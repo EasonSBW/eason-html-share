@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@600;700&display=swap');
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  width: 1200px;
+  height: 1780px;
+  font-family: 'Noto Sans TC', sans-serif;
+  background: #F4F1EA;
+  color: #1B2A4A;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Header */
+.header {
+  background: linear-gradient(135deg, #1B2A4A 0%, #2C4270 60%, #3A5998 100%);
+  padding: 64px 70px 48px 70px;
+  position: relative;
+}
+.header::after {
+  content: "";
+  position: absolute;
+  right: -60px; top: -60px;
+  width: 320px; height: 320px;
+  border-radius: 50%;
+  background: rgba(212,165,116,0.15);
+}
+.eyebrow {
+  color: #D4A574;
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: 4px;
+  margin-bottom: 14px;
+}
+.title {
+  font-family: 'Noto Serif TC', serif;
+  color: #FFFFFF;
+  font-size: 58px;
+  font-weight: 700;
+  line-height: 1.35;
+  letter-spacing: 1px;
+}
+.subtitle {
+  color: #C9D2E8;
+  font-size: 24px;
+  margin-top: 18px;
+  font-weight: 500;
+}
+
+/* Stats bar */
+.stats {
+  display: flex;
+  justify-content: space-between;
+  padding: 0 70px;
+  margin-top: -44px;
+  position: relative;
+  z-index: 5;
+  gap: 24px;
+}
+.stat-card {
+  flex: 1;
+  background: #FFFFFF;
+  border-radius: 18px;
+  box-shadow: 0 12px 28px rgba(27,42,74,0.18);
+  padding: 26px 10px;
+  text-align: center;
+}
+.stat-num {
+  font-size: 46px;
+  font-weight: 900;
+  color: #1B2A4A;
+  line-height: 1;
+}
+.stat-num span { color: #C9742F; }
+.stat-label {
+  font-size: 17px;
+  color: #5B6479;
+  margin-top: 8px;
+  font-weight: 500;
+}
+
+/* Section titles */
+.section {
+  padding: 56px 70px 0 70px;
+}
+.section-title {
+  font-size: 30px;
+  font-weight: 900;
+  color: #1B2A4A;
+  border-left: 8px solid #C9742F;
+  padding-left: 16px;
+  margin-bottom: 28px;
+}
+
+/* Project cards grid */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+}
+.card {
+  background: #FFFFFF;
+  border-radius: 16px;
+  padding: 22px 24px;
+  box-shadow: 0 6px 16px rgba(27,42,74,0.08);
+  border-top: 6px solid #C9742F;
+  position: relative;
+}
+.card.highlight {
+  border-top: 6px solid #1B2A4A;
+  background: #FFF9F0;
+}
+.card-name {
+  font-size: 23px;
+  font-weight: 900;
+  color: #1B2A4A;
+}
+.card-dev {
+  font-size: 15px;
+  color: #8A8470;
+  margin-top: 2px;
+  margin-bottom: 12px;
+}
+.tag-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.tag {
+  background: #EFE6D8;
+  color: #6B4F2A;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 5px 11px;
+  border-radius: 20px;
+}
+.card.highlight .tag {
+  background: #1B2A4A;
+  color: #FFFFFF;
+}
+.you-badge {
+  position: absolute;
+  top: -12px; right: 16px;
+  background: #C9742F;
+  color: white;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 5px 14px;
+  border-radius: 20px;
+  box-shadow: 0 4px 10px rgba(201,116,47,0.4);
+}
+
+/* Category cloud */
+.cat-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+.cat-item {
+  background: #FFFFFF;
+  border-radius: 14px;
+  padding: 16px 20px;
+  box-shadow: 0 4px 12px rgba(27,42,74,0.06);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+.cat-item.new { background: #FFF3E8; border: 2px dashed #C9742F; }
+.cat-dot {
+  width: 14px; height: 14px;
+  border-radius: 50%;
+  background: #1B2A4A;
+  flex-shrink: 0;
+}
+.cat-item.new .cat-dot { background: #C9742F; }
+.cat-text { font-size: 17px; font-weight: 700; color: #2A2A2A; }
+.cat-sub { font-size: 13px; color: #8A8470; margin-top: 2px; }
+
+/* Insight box */
+.insight {
+  margin: 50px 70px 0 70px;
+  background: #1B2A4A;
+  border-radius: 20px;
+  padding: 34px 40px;
+  color: #FFFFFF;
+  display: flex;
+  gap: 24px;
+  align-items: center;
+}
+.insight-icon {
+  font-size: 50px;
+  flex-shrink: 0;
+}
+.insight-text {
+  font-size: 19px;
+  line-height: 1.7;
+  color: #E8EAF2;
+}
+.insight-text b { color: #D4A574; }
+
+/* Footer */
+.footer {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  padding: 22px 70px;
+  display: flex;
+  justify-content: space-between;
+  font-size: 14px;
+  color: #8A8470;
+  border-top: 1px solid #E0D9C8;
+}
+</style>
+</head>
+<body>
+
+  <div class="header">
+    <div class="eyebrow">TAICHUNG TAIPING DISTRICT・MARKET SCAN</div>
+    <div class="title">台中太平區<br>預售屋 Facebook 廣告訴求調查</div>
+    <div class="subtitle">38 個預售／結構中建案全面普查　・　Meta 廣告檔案庫即時資料</div>
+  </div>
+
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-num">38</div>
+      <div class="stat-label">普查建案總數</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num"><span>7</span></div>
+      <div class="stat-label">建商主動投放廣告</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">3</div>
+      <div class="stat-label">僅有裝潢／仲介轉售提及</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">4</div>
+      <div class="stat-label">廣告訴求新分類</div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">主動投放廣告的 7 個建案</div>
+    <div class="grid">
+      <div class="card highlight">
+        <div class="you-badge">你的案子</div>
+        <div class="card-name">城鈺森川</div>
+        <div class="card-dev">城鈺建設・上東城LaLaport</div>
+        <div class="tag-row">
+          <span class="tag">限量倒數</span>
+          <span class="tag">進口精裝修</span>
+          <span class="tag">水岸地標</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-name">坤悅涵仰</div>
+        <div class="card-dev">坤悅開發・中興東路</div>
+        <div class="tag-row">
+          <span class="tag">上櫃品牌</span>
+          <span class="tag">六合一機能</span>
+          <span class="tag">售服承諾</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-name">櫻花上河之櫻</div>
+        <div class="card-dev">櫻花建設・LalaPort對面</div>
+        <div class="tag-row">
+          <span class="tag">上市品牌</span>
+          <span class="tag">12年學區</span>
+          <span class="tag">千坪造鎮</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-name">錢連全联／鋼骨双併</div>
+        <div class="card-dev">胤齊建業・光興路商圈</div>
+        <div class="tag-row">
+          <span class="tag">投資收租</span>
+          <span class="tag">低自備</span>
+          <span class="tag">74線交通</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-name">聚佳大值</div>
+        <div class="card-dev">市醫特區・環中東路</div>
+        <div class="tag-row">
+          <span class="tag">鄰中國醫附醫</span>
+          <span class="tag">雙匝道交通</span>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-name">大興家園</div>
+        <div class="card-dev">葫蘆墩建設・太原市醫特區</div>
+        <div class="tag-row">
+          <span class="tag">已完工即住</span>
+          <span class="tag">798萬起</span>
+          <span class="tag">送家具家電</span>
+        </div>
+      </div>
+    </div>
+    <div class="grid" style="margin-top:18px; grid-template-columns: 1fr;">
+      <div class="card">
+        <div class="card-name">大觀遠耀鑫</div>
+        <div class="card-dev">國立勤益科大旁・第三期預售</div>
+        <div class="tag-row">
+          <span class="tag">學生收租剛性需求</span>
+          <span class="tag">一戶收兩份租金</span>
+          <span class="tag">倒數10席</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section">
+    <div class="section-title">廣告訴求分類（含 4 個新發現）</div>
+    <div class="cat-grid">
+      <div class="cat-item"><div class="cat-dot"></div><div><div class="cat-text">地段／交通樞紐</div><div class="cat-sub">城鈺森川・坤悅涵仰・櫻花上河之櫻・錢連全联・聚佳大值</div></div></div>
+      <div class="cat-item"><div class="cat-dot"></div><div><div class="cat-text">品牌信譽</div><div class="cat-sub">坤悅涵仰・櫻花上河之櫻</div></div></div>
+      <div class="cat-item"><div class="cat-dot"></div><div><div class="cat-text">學區</div><div class="cat-sub">坤悅涵仰・櫻花上河之櫻</div></div></div>
+      <div class="cat-item"><div class="cat-dot"></div><div><div class="cat-text">景觀／地標稀缺</div><div class="cat-sub">城鈺森川・坤悅涵仰・櫻花上河之櫻</div></div></div>
+      <div class="cat-item"><div class="cat-dot"></div><div><div class="cat-text">限量倒數</div><div class="cat-sub">城鈺森川・大觀遠耀鑫</div></div></div>
+      <div class="cat-item"><div class="cat-dot"></div><div><div class="cat-text">精裝修／進口建材</div><div class="cat-sub">城鈺森川・大興家園</div></div></div>
+      <div class="cat-item new"><div class="cat-dot"></div><div><div class="cat-text">投資置產／收租 〈新〉</div><div class="cat-sub">錢連全联・大觀遠耀鑫</div></div></div>
+      <div class="cat-item new"><div class="cat-dot"></div><div><div class="cat-text">醫療資源鄰近 〈新〉</div><div class="cat-sub">聚佳大值・大興家園</div></div></div>
+      <div class="cat-item new"><div class="cat-dot"></div><div><div class="cat-text">已完工即住 〈新〉</div><div class="cat-sub">大興家園</div></div></div>
+      <div class="cat-item new"><div class="cat-dot"></div><div><div class="cat-text">學生租屋剛性需求 〈新〉</div><div class="cat-sub">大觀遠耀鑫</div></div></div>
+    </div>
+  </div>
+
+  <div class="insight">
+    <div class="insight-icon">💡</div>
+    <div class="insight-text">
+      太平區買方市場至少分成三種打法：<b>自住三房宅</b>（城鈺森川、坤悅涵仰、櫻花上河之櫻）、<b>投資收租型</b>（錢連、大觀遠耀鑫）、<b>低總價即住型</b>（大興家園）。城鈺森川目前主打「稀缺＋進口精裝修」，與最近的櫻花上河之櫻（上市品牌＋學區＋造鎮規模）尚未正面對撞，但同屬 LalaPort 生活圈，買方很可能放在一起比較。
+    </div>
+  </div>
+
+  <div class="footer">
+    <div>資料來源：Meta 廣告檔案庫（facebook.com/ads/library）即時查詢</div>
+    <div>製表日期：2026-06-19・EasonAi-Agent</div>
+  </div>
+
+</body>
+</html>

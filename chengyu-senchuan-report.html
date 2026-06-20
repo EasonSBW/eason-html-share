@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<title>市調簡報製作工具</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, 'PingFang TC', 'Helvetica Neue', sans-serif;
+    background: #eef0ef; height:100vh; overflow:hidden;
+  }
+
+  #toolbar {
+    display:flex; align-items:center; gap:10px;
+    background:#1a2332; color:#fff; padding:10px 18px; height:52px;
+    position:fixed; top:0; left:0; right:0; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,.3);
+  }
+  #toolbar h1 { font-size:15px; font-weight:700; flex:1; }
+  .btn { padding:7px 16px; border:none; border-radius:5px; cursor:pointer; font-size:13px; font-weight:600; transition:opacity .2s; }
+  .btn:hover { opacity:.85; }
+  .btn-pdf { background:#e74c3c; color:#fff; }
+  .btn-control { background:#2d8b8b; color:#fff; }
+
+  #main { display:flex; height:calc(100vh - 52px); margin-top:52px; }
+
+  #form-panel {
+    width:360px; min-width:320px; background:#fff;
+    overflow-y:auto; padding:14px; border-right:1px solid #ddd; flex-shrink:0;
+  }
+  .case-picker {
+    margin-bottom:14px; padding:10px; background:#eef1f8; border-radius:8px;
+  }
+  .case-picker label { font-size:11px; color:#555; display:block; margin-bottom:4px; font-weight:700; }
+  .case-picker select {
+    width:100%; font-size:13px; padding:7px 8px; border:1px solid #2d8b8b; border-radius:5px;
+    font-weight:700; color:#1a2332; background:#fff;
+  }
+  .section-title {
+    font-size:13px; font-weight:700; color:#1a2332;
+    background:#eef1f8; border-left:4px solid #2d8b8b;
+    padding:6px 10px; margin:12px 0 8px;
+  }
+  .section-title:first-child { margin-top:0; }
+  .field-row { display:flex; align-items:center; gap:6px; margin-bottom:6px; }
+  .field-row label { font-size:11px; color:#555; width:78px; flex-shrink:0; }
+  .field-row input, .field-row select {
+    flex:1; font-size:11.5px; padding:5px 6px;
+    border:1px solid #ccc; border-radius:4px;
+    font-family: -apple-system, sans-serif;
+  }
+  .field-row input:focus, .field-row select:focus { outline:none; border-color:#2d8b8b; }
+  .field-row select.fac-input-cat { flex:0 0 92px; }
+
+  #preview-panel {
+    flex:1; overflow:auto; background:#888;
+    display:flex; align-items:flex-start; justify-content:center; padding:20px;
+  }
+  #slide-wrapper { width:100%; max-width:1280px; }
+  #slide-scaler { position:relative; width:100%; padding-bottom:56.25%; overflow:hidden; }
+
+  .slide {
+    position:absolute; top:0; left:0;
+    width:1280px; height:720px; transform-origin:top left;
+    background:#f7f9f8; border-radius:14px; overflow:hidden;
+    box-shadow:0 8px 40px rgba(0,0,0,.3);
+  }
+  .slide * { box-sizing:border-box; }
+  #slide-inner {
+    width:1280px; transform-origin:top left;
+    display:flex; flex-direction:column;
+  }
+
+  .hd { display:flex; align-items:baseline; gap:14px; padding:14px 36px 6px; flex-shrink:0; }
+  .nm { font-size:31px; font-weight:800; color:#1a2332; }
+  .pr-pill { margin-left:auto; background:#1a2332; color:#a8dadc; font-size:15px; font-weight:700;
+             padding:6px 16px; border-radius:20px; }
+  .pr-pill b { color:#fff; font-size:18px; }
+
+  .bd { display:flex; gap:0; padding:0 36px 4px; flex-shrink:0; }
+  .data-col { flex:1.45; display:flex; gap:9px; min-width:0; }
+  .rail { width:4px; border-radius:2px; flex-shrink:0; background:#2d8b8b; }
+  .grp { flex:1; min-width:0; }
+  .grp-label { font-size:11.5px; font-weight:800; color:#2d8b8b; letter-spacing:1px; margin:4px 0 2px; text-transform:uppercase; }
+  .grp-label:first-child { margin-top:0; }
+
+  .pair-row { display:grid; grid-template-columns: 84px 1fr 84px 1fr; gap:0 10px; padding:1.6px 0; border-bottom:1px solid #e9eeec; }
+  .pair-row b { font-size:11.5px; color:#7a8a87; font-weight:600; }
+  .pair-row span { font-size:12.5px; color:#1a2332; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .full-row { display:flex; gap:10px; padding:1.6px 0; border-bottom:1px solid #e9eeec; }
+  .full-row b { font-size:11.5px; color:#7a8a87; font-weight:600; flex-shrink:0; width:84px; }
+  .full-row span { font-size:11.5px; color:#1a2332; font-weight:600; }
+
+  .room-row { display:flex; align-items:baseline; gap:10px; padding:1.6px 0; border-bottom:1px solid #e9eeec; }
+  .room-row b { font-size:11.5px; color:#7a8a87; font-weight:600; flex-shrink:0; width:84px; }
+  .room-row span { font-size:14px; color:#1a2332; font-weight:800; }
+
+  .ph-wrap { flex:0.62; padding-left:16px; }
+  .ph { height:100%; min-height:75px; background:#dde8e4; border-radius:12px; overflow:hidden; position:relative; }
+  .ph img { width:100%; height:100%; object-fit:cover; object-position:center 30%; display:block; }
+  .ph .cap { position:absolute; bottom:0; left:0; right:0; background:rgba(26,35,50,.7); color:#fff;
+             font-size:8px; text-align:center; padding:3px 6px; }
+
+  .mat-section { padding:5px 36px 4px; background:#fff; border-top:1px solid #e6ebe9;
+                 display:flex; gap:12px; flex-shrink:0; }
+  .mat-col { flex:1; min-width:0; display:flex; flex-direction:column; }
+  .mat-hd { background:#1a2332; color:#a8dadc; font-size:11px; font-weight:800; letter-spacing:.4px;
+            text-align:center; padding:3px 3px; border-radius:6px; margin-bottom:3.5px; }
+  .mat-item { font-size:11px; padding:2px 2px; border-bottom:1px solid #f0f3f2; line-height:1.15; }
+  .mat-item .lb { color:#2d8b8b; font-weight:700; display:block; }
+  .mat-item .vl { color:#1a2332; font-weight:500; }
+
+  .fac-section { flex:1; padding:5px 36px 9px; background:#f4f9f7; border-top:1px solid #e6ebe9;
+                 display:flex; flex-direction:column; min-height:0; }
+  .fac-top { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:5px; }
+  .fac-label { font-size:11px; font-weight:800; color:#2d8b8b; letter-spacing:1px; text-transform:uppercase; }
+  .fac-legend { display:flex; gap:10px; }
+  .fac-legend span { font-size:9.5px; color:#5a6a68; display:flex; align-items:center; gap:4px; }
+  .dot { width:7px; height:7px; border-radius:50%; display:inline-block; }
+  .dot.sport { background:#2d8b8b; }
+  .dot.social { background:#3a4a7a; }
+  .dot.service { background:#b8893f; }
+  .dot.green { background:#4f9d4f; }
+
+  .fac-chips { display:flex; flex-wrap:wrap; gap:7px; align-content:flex-start; }
+  .fac-chip { border-radius:16px; padding:5px 13px; font-size:12.5px; font-weight:700; line-height:1; }
+  .fac-chip.sport   { background:#dcefed; color:#1c6b69; }
+  .fac-chip.social  { background:#e1e4f2; color:#2e3a6b; }
+  .fac-chip.service { background:#f5e9d3; color:#8a5f1f; }
+  .fac-chip.green   { background:#e1f0e1; color:#2e6b2e; }
+
+  #control-panel {
+    display:none; position:fixed; inset:52px 0 0 0; background:#fff; z-index:50;
+    padding:24px; overflow:auto;
+  }
+  #control-panel.active { display:block; }
+  #control-panel .placeholder { max-width:600px; margin:60px auto; text-align:center; color:#777; }
+  #control-panel .placeholder h2 { color:#1a2332; margin-bottom:12px; }
+  #control-panel .close-btn {
+    position:absolute; top:14px; right:24px; background:#1a2332; color:#fff;
+    border:none; border-radius:5px; padding:6px 14px; cursor:pointer; font-size:13px;
+  }
+
+  @media print {
+    body { overflow:visible; height:auto; }
+    #toolbar, #form-panel { display:none !important; }
+    #main { margin:0; height:auto; }
+    #preview-panel { background:#fff; padding:0; display:block; }
+    #slide-wrapper { max-width:100%; }
+    #slide-scaler { padding-bottom:56.25%; }
+    .slide { box-shadow:none; }
+    @page { size: A4 landscape; margin:0; }
+  }
+</style>
+</head>
+<body>
+
+<div id="toolbar">
+  <h1 id="toolbar-title">🏢 市調簡報製作工具</h1>
+  <button class="btn btn-control" onclick="openControl()">樓層銷控</button>
+  <button class="btn btn-pdf" onclick="exportPDF()">匯出 PDF</button>
+</div>
+
+<div id="main">
+
+  <div id="form-panel">
+
+    <div class="case-picker">
+      <label>📁 選擇個案</label>
+      <select id="case-select" onchange="loadCase(this.value)"></select>
+    </div>
+
+    <div class="section-title">📌 標題資訊</div>
+    <div class="field-row"><label>案名</label><input id="f-name" oninput="render()"></div>
+    <div class="field-row"><label>價格標籤</label><input id="f-pricelabel" oninput="render()"></div>
+    <div class="field-row"><label>價格數值</label><input id="f-price" oninput="render()"></div>
+
+    <div class="section-title">🏗️ 基本資料</div>
+    <div class="field-row"><label>總銷金額</label><input id="f-totalsales" oninput="render()"></div>
+    <div class="field-row"><label>基地面積</label><input id="f-landarea" oninput="render()"></div>
+    <div class="field-row"><label>樓層規劃</label><input id="f-floors" oninput="render()"></div>
+    <div class="field-row"><label>公設比</label><input id="f-public" oninput="render()"></div>
+    <div class="field-row"><label>規劃戶數</label><input id="f-units" oninput="render()"></div>
+    <div class="field-row"><label>建蔽率</label><input id="f-coverage" oninput="render()"></div>
+    <div class="field-row"><label>推案時間</label><input id="f-launchtime" oninput="render()"></div>
+    <div class="field-row"><label>土地分區</label><input id="f-zone" oninput="render()"></div>
+    <div class="field-row"><label>建築結構</label><input id="f-structure" oninput="render()"></div>
+    <div class="field-row"><label>管理費用</label><input id="f-mgmtfee" oninput="render()"></div>
+    <div class="field-row"><label>投資興建</label><input id="f-developer" oninput="render()"></div>
+    <div class="field-row"><label>銷售團隊</label><input id="f-salesteam" oninput="render()"></div>
+    <div class="field-row"><label>建築設計</label><input id="f-architect" oninput="render()"></div>
+    <div class="field-row"><label>營造工程</label><input id="f-contractor" oninput="render()"></div>
+    <div class="field-row"><label>完工時間</label><input id="f-completion" oninput="render()"></div>
+    <div class="field-row"><label>交通特色</label><input id="f-traffic" oninput="render()"></div>
+    <div class="field-row"><label>基地位置</label><input id="f-address" oninput="render()"></div>
+
+    <div class="section-title">🏠 產品定位 — 房型坪數</div>
+    <div id="rooms-form-container"></div>
+
+    <div class="section-title">🚗 產品定位 — 其他</div>
+    <div class="field-row"><label>車位規劃</label><input id="f-parking" oninput="render()"></div>
+    <div class="field-row"><label>車位價格</label><input id="f-parkprice" oninput="render()"></div>
+    <div class="field-row"><label>樓層高度</label><input id="f-height" oninput="render()"></div>
+    <div class="field-row"><label>付款方式</label><input id="f-payment" oninput="render()"></div>
+
+    <div id="materials-form-container"></div>
+
+    <div class="section-title">🌳 公設規劃（名稱／分類）</div>
+    <div id="facilities-form-container"></div>
+
+    <div class="section-title">🖼️ 外觀照片</div>
+    <div class="field-row"><label>圖片網址</label><input id="f-photo" oninput="render()"></div>
+    <div class="field-row"><label>圖片說明</label><input id="f-photocap" oninput="render()"></div>
+
+  </div><!-- /form-panel -->
+
+  <div id="preview-panel">
+    <div id="slide-wrapper">
+      <div id="slide-scaler">
+        <div class="slide" id="slide"></div>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /main -->
+
+<div id="control-panel">
+  <button class="close-btn" onclick="closeControl()">關閉 ✕</button>
+  <div class="placeholder">
+    <h2>📊 樓層銷控表</h2>
+    <p>這個功能還在規劃中，等 Eason 提供樓層銷控表要呈現的結構（例如：要顯示哪些欄位、已售/未售怎麼標示、戶型怎麼排）之後再實作。</p>
+  </div>
+</div>
+
+<script>
+/* ───────────── 個案資料 ───────────── */
+const CASES = {
+
+  chengyu: {
+    name: '城鈺森川', priceLabel: '成交均價', price: '48.2 萬/坪',
+    basic: {
+      totalsales:'約13.37億', landarea:'477.32坪', floors:'15F／B3', public:'34.5%',
+      units:'61住家+3店面', coverage:'40.34%', launchtime:'114年11月', zone:'住宅區',
+      structure:'RC鋼筋混凝土', mgmtfee:'100元/月', developer:'城鈺建設', salesteam:'惠新廣告',
+      architect:'永續建築師事務所', contractor:'建群營造', completion:'2028年Q4',
+      traffic:'距74號快速道路1.8km', address:'太平區旱溪東路二段、新福十六街、新福路口',
+    },
+    rooms: [ ['3房坪數', '38／39／40 坪（純3房規劃）'] ],
+    parking:'平面式79個', parkprice:'165–245萬(均202萬)',
+    height:'1F:4.2m｜2F:3.2m｜3-14F:3.25m｜15F:3.45m', payment:'自備款20%／銀行貸款80%',
+    materials: [
+      { title:'客廳建材', items:[['門鎖品牌','WAFERLOCK三合一電子鎖'],['客廳地坪','KRONOTEX太格木地板'],['空調系統','Panasonic變頻冷暖機'],['全屋收納','系統收納設計'],['新風機','LIFEGEAR樂奇'],['智能系統','Life Smart']] },
+      { title:'鋁窗建材', items:[['鋁窗品牌','大同氣密窗'],['玻璃厚度','5+5 mm']] },
+      { title:'廚房建材', items:[['抽油煙機','Rinnai'],['瓦斯爐','Rinnai雙口'],['系統廚具','Clean up'],['洗碗機','GLEM GAS義大利'],['背板','磁吸背板'],['收納櫃','電器收納櫃']] },
+      { title:'衛浴建材', items:[['衛浴系統','TOTO免治（馬桶/面盆/五金）'],['收納','鏡櫃、下櫃'],['暖風機','樂奇(LIFEGEAR)']] },
+      { title:'其他建材', items:[['','三菱電梯（17人座、12人座）'],['','HUSKY冷風滅菌曬衣架']] },
+    ],
+    facilities: [
+      ['接待大廳','service'],['空中花園','green'],['交誼廳','social'],['閱覽室','social'],
+      ['健身房','sport'],['廚藝教室','social'],['信箱區','service'],['納涼席','social'],
+      ['多功能室','social'],['常日茶庵','social'],['戶外瑜伽','sport'],['戶外休憩區','green'],
+      ['烤肉區','sport'],['曬被區','service'],
+    ],
+    photo:'https://www.0988055028.com/upload/web/images/%E5%9F%8E%E9%88%BA%E6%A3%AE%E5%B7%9D114080911.jpg',
+    photocap:'官方效果圖（預售階段，實際完工外觀以建商公告為準）',
+  },
+
+  yongshang: {
+    name: '永尚謙玥', priceLabel: '開價', price: '50～58 萬',
+    basic: {
+      totalsales:'—', landarea:'約1,646坪', floors:'22F／B3', public:'34.5%',
+      units:'294住家(1幢2棟)', coverage:'24.36%', launchtime:'114年', zone:'住2-1',
+      structure:'RC鋼筋混凝土', mgmtfee:'約120元/坪', developer:'永尚建設', salesteam:'海悅－好漾',
+      architect:'許獻叡事務所', contractor:'成中恆營造', completion:'2030年下半年',
+      traffic:'北屯總站步行可達', address:'北屯區敦富路與南興北二路交叉口',
+    },
+    rooms: [ ['2房坪數','24–29 坪'], ['3房坪數','35–37 坪'], ['4房坪數','52–58 坪'] ],
+    parking:'地下1-3樓', parkprice:'185–240萬(均218.5萬)',
+    height:'大廳5.5m／2F~22F:3.4m', payment:'低首付：訂簽58／68萬（名額有限）',
+    materials: [
+      { title:'客廳建材', items:[['門鎖品牌','維夫拉克四合一指紋鎖'],['玄關門','—'],['客廳地坪','德國太格耐磨木地板'],['廚房地坪','德國太格耐磨木地板'],['房間地坪','德國太格耐磨木地板']] },
+      { title:'鋁窗建材', items:[['鋁窗品牌','YKK氣密窗'],['玻璃厚度','5+5 mm'],['空氣清淨','VAF蒲羅特新風機'],['空調系統','—']] },
+      { title:'廚房建材', items:[['廚具品牌','義大利STOSA廚具'],['檯面','—'],['爐具','義大利GLAM GAS IH爐'],['抽油煙機','義大利GLAM GAS'],['洗烘碗機','伊萊克斯洗碗機'],['烤箱','伊萊克斯燒烤微波爐'],['炊飯櫃','—']] },
+      { title:'衛浴建材', items:[['主衛馬桶','INAX AQUA自動馬桶'],['主衛五金','Grohe'],['主衛暖風機','Panasonic'],['次衛馬桶','INAX免治馬桶蓋'],['次衛五金','Grohe'],['次衛暖風機','Panasonic'],['面盆','INAX AQUA']] },
+      { title:'其他建材', items:[['','德國BWT社區淨水系統'],['','漢來物業管理'],['','電梯配送機器人'],['','智慧KEY充電系統']] },
+    ],
+    facilities: [
+      ['大廳','service'],['信箱區','service'],['游泳池(30m)','sport'],['景觀花園(1,200坪)','green'],
+      ['宅配室','service'],['健身房','sport'],['音樂教室','social'],['交誼廳','social'],
+      ['瑜珈室','sport'],['閱覽室','social'],['咖啡輕食區','social'],['Uber外送區','service'],
+      ['更衣室','service'],['露營區','sport'],['烤肉區','sport'],['曬被區','service'],
+      ['中庭花園','green'],['多功能室','social'],['家教室','social'],['會議室','social'],
+      ['餐廳','social'],['回收室','service'],
+    ],
+    photo:'https://img1.591.com.tw/house/2025/08/26/175619144339031308.jpg!660x495.water3.jpg',
+    photocap:'來源：591（含浮水印・內部測試用，建議之後換成無水印版本）',
+  },
+
+};
+
+const facLabels = { sport: '休閒運動', social: '社交聚會', service: '生活服務', green: '環境景觀' };
+
+/* ───────────── 工具函式 ───────────── */
+function v(id) { const el = document.getElementById(id); return el ? el.value : ''; }
+function esc(s) { return (s ?? '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+function scaleSlide() {
+  const scaler = document.getElementById('slide-scaler');
+  const slide = document.getElementById('slide');
+  const scale = scaler.offsetWidth / 1280;
+  slide.style.transform = `scale(${scale})`;
+}
+window.addEventListener('resize', scaleSlide);
+
+/* ───────────── 個案切換：動態生成表單 ───────────── */
+function populateCaseSelect() {
+  const sel = document.getElementById('case-select');
+  sel.innerHTML = Object.keys(CASES).map(key => `<option value="${key}">${CASES[key].name}</option>`).join('');
+}
+
+function loadCase(key) {
+  const c = CASES[key];
+  document.getElementById('toolbar-title').textContent = `🏢 ${c.name} 市調簡報製作工具`;
+  document.getElementById('f-name').value = c.name;
+  document.getElementById('f-pricelabel').value = c.priceLabel;
+  document.getElementById('f-price').value = c.price;
+  for (const k in c.basic) {
+    const el = document.getElementById('f-' + (k === 'launchtime' ? 'launchtime' : k));
+    if (el) el.value = c.basic[k];
+  }
+  document.getElementById('f-parking').value = c.parking;
+  document.getElementById('f-parkprice').value = c.parkprice;
+  document.getElementById('f-height').value = c.height;
+  document.getElementById('f-payment').value = c.payment;
+  document.getElementById('f-photo').value = c.photo;
+  document.getElementById('f-photocap').value = c.photocap;
+
+  buildRoomsForm(c.rooms);
+  buildMaterialsForm(c.materials);
+  buildFacilitiesForm(c.facilities);
+  render();
+}
+
+function buildRoomsForm(rooms) {
+  const container = document.getElementById('rooms-form-container');
+  container.innerHTML = rooms.map((r, i) => `
+    <div class="field-row">
+      <label>${esc(r[0])}</label>
+      <input class="room-input" data-label="${esc(r[0])}" value="${esc(r[1])}" oninput="render()">
+    </div>
+  `).join('');
+}
+
+const matIcons = ['🛋️','🪟','🍳','🚿','📦'];
+function buildMaterialsForm(materials) {
+  const container = document.getElementById('materials-form-container');
+  container.innerHTML = materials.map((cat, ci) => `
+    <div class="section-title" data-mat-title="${ci}">${matIcons[ci] || '🔧'} ${esc(cat.title)}<input type="hidden" class="mat-cat-title" value="${esc(cat.title)}"></div>
+    ${cat.items.map((item, ii) => `
+      <div class="field-row">
+        <label>${esc(item[0] || ('項目' + (ii+1)))}</label>
+        <input class="mat-input" data-cat="${ci}" data-label="${esc(item[0]||'')}" value="${esc(item[1])}" oninput="render()">
+      </div>
+    `).join('')}
+  `).join('');
+}
+
+function buildFacilitiesForm(facilities) {
+  const container = document.getElementById('facilities-form-container');
+  container.innerHTML = facilities.map((f, i) => `
+    <div class="field-row">
+      <label>公設${i+1}</label>
+      <input class="fac-input-name" value="${esc(f[0])}" oninput="render()">
+      <select class="fac-input-cat" onchange="render()">
+        ${Object.keys(facLabels).map(c => `<option value="${c}" ${c===f[1]?'selected':''}>${facLabels[c]}</option>`).join('')}
+      </select>
+    </div>
+  `).join('');
+}
+
+/* ───────────── 渲染投影片 ───────────── */
+function render() {
+  // 房型坪數（動態列數）
+  const roomRows = Array.from(document.querySelectorAll('.room-input')).map(el =>
+    `<div class="room-row"><b>${el.dataset.label}</b><span>${el.value}</span></div>`
+  ).join('');
+
+  // 建材（依分類動態列數）
+  const matTitleEls = Array.from(document.querySelectorAll('.mat-cat-title'));
+  const matInputs = Array.from(document.querySelectorAll('.mat-input'));
+  const matSection = matTitleEls.map((titleEl, ci) => {
+    const items = matInputs.filter(el => Number(el.dataset.cat) === ci);
+    return `
+      <div class="mat-col">
+        <div class="mat-hd">${titleEl.value}</div>
+        ${items.map(el => `
+          <div class="mat-item">
+            ${el.dataset.label ? `<span class="lb">${el.dataset.label}</span>` : ''}
+            <span class="vl">${el.value}</span>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }).join('');
+
+  // 公設標籤（動態筆數）
+  const facNames = Array.from(document.querySelectorAll('.fac-input-name'));
+  const facCats = Array.from(document.querySelectorAll('.fac-input-cat'));
+  const facChips = facNames.map((el, i) =>
+    `<span class="fac-chip ${facCats[i].value}">${el.value}</span>`
+  ).join('');
+
+  document.getElementById('slide').innerHTML = `
+    <div id="slide-inner">
+    <div class="hd">
+      <span class="nm">${v('f-name')}</span>
+      <span class="pr-pill">${v('f-pricelabel')} <b>${v('f-price')}</b></span>
+    </div>
+
+    <div class="bd">
+      <div class="data-col">
+        <div class="rail"></div>
+        <div class="grp">
+          <div class="grp-label">基本資料</div>
+          <div class="pair-row"><b>總銷金額</b><span>${v('f-totalsales')}</span><b>基地面積</b><span>${v('f-landarea')}</span></div>
+          <div class="pair-row"><b>樓層規劃</b><span>${v('f-floors')}</span><b>公設比</b><span>${v('f-public')}</span></div>
+          <div class="pair-row"><b>規劃戶數</b><span>${v('f-units')}</span><b>建蔽率</b><span>${v('f-coverage')}</span></div>
+          <div class="pair-row"><b>推案時間</b><span>${v('f-launchtime')}</span><b>土地分區</b><span>${v('f-zone')}</span></div>
+          <div class="pair-row"><b>建築結構</b><span>${v('f-structure')}</span><b>管理費用</b><span>${v('f-mgmtfee')}</span></div>
+          <div class="pair-row"><b>投資興建</b><span>${v('f-developer')}</span><b>銷售團隊</b><span>${v('f-salesteam')}</span></div>
+          <div class="pair-row"><b>建築設計</b><span>${v('f-architect')}</span><b>營造工程</b><span>${v('f-contractor')}</span></div>
+          <div class="pair-row"><b>完工時間</b><span>${v('f-completion')}</span><b>交通特色</b><span>${v('f-traffic')}</span></div>
+          <div class="full-row"><b>基地位置</b><span>${v('f-address')}</span></div>
+
+          <div class="grp-label">產品定位</div>
+          ${roomRows}
+          <div class="pair-row"><b>車位規劃</b><span>${v('f-parking')}</span><b>車位價格</b><span>${v('f-parkprice')}</span></div>
+          <div class="full-row"><b>樓層高度</b><span>${v('f-height')}</span></div>
+          <div class="full-row"><b>付款方式</b><span>${v('f-payment')}</span></div>
+        </div>
+      </div>
+      <div class="ph-wrap">
+        <div class="ph">
+          <img src="${v('f-photo')}" alt="${v('f-name')}外觀效果圖">
+          <div class="cap">${v('f-photocap')}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mat-section">${matSection}</div>
+
+    <div class="fac-section">
+      <div class="fac-top">
+        <div class="fac-label">公設規劃</div>
+        <div class="fac-legend">
+          <span><span class="dot sport"></span>休閒運動</span>
+          <span><span class="dot social"></span>社交聚會</span>
+          <span><span class="dot service"></span>生活服務</span>
+          <span><span class="dot green"></span>環境景觀</span>
+        </div>
+      </div>
+      <div class="fac-chips">${facChips}</div>
+    </div>
+    </div>
+  `;
+  fitSlideContent();
+  scaleSlide();
+}
+
+/* 依資料量自動縮放 #slide-inner，讓內容剛好塞進固定的 1280×720 畫框 */
+function fitSlideContent() {
+  const inner = document.getElementById('slide-inner');
+  if (!inner) return;
+  inner.style.transform = 'none';
+  inner.style.width = '1280px';
+  const naturalHeight = inner.scrollHeight;
+  const scale = Math.min(1, 720 / naturalHeight);
+  inner.style.transform = `scale(${scale})`;
+  inner.style.width = (1280 / scale) + 'px';
+}
+
+function exportPDF() { window.print(); }
+function openControl() { document.getElementById('control-panel').classList.add('active'); }
+function closeControl() { document.getElementById('control-panel').classList.remove('active'); }
+
+/* ───────────── 初始化 ───────────── */
+populateCaseSelect();
+loadCase('chengyu');
+</script>
+</body>
+</html>
