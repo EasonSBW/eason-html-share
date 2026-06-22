@@ -429,6 +429,54 @@ const CASES = {
     },
   },
 
+  zhuyin: {
+    name: '住寅純萃',
+    // 成交均價區間/均價由下方 salesGrid 住宅類 57 筆成交單價直接算出（min–max、平均），與內政部實價登錄查詢結果交叉核對一致
+    askPrice: '查證中', dealRange: '39.5-48.9萬/坪', dealAvg: '42.7萬', priceGap: '查證中',
+    basic: {
+      totalsales:'—', landarea:'1339.03坪', floors:'11F／B2', public:'33.9%',
+      units:'126戶住家', coverage:'24.42%', launchtime:'113年10月', zone:'第二種住宅區',
+      structure:'RC鋼筋混凝土', mgmtfee:'待定', developer:'住寅建設', salesteam:'璟耀國際行銷',
+      architect:'陳明偉建築師事務所', contractor:'真寅營造', completion:'2029年12月',
+      traffic:'鄰捷運藍線B7站／國道3號龍井交流道', address:'台中市沙鹿區平等二街、平等三街口',
+    },
+    rooms: [ ['2房坪數', '26.5–26.99 坪'], ['3房坪數', '36.6–37.5 坪'] ],
+    parking:'平面式143個', parkprice:'170–200萬(均183萬)',
+    height:'查證中', payment:'自備款20%／銀行貸款80%，訂簽58萬起（工程零付款方案）',
+    materials: [
+      { title:'客廳建材', items:[['門鎖品牌','維夫拉克四合一電子鎖'],['客廳地坪','太格超耐磨木地板']] },
+      { title:'鋁窗建材', items:[['鋁窗品牌','大同氣密窗'],['玻璃厚度','5+5 mm膠合玻璃']] },
+      { title:'廚房建材', items:[['系統廚具','櫻花整體廚具'],['洗碗機','SVAGO洗碗機']] },
+      { title:'衛浴建材', items:[['衛浴系統','INAX系列'],['電腦馬桶','TOTO電腦馬桶'],['暖風機','台達電7合1暖風機']] },
+    ],
+    facilities: [
+      ['接待大廳','service'],['交誼廳','social'],['健身房','sport'],['兒童遊戲室','social'],
+      ['中庭花園水景','green'],['資源回收區','service'],
+    ],
+    photo:'https://img1.591.com.tw/house/2024/12/12/173398210666102900.jpg!fit.1200x800.jpg',
+    photocap:'官方效果圖（來源：591新建案，預售階段，實際完工外觀以建商公告為準）',
+    salesGrid: {
+      source: '主委說 trueway.adholic.com.tw（住寅純萃頁面，銷控表＋交易紀錄分頁交叉核對，57 筆並與內政部實價登錄查詢服務網查詢結果比對一致），查詢日期 2026-06-22',
+      categories: {
+        res: { label:'住宅', bg:'#dcefed', fg:'#1c6b69' },
+      },
+      columns: ['A','A-1','A-2','A-3','A-5','A-6','A-7','B','B-1','B-2','B-3','B-5','B-6','B-7'],
+      rows: [
+        { floor:'11F', cells:{ 'A-5':{price:43.3,total:1354,cat:'res'} } },
+        { floor:'10F', cells:{ 'B-6':{price:42.3,total:1790,cat:'res'} } },
+        { floor:'9F',  cells:{ 'A-6':{price:42.9,total:1991,cat:'res'} } },
+        { floor:'8F',  cells:{ 'A-2':{price:44.7,total:1385,cat:'res'}, 'A-3':{price:44.4,total:1360,cat:'res'}, 'A-5':{price:44.4,total:1382,cat:'res'}, 'A-6':{price:41.1,total:1915,cat:'res'}, 'A-7':{price:42.4,total:1740,cat:'res'}, 'B-1':{price:44.1,total:1344,cat:'res'}, 'B-2':{price:44.2,total:1376,cat:'res'}, 'B-3':{price:44.4,total:1366,cat:'res'}, 'B-5':{price:43.0,total:1346,cat:'res'}, 'B-6':{price:42.1,total:1778,cat:'res'} } },
+        { floor:'7F',  cells:{ 'A-1':{price:43.6,total:1326,cat:'res'}, 'A-3':{price:43.8,total:1370,cat:'res'}, 'A-5':{price:43.2,total:1531,cat:'res'}, 'A-6':{price:41.1,total:1925,cat:'res'}, 'B-1':{price:43.0,total:1314,cat:'res'}, 'B-5':{price:42.5,total:1332,cat:'res'}, 'B-6':{price:41.7,total:1762,cat:'res'} } },
+        { floor:'6F',  cells:{ A:{price:41.7,total:1760,cat:'res'}, 'A-1':{price:43.4,total:1325,cat:'res'}, 'A-2':{price:43.4,total:1354,cat:'res'}, 'A-3':{price:43.4,total:1350,cat:'res'}, 'A-5':{price:42.7,total:1337,cat:'res'}, B:{price:41.2,total:1723,cat:'res'}, 'B-1':{price:42.8,total:1320,cat:'res'}, 'B-2':{price:43.2,total:1335,cat:'res'}, 'B-5':{price:42.0,total:1304,cat:'res'}, 'B-7':{price:40.9,total:1695,cat:'res'} } },
+        { floor:'5F',  cells:{ A:{price:42.3,total:1322,cat:'res'}, 'A-1':{price:42.9,total:1312,cat:'res'}, 'A-2':{price:42.9,total:1320,cat:'res'}, 'A-3':{price:42.9,total:1335,cat:'res'}, 'A-7':{price:41.0,total:1883,cat:'res'}, B:{price:41.5,total:1305,cat:'res'}, 'B-1':{price:42.5,total:1300,cat:'res'}, 'B-2':{price:42.5,total:1316,cat:'res'}, 'B-3':{price:42.9,total:1320,cat:'res'}, 'B-6':{price:40.7,total:1724,cat:'res'}, 'B-7':{price:40.5,total:1670,cat:'res'} } },
+        { floor:'4F',  cells:{ 'A-5':{price:42.0,total:1329,cat:'res'}, 'B-1':{price:41.6,total:1272,cat:'res'}, 'B-2':{price:42.1,total:1315,cat:'res'}, 'B-5':{price:41.0,total:1282,cat:'res'} } },
+        { floor:'3F',  cells:{ A:{price:41.7,total:1294,cat:'res'}, 'A-1':{price:41.6,total:1273,cat:'res'}, 'A-5':{price:41.5,total:1305,cat:'res'}, 'A-6':{price:39.7,total:1677,cat:'res'}, 'A-7':{price:39.5,total:1633,cat:'res'}, 'B-1':{price:41.1,total:1259,cat:'res'}, 'B-2':{price:41.4,total:1295,cat:'res'} } },
+        { floor:'2F',  cells:{ 'A-5':{price:39.6,total:1255,cat:'res'} } },
+        { floor:'1F',  cells:{ 'A-5':{price:48.9,total:1328,cat:'res'}, 'A-6':{price:48.4,total:1968,cat:'res'}, 'A-7':{price:47.4,total:1713,cat:'res'}, 'B-7':{price:46.9,total:1687,cat:'res'} } },
+      ],
+    },
+  },
+
 };
 
 const facLabels = { sport: '休閒運動', social: '社交聚會', service: '生活服務', green: '環境景觀' };
@@ -506,7 +554,7 @@ function loadCase(key) {
   localStorage.setItem(LAST_CASE_KEY, key);
   document.getElementById('case-select').value = key;
   const saved = localStorage.getItem(STORAGE_PREFIX + key);
-  const c = saved ? JSON.parse(saved) : CASES[key];
+  const c = saved ? { ...CASES[key], ...JSON.parse(saved) } : CASES[key];
   const status = document.getElementById('save-status');
   if (status) status.textContent = saved ? '讀取本機已儲存的修改版本' : '尚未修改（原始查證資料）';
   document.getElementById('toolbar-title').textContent = `🏢 ${c.name} 市調簡報製作工具`;
