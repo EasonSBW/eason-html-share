@@ -146,8 +146,13 @@
     #main { margin:0; height:auto; }
     #preview-panel { background:#fff; padding:0; display:block; }
     #slide-wrapper { max-width:100%; }
-    #slide-scaler { padding-bottom:56.25%; }
-    .slide { box-shadow:none; }
+    #slide-scaler { padding-bottom:0; overflow:visible; }
+    .slide {
+      position:relative; width:100%; height:auto;
+      overflow:visible; transform:none !important;
+      box-shadow:none;
+    }
+    #slide-inner { transform:none !important; width:100% !important; }
     @page { size: A4 landscape; margin:0; }
   }
 </style>
