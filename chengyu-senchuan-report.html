@@ -78,9 +78,10 @@
 
   .hd { display:flex; align-items:baseline; gap:14px; padding:14px 36px 6px; flex-shrink:0; }
   .nm { font-size:31px; font-weight:800; color:#1a2332; }
-  .pr-pill { margin-left:auto; background:#1a2332; color:#a8dadc; font-size:15px; font-weight:700;
-             padding:6px 16px; border-radius:20px; }
-  .pr-pill b { color:#fff; font-size:18px; }
+  .pr-pills { margin-left:auto; display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
+  .pr-pill { background:#1a2332; color:#a8dadc; font-size:11px; font-weight:700;
+             padding:5px 11px; border-radius:16px; white-space:nowrap; }
+  .pr-pill b { color:#fff; font-size:12.5px; }
 
   .bd { display:flex; gap:0; padding:0 36px 4px; flex-shrink:0; }
   .data-col { flex:1.45; display:flex; gap:9px; min-width:0; }
@@ -134,13 +135,27 @@
   .fac-chip.service { background:#f5e9d3; color:#8a5f1f; }
   .fac-chip.green   { background:#e1f0e1; color:#2e6b2e; }
 
+  .sg-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:8px; }
+  .sg-head h2 { color:#1a2332; font-size:18px; }
+  .sg-legend { display:flex; gap:14px; }
+  .sg-legend-item { font-size:12px; color:#5a6a68; display:flex; align-items:center; gap:5px; }
+  .sg-dot { width:9px; height:9px; border-radius:50%; display:inline-block; }
+  .sg-wrap { overflow-x:auto; }
+  .sg-table { border-collapse:collapse; font-size:12px; text-align:center; }
+  .sg-table th, .sg-table td { padding:4px 6px; min-width:64px; }
+  .sg-table thead th { color:#2d8b8b; font-weight:700; font-size:11px; }
+  .sg-table tbody th { color:#7a8a87; font-weight:700; text-align:right; padding-right:10px; white-space:nowrap; }
+  .sg-cell { border-radius:6px; padding:5px 4px; font-weight:700; line-height:1.3; }
+  .sg-source { margin-top:14px; font-size:11px; color:#9aa6a4; }
+
   #control-panel {
     display:none; position:fixed; inset:52px 0 0 0; background:#fff; z-index:50;
     padding:24px; overflow:auto;
   }
   #control-panel.active { display:block; }
-  #control-panel .placeholder { max-width:600px; margin:60px auto; text-align:center; color:#777; }
-  #control-panel .placeholder h2 { color:#1a2332; margin-bottom:12px; }
+  #control-panel .sg-empty-wrap { max-width:600px; margin:60px auto; text-align:center; color:#777; }
+  #control-panel .sg-empty-wrap h2 { color:#1a2332; margin-bottom:12px; }
+  #control-panel .sg-empty { font-size:14px; }
   #control-panel .close-btn {
     position:absolute; top:14px; right:24px; background:#1a2332; color:#fff;
     border:none; border-radius:5px; padding:6px 14px; cursor:pointer; font-size:13px;
@@ -184,8 +199,10 @@
 
     <div class="section-title">📌 標題資訊</div>
     <div class="field-row"><label>案名</label><input id="f-name" oninput="render()"></div>
-    <div class="field-row"><label>價格標籤</label><input id="f-pricelabel" oninput="render()"></div>
-    <div class="field-row"><label>價格數值</label><input id="f-price" oninput="render()"></div>
+    <div class="field-row"><label>開價</label><input id="f-askprice" oninput="render()"></div>
+    <div class="field-row"><label>成交區間</label><input id="f-dealrange" oninput="render()"></div>
+    <div class="field-row"><label>成交均價</label><input id="f-dealavg" oninput="render()"></div>
+    <div class="field-row"><label>價差</label><input id="f-pricegap" oninput="render()"></div>
 
     <div class="section-title">🏗️ 基本資料</div>
     <div class="field-row"><label>總銷金額</label><input id="f-totalsales" oninput="render()"></div>
@@ -238,10 +255,7 @@
 
 <div id="control-panel">
   <button class="close-btn" onclick="closeControl()">關閉 ✕</button>
-  <div class="placeholder">
-    <h2>📊 樓層銷控表</h2>
-    <p>這個功能還在規劃中，等 Eason 提供樓層銷控表要呈現的結構（例如：要顯示哪些欄位、已售/未售怎麼標示、戶型怎麼排）之後再實作。</p>
-  </div>
+  <div id="sales-grid-root"></div>
 </div>
 
 <script>
@@ -249,7 +263,9 @@
 const CASES = {
 
   chengyu: {
-    name: '城鈺森川', priceLabel: '成交均價', price: '48.2 萬/坪',
+    name: '城鈺森川',
+    // 成交均價區間/均價由下方 salesGrid 住宅類 40 筆成交單價直接算出（min–max、平均）；開價來源：Mobile01網友賞屋回報「單坪開價47~53萬」(2025-08-18)，591官方頁寫「價格待定」，屬非官方單一來源；價差＝成交均價－開價區間中位數
+    askPrice: '47-53萬/坪', dealRange: '43.3-55.1萬/坪', dealAvg: '48.2萬', priceGap: '-1.8萬/坪',
     basic: {
       totalsales:'約13.37億', landarea:'477.32坪', floors:'15F／B3', public:'34.5%',
       units:'61住家+3店面', coverage:'40.34%', launchtime:'114年11月', zone:'住宅區',
@@ -275,10 +291,36 @@ const CASES = {
     ],
     photo:'https://www.0988055028.com/upload/web/images/%E5%9F%8E%E9%88%BA%E6%A3%AE%E5%B7%9D114080911.jpg',
     photocap:'官方效果圖（預售階段，實際完工外觀以建商公告為準）',
+    salesGrid: {
+      source: '主委說 trueway.adholic.com.tw（城鈺森川頁面，銷控表＋交易紀錄分頁交叉核對），查詢日期 2026-06-22',
+      categories: {
+        res:   { label:'住宅', bg:'#dcefed', fg:'#1c6b69' },
+        store: { label:'店面', bg:'#e1f0e1', fg:'#2e6b2e' },
+      },
+      columns: ['A','B','C','D','E'],
+      rows: [
+        { floor:'15F', cells:{ A:{price:51.9,total:2369,cat:'res'} } },
+        { floor:'14F', cells:{ A:{price:50.1,total:2411,cat:'res'} } },
+        { floor:'13F', cells:{ A:{price:50.1,total:2250,cat:'res'}, C:{price:49.4,total:2233,cat:'res'}, E:{price:49.8,total:2143,cat:'res'} } },
+        { floor:'12F', cells:{ A:{price:55.1,total:2649,cat:'res'}, C:{price:54.9,total:2637,cat:'res'}, D:{price:47.9,total:2090,cat:'res'}, E:{price:49.6,total:2353,cat:'res'} } },
+        { floor:'11F', cells:{ A:{price:49.0,total:2196,cat:'res'}, C:{price:48.8,total:2184,cat:'res'}, D:{price:47.0,total:2063,cat:'res'} } },
+        { floor:'10F', cells:{ A:{price:49.8,total:2460,cat:'res'}, C:{price:49.5,total:2200,cat:'res'} } },
+        { floor:'9F',  cells:{ C:{price:50.8,total:2478,cat:'res'} } },
+        { floor:'8F',  cells:{ A:{price:48.6,total:2198,cat:'res'}, B:{price:49.5,total:2045,cat:'res'}, C:{price:48.0,total:2148,cat:'res'}, D:{price:46.9,total:2038,cat:'res'}, E:{price:46.6,total:1998,cat:'res'} } },
+        { floor:'7F',  cells:{ A:{price:48.1,total:2150,cat:'res'}, C:{price:48.3,total:2130,cat:'res'}, D:{price:46.0,total:2034,cat:'res'}, E:{price:46.0,total:1966,cat:'res'} } },
+        { floor:'6F',  cells:{ A:{price:48.6,total:2170,cat:'res'}, B:{price:49.0,total:2015,cat:'res'}, C:{price:48.9,total:2207,cat:'res'} } },
+        { floor:'5F',  cells:{ A:{price:47.8,total:2099,cat:'res'}, C:{price:47.6,total:2258,cat:'res'}, D:{price:46.9,total:2038,cat:'res'}, E:{price:45.5,total:1938,cat:'res'} } },
+        { floor:'4F',  cells:{ A:{price:47.1,total:2316,cat:'res'}, B:{price:46.6,total:1909,cat:'res'}, C:{price:45.8,total:2050,cat:'res'}, E:{price:45.1,total:1957,cat:'res'} } },
+        { floor:'3F',  cells:{ A:{price:46.3,total:2154,cat:'res'}, B:{price:46.9,total:2065,cat:'res'}, C:{price:46.1,total:2343,cat:'res'}, D:{price:43.3,total:1950,cat:'res'}, E:{price:44.2,total:1950,cat:'res'} } },
+        { floor:'1F',  cells:{ C:{price:65.5,total:1888,cat:'store'} } },
+      ],
+    },
   },
 
   yongshang: {
-    name: '永尚謙玥', priceLabel: '開價', price: '50～58 萬',
+    name: '永尚謙玥',
+    // 成交均價區間/均價由下方 salesGrid 住宅類 98 筆成交單價直接算出；開價來源：591官方建案頁標題「開價50~58萬/坪」；價差＝成交均價－開價區間中位數
+    askPrice: '50-58萬/坪', dealRange: '49.1-58.3萬/坪', dealAvg: '53.9萬', priceGap: '-0.1萬/坪',
     basic: {
       totalsales:'—', landarea:'約1,646坪', floors:'22F／B3', public:'34.5%',
       units:'294住家(1幢2棟)', coverage:'24.36%', launchtime:'114年', zone:'住2-1',
@@ -306,10 +348,39 @@ const CASES = {
     ],
     photo:'https://img1.591.com.tw/house/2025/08/26/175619144339031308.jpg!660x495.water3.jpg',
     photocap:'來源：591（含浮水印・內部測試用，建議之後換成無水印版本）',
+    salesGrid: {
+      source: '主委說 trueway.adholic.com.tw（永尚謙玥頁面，銷控表＋交易紀錄分頁交叉核對，98 筆全數比對一致），查詢日期 2026-06-22',
+      categories: {
+        res:   { label:'住宅', bg:'#dcefed', fg:'#1c6b69' },
+      },
+      columns: ['A1','A2','A3','A6','A7','A8','B1','B2','B3','B5','B6','B7','B8'],
+      rows: [
+        { floor:'22F', cells:{ B1:{price:55.6,total:2194,cat:'res'}, B3:{price:57.1,total:2348,cat:'res'}, B6:{price:58.0,total:1843,cat:'res'}, B8:{price:58.0,total:1712,cat:'res'} } },
+        { floor:'21F', cells:{ A1:{price:56.6,total:2215,cat:'res'}, A3:{price:58.1,total:2386,cat:'res'}, B3:{price:57.1,total:2348,cat:'res'}, B8:{price:58.1,total:1698,cat:'res'} } },
+        { floor:'20F', cells:{ A3:{price:57.9,total:2365,cat:'res'} } },
+        { floor:'18F', cells:{ B3:{price:56.2,total:2315,cat:'res'} } },
+        { floor:'15F', cells:{ A1:{price:54.0,total:2126,cat:'res'}, A6:{price:54.7,total:1823,cat:'res'}, B1:{price:53.3,total:2098,cat:'res'}, B2:{price:56.8,total:1638,cat:'res'}, B3:{price:54.5,total:2255,cat:'res'}, B5:{price:52.1,total:1571,cat:'res'}, B6:{price:54.6,total:1747,cat:'res'}, B7:{price:58.3,total:1800,cat:'res'} } },
+        { floor:'14F', cells:{ B1:{price:53.0,total:2091,cat:'res'}, B5:{price:52.1,total:1572,cat:'res'} } },
+        { floor:'13F', cells:{ B5:{price:51.8,total:1580,cat:'res'}, B7:{price:56.4,total:1747,cat:'res'}, B8:{price:55.1,total:1623,cat:'res'} } },
+        { floor:'12F', cells:{ A1:{price:53.5,total:2106,cat:'res'}, A6:{price:54.0,total:1787,cat:'res'}, B1:{price:52.5,total:2055,cat:'res'}, B5:{price:52.2,total:1590,cat:'res'}, B6:{price:54.4,total:1727,cat:'res'} } },
+        { floor:'11F', cells:{ A3:{price:54.8,total:2249,cat:'res'}, A6:{price:53.8,total:1796,cat:'res'}, A7:{price:56.8,total:1758,cat:'res'}, B1:{price:52.5,total:2070,cat:'res'}, B2:{price:56.0,total:1618,cat:'res'}, B5:{price:51.3,total:1550,cat:'res'}, B7:{price:55.7,total:1730,cat:'res'}, B8:{price:54.8,total:1613,cat:'res'} } },
+        { floor:'10F', cells:{ B1:{price:52.3,total:2089,cat:'res'}, B2:{price:55.6,total:1608,cat:'res'}, B3:{price:53.5,total:2188,cat:'res'}, B5:{price:51.1,total:1545,cat:'res'}, B6:{price:53.7,total:1709,cat:'res'}, B7:{price:55.6,total:1755,cat:'res'} } },
+        { floor:'9F', cells:{ A2:{price:56.7,total:1621,cat:'res'}, B1:{price:51.9,total:2049,cat:'res'}, B2:{price:55.4,total:1603,cat:'res'}, B3:{price:53.5,total:2203,cat:'res'}, B5:{price:50.8,total:1539,cat:'res'}, B7:{price:55.3,total:1734,cat:'res'}, B8:{price:54.8,total:1615,cat:'res'} } },
+        { floor:'8F', cells:{ A1:{price:53.0,total:2088,cat:'res'}, A3:{price:54.2,total:2227,cat:'res'}, A6:{price:53.2,total:1763,cat:'res'}, B1:{price:51.7,total:2042,cat:'res'}, B3:{price:53.2,total:2189,cat:'res'}, B5:{price:50.7,total:1535,cat:'res'}, B6:{price:53.4,total:1713,cat:'res'}, B7:{price:55.2,total:1729,cat:'res'}, B8:{price:54.1,total:1597,cat:'res'} } },
+        { floor:'7F', cells:{ A2:{price:56.2,total:1608,cat:'res'}, A3:{price:53.9,total:2200,cat:'res'}, A6:{price:53.0,total:1772,cat:'res'}, A7:{price:56.0,total:1752,cat:'res'}, A8:{price:55.0,total:1620,cat:'res'}, B1:{price:51.6,total:2066,cat:'res'}, B2:{price:55.0,total:1593,cat:'res'}, B3:{price:53.2,total:2414,cat:'res'}, B5:{price:50.7,total:1535,cat:'res'}, B6:{price:53.0,total:1667,cat:'res'}, B7:{price:55.2,total:1729,cat:'res'}, B8:{price:54.3,total:1600,cat:'res'} } },
+        { floor:'6F', cells:{ A1:{price:52.3,total:2063,cat:'res'}, A7:{price:55.8,total:1731,cat:'res'}, A8:{price:54.8,total:1630,cat:'res'}, B1:{price:51.3,total:2013,cat:'res'}, B2:{price:54.8,total:1588,cat:'res'}, B6:{price:52.7,total:1681,cat:'res'}, B7:{price:54.8,total:1718,cat:'res'}, B8:{price:53.9,total:1592,cat:'res'} } },
+        { floor:'5F', cells:{ A1:{price:52.1,total:2056,cat:'res'}, A7:{price:55.6,total:1741,cat:'res'}, B1:{price:51.1,total:2016,cat:'res'}, B2:{price:54.6,total:1583,cat:'res'}, B5:{price:50.7,total:1536,cat:'res'}, B6:{price:52.6,total:1706,cat:'res'}, B7:{price:54.8,total:1703,cat:'res'} } },
+        { floor:'4F', cells:{ A3:{price:52.8,total:2175,cat:'res'}, B1:{price:50.6,total:2046,cat:'res'}, B2:{price:53.8,total:1550,cat:'res'}, B5:{price:49.9,total:1515,cat:'res'}, B7:{price:53.5,total:1685,cat:'res'}, B8:{price:52.6,total:1552,cat:'res'} } },
+        { floor:'3F', cells:{ A1:{price:51.6,total:2024,cat:'res'}, B1:{price:50.8,total:2010,cat:'res'}, B5:{price:49.5,total:1478,cat:'res'}, B7:{price:54.1,total:1684,cat:'res'} } },
+        { floor:'2F', cells:{ A1:{price:51.1,total:2008,cat:'res'}, B2:{price:53.6,total:1558,cat:'res'}, B5:{price:49.1,total:1468,cat:'res'} } },
+      ],
+    },
   },
 
   panxing: {
-    name: '磐興寬悅', priceLabel: '成交均價', price: '70.8 萬/坪',
+    name: '磐興寬悅',
+    // 成交均價區間/均價由下方 salesGrid 住宅類成交單價算出；33筆中1F那筆100.0萬/坪明顯偏離其他32筆(次高79.5)疑似特殊戶，已排除後計算；開價查無資料(591官方頁寫「價格待定」，樂居/houseprice.tw/大橘團隊等來源都只有成交數字沒有開價)
+    askPrice: '查證中', dealRange: '66.5-79.5萬/坪', dealAvg: '70.8萬', priceGap: '查證中',
     basic: {
       totalsales:'—', landarea:'679.86坪', floors:'14F／B2', public:'34.8%',
       units:'72住家+1店面', coverage:'41.77%', launchtime:'—', zone:'第一之一種住宅區',
@@ -334,6 +405,28 @@ const CASES = {
     ],
     photo:'https://www.0988055028.com/upload/web/images/%E7%A3%90%E8%88%88%E5%AF%AC%E6%82%85114072806.jpg',
     photocap:'官方效果圖（隈研吾設計台中大巨蛋第一排，預售階段）',
+    salesGrid: {
+      source: '主委說 trueway.adholic.com.tw（磐興寬悅頁面，銷控表＋交易紀錄分頁交叉核對，33 筆全數比對一致），查詢日期 2026-06-22',
+      categories: {
+        res:   { label:'住宅', bg:'#dcefed', fg:'#1c6b69' },
+      },
+      columns: ['A','B','C','D','E','F'],
+      rows: [
+        { floor:'14F', cells:{ C:{price:67.5,total:2118,cat:'res'}, D:{price:69.0,total:2155,cat:'res'}, E:{price:67.9,total:2106,cat:'res'} } },
+        { floor:'13F', cells:{ D:{price:67.6,total:2169,cat:'res'}, F:{price:79.5,total:3287,cat:'res'} } },
+        { floor:'12F', cells:{ A:{price:78.1,total:3454,cat:'res'}, B:{price:77.9,total:3203,cat:'res'}, D:{price:67.5,total:2156,cat:'res'}, E:{price:67.5,total:2143,cat:'res'}, F:{price:74.5,total:2862,cat:'res'} } },
+        { floor:'11F', cells:{ B:{price:77.1,total:3413,cat:'res'} } },
+        { floor:'10F', cells:{ B:{price:74.1,total:3060,cat:'res'}, C:{price:66.9,total:2135,cat:'res'}, D:{price:67.3,total:2155,cat:'res'}, E:{price:68.4,total:2168,cat:'res'}, F:{price:74.5,total:2862,cat:'res'} } },
+        { floor:'8F',  cells:{ A:{price:70.9,total:3183,cat:'res'}, B:{price:72.1,total:2975,cat:'res'} } },
+        { floor:'7F',  cells:{ A:{price:74.1,total:3308,cat:'res'}, B:{price:72.1,total:2985,cat:'res'}, C:{price:67.6,total:2155,cat:'res'} } },
+        { floor:'6F',  cells:{ A:{price:70.1,total:2911,cat:'res'}, B:{price:70.1,total:2908,cat:'res'}, C:{price:66.5,total:2358,cat:'res'}, F:{price:68.3,total:2635,cat:'res'} } },
+        { floor:'5F',  cells:{ A:{price:69.6,total:2893,cat:'res'}, B:{price:69.6,total:3150,cat:'res'}, F:{price:67.8,total:2617,cat:'res'} } },
+        { floor:'4F',  cells:{ A:{price:68.6,total:2845,cat:'res'}, F:{price:67.0,total:2589,cat:'res'} } },
+        { floor:'3F',  cells:{ F:{price:69.5,total:2677,cat:'res'} } },
+        { floor:'2F',  cells:{ B:{price:77.1,total:3175,cat:'res'} } },
+        { floor:'1F',  cells:{ A:{price:100.0,total:4251,cat:'res'} } },
+      ],
+    },
   },
 
 };
@@ -377,7 +470,8 @@ function getCurrentFormData() {
   const facilities = facNames.map((el, i) => [el.value, facCats[i].value]);
 
   return {
-    name: v('f-name'), priceLabel: v('f-pricelabel'), price: v('f-price'),
+    name: v('f-name'),
+    askPrice: v('f-askprice'), dealRange: v('f-dealrange'), dealAvg: v('f-dealavg'), priceGap: v('f-pricegap'),
     basic, rooms,
     parking: v('f-parking'), parkprice: v('f-parkprice'), height: v('f-height'), payment: v('f-payment'),
     materials, facilities,
@@ -417,8 +511,10 @@ function loadCase(key) {
   if (status) status.textContent = saved ? '讀取本機已儲存的修改版本' : '尚未修改（原始查證資料）';
   document.getElementById('toolbar-title').textContent = `🏢 ${c.name} 市調簡報製作工具`;
   document.getElementById('f-name').value = c.name;
-  document.getElementById('f-pricelabel').value = c.priceLabel;
-  document.getElementById('f-price').value = c.price;
+  document.getElementById('f-askprice').value = c.askPrice;
+  document.getElementById('f-dealrange').value = c.dealRange;
+  document.getElementById('f-dealavg').value = c.dealAvg;
+  document.getElementById('f-pricegap').value = c.priceGap;
   for (const k in c.basic) {
     const el = document.getElementById('f-' + (k === 'launchtime' ? 'launchtime' : k));
     if (el) el.value = c.basic[k];
@@ -434,6 +530,7 @@ function loadCase(key) {
   buildMaterialsForm(c.materials);
   buildFacilitiesForm(c.facilities);
   render();
+  renderSalesGrid(key);
 }
 
 function buildRoomsForm(rooms) {
@@ -473,6 +570,64 @@ function buildFacilitiesForm(facilities) {
   `).join('');
 }
 
+/* ───────────── 樓層銷控表 ───────────── */
+function findCrownCell(sg) {
+  let max = -Infinity, target = null;
+  sg.rows.forEach(r => {
+    sg.columns.forEach(col => {
+      const cell = r.cells[col];
+      if (cell && cell.price > max) { max = cell.price; target = cell; }
+    });
+  });
+  return target;
+}
+
+function renderSalesGrid(key) {
+  const root = document.getElementById('sales-grid-root');
+  const name = CASES[key].name;
+  const sg = CASES[key].salesGrid;
+  if (!sg) {
+    root.innerHTML = `
+      <div class="sg-empty-wrap">
+        <h2>📊 ${esc(name)} 樓層銷控表</h2>
+        <p class="sg-empty">目前尚無樓層銷控資料。</p>
+      </div>`;
+    return;
+  }
+
+  const crown = findCrownCell(sg);
+
+  const legendHtml = Object.values(sg.categories).map(cat =>
+    `<span class="sg-legend-item"><span class="sg-dot" style="background:${cat.fg}"></span>${esc(cat.label)}</span>`
+  ).join('');
+
+  const headerHtml = sg.columns.map(col => `<th>${esc(col)}</th>`).join('');
+
+  const bodyHtml = sg.rows.map(r => {
+    const cellsHtml = sg.columns.map(col => {
+      const cell = r.cells[col];
+      if (!cell) return '<td></td>';
+      const cat = sg.categories[cell.cat];
+      const crownMark = cell === crown ? '👑' : '';
+      return `<td><div class="sg-cell" style="background:${cat.bg};color:${cat.fg}">${crownMark}${cell.price}<br>${cell.total}萬</div></td>`;
+    }).join('');
+    return `<tr><th>${esc(r.floor)}</th>${cellsHtml}</tr>`;
+  }).join('');
+
+  root.innerHTML = `
+    <div class="sg-head">
+      <h2>📊 ${esc(name)} 樓層銷控表</h2>
+      <div class="sg-legend">${legendHtml}</div>
+    </div>
+    <div class="sg-wrap">
+      <table class="sg-table">
+        <thead><tr><th></th>${headerHtml}</tr></thead>
+        <tbody>${bodyHtml}</tbody>
+      </table>
+    </div>
+    <div class="sg-source">資料來源：${esc(sg.source)}</div>`;
+}
+
 /* ───────────── 渲染投影片 ───────────── */
 function render() {
   // 房型坪數（動態列數）
@@ -509,7 +664,11 @@ function render() {
     <div id="slide-inner">
     <div class="hd">
       <span class="nm">${v('f-name')}</span>
-      <span class="pr-pill">${v('f-pricelabel')} <b>${v('f-price')}</b></span>
+      <div class="pr-pills">
+        <span class="pr-pill">開價 <b>${v('f-askprice')}</b></span>
+        <span class="pr-pill">成交均價 <b>${v('f-dealrange')} (${v('f-dealavg')})</b></span>
+        <span class="pr-pill">價差 <b>${v('f-pricegap')}</b></span>
+      </div>
     </div>
 
     <div class="bd">
