@@ -35,6 +35,12 @@
     width:100%; font-size:13px; padding:7px 8px; border:1px solid #2d8b8b; border-radius:5px;
     font-weight:700; color:#1a2332; background:#fff;
   }
+  #save-status { font-size:10.5px; color:#2d8b8b; margin-top:6px; }
+  #reset-btn {
+    width:100%; margin-top:6px; padding:6px 8px; font-size:11px; font-weight:600;
+    background:#fff; color:#b8543f; border:1px solid #d99; border-radius:5px; cursor:pointer;
+  }
+  #reset-btn:hover { background:#fdf3f1; }
   .section-title {
     font-size:13px; font-weight:700; color:#1a2332;
     background:#eef1f8; border-left:4px solid #2d8b8b;
@@ -172,6 +178,8 @@
     <div class="case-picker">
       <label>📁 選擇個案</label>
       <select id="case-select" onchange="loadCase(this.value)"></select>
+      <div id="save-status">已自動儲存於本機瀏覽器</div>
+      <button type="button" id="reset-btn" onclick="resetCurrentCase()">↺ 重設為原始查證資料</button>
     </div>
 
     <div class="section-title">📌 標題資訊</div>
@@ -300,6 +308,34 @@ const CASES = {
     photocap:'來源：591（含浮水印・內部測試用，建議之後換成無水印版本）',
   },
 
+  panxing: {
+    name: '磐興寬悅', priceLabel: '成交均價', price: '70.8 萬/坪',
+    basic: {
+      totalsales:'—', landarea:'679.86坪', floors:'14F／B2', public:'34.8%',
+      units:'72住家+1店面', coverage:'41.77%', launchtime:'—', zone:'第一之一種住宅區',
+      structure:'RC鋼筋混凝土', mgmtfee:'待定', developer:'磐興建設', salesteam:'惠興廣告(同集團子公司)',
+      architect:'許榮江建築師事務所', contractor:'樸真營造', completion:'2029年第一季',
+      traffic:'鄰74快速道路／國道1號', address:'北屯區崇德十九路近榮德路',
+    },
+    rooms: [ ['2房坪數', '28／34／38 坪（純2房規劃）'] ],
+    parking:'平面式89個', parkprice:'235–260萬(均252.8萬)',
+    height:'1F大廳挑高7m夾層3.3m｜2F以上3.3m', payment:'自備款20%／銀行貸款80%',
+    materials: [
+      { title:'客廳建材', items:[['收納系統','LIXIL系列收納設計'],['樓地板','20cm樓地板(不含木地板)強化隔音']] },
+      { title:'鋁窗建材', items:[['鋁窗品牌','TOSTEM氣密窗(日本LIXIL集團)']] },
+      { title:'廚房建材', items:[['廚具系統','日本LIXIL系列進口']] },
+      { title:'衛浴建材', items:[['衛浴系統','INAX／GROHE／American Standard(LIXIL集團)']] },
+      { title:'其他建材', items:[['','三菱電梯(15人座 X2)'],['','電動車EMS系統(管線拉到車位)']] },
+    ],
+    facilities: [
+      ['接待大廳','service'],['交誼廳','social'],['閱覽室','social'],['健身房','sport'],
+      ['信箱區','service'],['視聽室','social'],['幸福廚房','social'],['頂樓吧台','social'],
+      ['景觀讀書區','green'],['景觀休憩區','green'],
+    ],
+    photo:'https://www.0988055028.com/upload/web/images/%E7%A3%90%E8%88%88%E5%AF%AC%E6%82%85114072806.jpg',
+    photocap:'官方效果圖（隈研吾設計台中大巨蛋第一排，預售階段）',
+  },
+
 };
 
 const facLabels = { sport: '休閒運動', social: '社交聚會', service: '生活服務', green: '環境景觀' };
@@ -316,6 +352,55 @@ function scaleSlide() {
 }
 window.addEventListener('resize', scaleSlide);
 
+/* ───────────── 本機儲存（localStorage） ───────────── */
+const STORAGE_PREFIX = 'mschk_case_';
+const LAST_CASE_KEY = 'mschk_last_case';
+let currentCaseKey = null;
+
+function getCurrentFormData() {
+  const basic = {};
+  ['totalsales','landarea','floors','public','units','coverage','launchtime','zone',
+   'structure','mgmtfee','developer','salesteam','architect','contractor','completion',
+   'traffic','address'].forEach(k => { basic[k] = v('f-' + k); });
+
+  const rooms = Array.from(document.querySelectorAll('.room-input')).map(el => [el.dataset.label, el.value]);
+
+  const matTitleEls = Array.from(document.querySelectorAll('.mat-cat-title'));
+  const matInputs = Array.from(document.querySelectorAll('.mat-input'));
+  const materials = matTitleEls.map((titleEl, ci) => ({
+    title: titleEl.value,
+    items: matInputs.filter(el => Number(el.dataset.cat) === ci).map(el => [el.dataset.label, el.value]),
+  }));
+
+  const facNames = Array.from(document.querySelectorAll('.fac-input-name'));
+  const facCats = Array.from(document.querySelectorAll('.fac-input-cat'));
+  const facilities = facNames.map((el, i) => [el.value, facCats[i].value]);
+
+  return {
+    name: v('f-name'), priceLabel: v('f-pricelabel'), price: v('f-price'),
+    basic, rooms,
+    parking: v('f-parking'), parkprice: v('f-parkprice'), height: v('f-height'), payment: v('f-payment'),
+    materials, facilities,
+    photo: v('f-photo'), photocap: v('f-photocap'),
+  };
+}
+
+function saveCurrentCase() {
+  if (!currentCaseKey) return;
+  localStorage.setItem(STORAGE_PREFIX + currentCaseKey, JSON.stringify(getCurrentFormData()));
+  const status = document.getElementById('save-status');
+  if (status) {
+    status.textContent = '已儲存（' + new Date().toLocaleTimeString('zh-TW', {hour:'2-digit', minute:'2-digit'}) + '）';
+  }
+}
+
+function resetCurrentCase() {
+  if (!currentCaseKey) return;
+  if (!confirm('確定要捨棄目前在這個個案上的修改，回復成原始查證資料嗎？')) return;
+  localStorage.removeItem(STORAGE_PREFIX + currentCaseKey);
+  loadCase(currentCaseKey);
+}
+
 /* ───────────── 個案切換：動態生成表單 ───────────── */
 function populateCaseSelect() {
   const sel = document.getElementById('case-select');
@@ -323,7 +408,13 @@ function populateCaseSelect() {
 }
 
 function loadCase(key) {
-  const c = CASES[key];
+  currentCaseKey = key;
+  localStorage.setItem(LAST_CASE_KEY, key);
+  document.getElementById('case-select').value = key;
+  const saved = localStorage.getItem(STORAGE_PREFIX + key);
+  const c = saved ? JSON.parse(saved) : CASES[key];
+  const status = document.getElementById('save-status');
+  if (status) status.textContent = saved ? '讀取本機已儲存的修改版本' : '尚未修改（原始查證資料）';
   document.getElementById('toolbar-title').textContent = `🏢 ${c.name} 市調簡報製作工具`;
   document.getElementById('f-name').value = c.name;
   document.getElementById('f-pricelabel').value = c.priceLabel;
@@ -469,6 +560,7 @@ function render() {
   `;
   fitSlideContent();
   scaleSlide();
+  saveCurrentCase();
 }
 
 /* 依資料量自動縮放 #slide-inner，讓內容剛好塞進固定的 1280×720 畫框 */
@@ -487,9 +579,10 @@ function exportPDF() { window.print(); }
 function openControl() { document.getElementById('control-panel').classList.add('active'); }
 function closeControl() { document.getElementById('control-panel').classList.remove('active'); }
 
-/* ───────────── 初始化 ───────────── */
+/* ───────────── 初始化（記住上次開啟時看的是哪個案子） ───────────── */
 populateCaseSelect();
-loadCase('chengyu');
+const lastCase = localStorage.getItem(LAST_CASE_KEY);
+loadCase((lastCase && CASES[lastCase]) ? lastCase : 'chengyu');
 </script>
 </body>
 </html>
