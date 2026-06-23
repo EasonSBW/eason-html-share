@@ -139,6 +139,35 @@
 
   .sg-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:8px; }
   .sg-head h2 { color:#1a2332; font-size:18px; }
+  .sg-head-title { display:flex; align-items:center; gap:12px; }
+  .sg-absorb-btn {
+    background:#eef1f8; color:#2d8b8b; border:1px solid #d8e4e2; border-radius:7px;
+    padding:5px 13px; font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;
+  }
+  .sg-absorb-btn:hover { background:#dcefed; }
+
+  .modal-overlay {
+    display:none; position:fixed; inset:0; background:rgba(26,35,50,.55); z-index:200;
+    align-items:center; justify-content:center;
+  }
+  .modal-overlay.active { display:flex; }
+  .modal-box {
+    background:#fff; border-radius:16px; padding:28px 30px; width:420px; max-width:92vw;
+    max-height:80vh; overflow:auto; position:relative; box-shadow:0 20px 60px rgba(0,0,0,.3);
+  }
+  .modal-box h3 { color:#1a2332; font-size:17px; margin-bottom:14px; }
+  .modal-close {
+    position:absolute; top:16px; right:18px; background:none; border:none;
+    font-size:16px; color:#9aa6a4; cursor:pointer;
+  }
+  .modal-close:hover { color:#5a6a68; }
+  .absorb-note { font-size:11px; color:#9aa6a4; margin-bottom:16px; line-height:1.5; }
+  .absorb-row { display:flex; align-items:center; gap:10px; padding:7px 0; border-bottom:1px solid #f0f3f2; }
+  .absorb-col { font-weight:800; color:#1a2332; font-size:13px; flex:0 0 50px; }
+  .absorb-bar-wrap { flex:1; height:8px; background:#eef1f0; border-radius:4px; overflow:hidden; }
+  .absorb-bar { height:100%; background:#2d8b8b; border-radius:4px; }
+  .absorb-pct { font-weight:800; color:#2d8b8b; font-size:13px; flex:0 0 42px; text-align:right; }
+  .absorb-count { font-size:10.5px; color:#9aa6a4; flex:0 0 54px; text-align:right; }
   .sg-legend { display:flex; gap:14px; }
   .sg-legend-item { font-size:12px; color:#5a6a68; display:flex; align-items:center; gap:5px; }
   .sg-dot { width:9px; height:9px; border-radius:50%; display:inline-block; }
@@ -349,6 +378,14 @@
 <div id="control-panel">
   <button class="close-btn" onclick="closeControl()">關閉 ✕</button>
   <div id="sales-grid-root"></div>
+</div>
+
+<div id="absorption-modal" class="modal-overlay" onclick="if(event.target===this) closeAbsorptionModal()">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeAbsorptionModal()">✕</button>
+    <h3>📈 戶別去化率</h3>
+    <div id="absorption-body"></div>
+  </div>
 </div>
 
 <script>
@@ -678,6 +715,7 @@ function populateCaseSelect() {
 
 function loadCase(key) {
   currentCaseKey = key;
+  closeAbsorptionModal();
   localStorage.setItem(LAST_CASE_KEY, key);
   document.getElementById('case-select').value = key;
   const saved = localStorage.getItem(STORAGE_PREFIX + key);
@@ -841,6 +879,50 @@ function renderSalesGridStats(sg, parkpriceStr) {
   return `<div class="sg-stats">${overallHtml}${typesHtml}${parkHtml}</div>`;
 }
 
+/* ───────────── 戶別去化率彈出視窗 ───────────── */
+// 分母：銷控表裡「至少有一戶有成交紀錄」的樓層數（視為該案已知的住宅樓層範圍）。
+// 分子：該戶別在這些樓層裡實際有成交紀錄的樓層數。兩者都是直接讀 salesGrid 現有資料動態算出，
+// 資料更新（新增成交筆數、新增樓層）後再次打開視窗會自動重新計算，不是寫死的數字。
+function computeAbsorptionRates(sg) {
+  const resFloors = sg.rows.filter(r => sg.columns.some(col => r.cells[col] && r.cells[col].cat === 'res'));
+  const total = resFloors.length;
+  if (!total) return [];
+  return sg.columns
+    .filter(col => sg.rows.some(r => r.cells[col] && r.cells[col].cat === 'res'))
+    .map(col => {
+      const sold = resFloors.filter(r => r.cells[col] && r.cells[col].cat === 'res').length;
+      return { col, sold, total, rate: sold / total };
+    });
+}
+
+function renderAbsorptionModal() {
+  const body = document.getElementById('absorption-body');
+  const sg = currentCaseKey ? CASES[currentCaseKey].salesGrid : null;
+  if (!sg) {
+    body.innerHTML = '<p class="sg-empty">目前尚無樓層銷控資料，無法計算去化率。</p>';
+    return;
+  }
+  const rates = computeAbsorptionRates(sg);
+  body.innerHTML = `
+    <div class="absorb-note">分母為此案已知有成交紀錄的樓層數，分子為該戶別實際有成交紀錄的樓層數，依銷控表現有資料估算；新增成交筆數後重新打開本視窗即會更新。</div>
+    ${rates.map(r => `
+      <div class="absorb-row">
+        <div class="absorb-col">${esc(r.col)}</div>
+        <div class="absorb-bar-wrap"><div class="absorb-bar" style="width:${(r.rate*100).toFixed(0)}%"></div></div>
+        <div class="absorb-pct">${(r.rate*100).toFixed(0)}%</div>
+        <div class="absorb-count">${r.sold}/${r.total} 層</div>
+      </div>
+    `).join('')}`;
+}
+
+function openAbsorptionModal() {
+  renderAbsorptionModal();
+  document.getElementById('absorption-modal').classList.add('active');
+}
+function closeAbsorptionModal() {
+  document.getElementById('absorption-modal').classList.remove('active');
+}
+
 function renderSalesGrid(key) {
   const root = document.getElementById('sales-grid-root');
   const name = CASES[key].name;
@@ -884,7 +966,10 @@ function renderSalesGrid(key) {
 
   root.innerHTML = `
     <div class="sg-head">
-      <h2>📊 ${esc(name)} 樓層銷控表</h2>
+      <div class="sg-head-title">
+        <h2>📊 ${esc(name)} 樓層銷控表</h2>
+        <button class="sg-absorb-btn" onclick="openAbsorptionModal()">📈 去化率</button>
+      </div>
       <div class="sg-legend">${legendHtml}</div>
     </div>
     <div class="sg-body">
