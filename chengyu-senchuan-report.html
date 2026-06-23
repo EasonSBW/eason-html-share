@@ -147,8 +147,44 @@
   .sg-table th, .sg-table td { padding:4px 6px; min-width:64px; }
   .sg-table thead th { color:#2d8b8b; font-weight:700; font-size:11px; }
   .sg-table tbody th { color:#7a8a87; font-weight:700; text-align:right; padding-right:10px; white-space:nowrap; }
+  .sg-table thead th:first-child,
+  .sg-table tbody th { position:sticky; left:0; background:#fff; z-index:1; }
   .sg-cell { border-radius:6px; padding:5px 4px; font-weight:700; line-height:1.3; }
   .sg-source { margin-top:14px; font-size:11px; color:#9aa6a4; }
+
+  /* ===== 手機版 mobile-view 元件樣式 ===== */
+  .mv-hero { position:relative; width:100%; }
+  .mv-hero img { width:100%; height:auto; display:block; }
+  .mv-hero-cap { position:absolute; bottom:0; left:0; right:0; background:linear-gradient(transparent,rgba(0,0,0,.55)); color:#fff; font-size:11px; padding:20px 16px 8px; }
+  .mv-title { padding:16px 18px 10px; background:#fff; }
+  .mv-title h1 { font-size:22px; font-weight:800; color:#1a2332; margin-bottom:4px; }
+  .mv-loc { font-size:12.5px; color:#7a8a87; }
+  .mv-statbar { display:flex; background:#1a2332; }
+  .mv-stat { flex:1; text-align:center; padding:12px 6px; border-right:1px solid rgba(255,255,255,.12); }
+  .mv-stat:last-child { border-right:none; }
+  .mv-stat-lb { font-size:10.5px; color:#a8dadc; margin-bottom:3px; }
+  .mv-stat-vl { font-size:14px; color:#fff; font-weight:800; line-height:1.3; }
+  .mv-stat-sub { display:block; font-size:10px; color:#a8dadc; font-weight:600; margin-top:2px; }
+  .mv-section { padding:16px 18px; border-bottom:8px solid #eef0ef; background:#fff; }
+  .mv-section h2 { font-size:14px; font-weight:800; color:#2d8b8b; margin-bottom:10px; }
+  .mv-row { display:flex; justify-content:space-between; gap:10px; padding:7px 0; border-bottom:1px solid #f0f3f2; font-size:14px; }
+  .mv-row:last-child { border-bottom:none; }
+  .mv-row b { color:#7a8a87; font-weight:600; font-size:12.5px; flex-shrink:0; }
+  .mv-row span { color:#1a2332; font-weight:700; text-align:right; }
+  .mv-room-highlight { background:#f4f9f7; border-radius:10px; padding:12px 14px; margin-bottom:10px; }
+  .mv-room-val { display:block; font-size:18px; font-weight:800; color:#1a2332; }
+  .mv-room-lb { display:block; font-size:12px; color:#7a8a87; margin-top:2px; }
+  .mv-mat-group { margin-bottom:10px; }
+  .mv-mat-title { font-size:12px; font-weight:800; color:#fff; background:#1a2332; display:inline-block; padding:3px 10px; border-radius:6px; margin-bottom:5px; }
+  .mv-mat-line { font-size:13px; color:#1a2332; line-height:1.6; }
+  .mv-mat-line b { color:#2d8b8b; font-weight:700; }
+  .mv-fac-chips { display:flex; flex-wrap:wrap; gap:7px; }
+  .mv-fac-chip { border-radius:14px; padding:6px 13px; font-size:13px; font-weight:700; }
+  .mv-fac-chip.sport { background:#dcefed; color:#1c6b69; }
+  .mv-fac-chip.social { background:#e1e4f2; color:#2e3a6b; }
+  .mv-fac-chip.service { background:#f5e9d3; color:#8a5f1f; }
+  .mv-fac-chip.green { background:#e1f0e1; color:#2e6b2e; }
+  .mv-section:last-of-type { padding-bottom:28px; }
 
   #control-panel {
     display:none; position:fixed; inset:52px 0 0 0; background:#fff; z-index:50;
@@ -181,6 +217,9 @@
     #preview-panel { padding:0; display:block; background:#eef0ef; align-items:stretch; }
     #slide-wrapper { display:none; }
     #mobile-view { display:block; }
+
+    #control-panel { padding:12px; }
+    #control-panel .close-btn { padding:10px 18px; font-size:14px; }
   }
 
   @media print {
@@ -555,9 +594,9 @@ function getCurrentFormData() {
   };
 }
 
-function saveCurrentCase() {
+function saveCurrentCase(formData) {
   if (!currentCaseKey) return;
-  localStorage.setItem(STORAGE_PREFIX + currentCaseKey, JSON.stringify(getCurrentFormData()));
+  localStorage.setItem(STORAGE_PREFIX + currentCaseKey, JSON.stringify(formData));
   const status = document.getElementById('save-status');
   if (status) {
     status.textContent = '已儲存（' + new Date().toLocaleTimeString('zh-TW', {hour:'2-digit', minute:'2-digit'}) + '）';
@@ -706,34 +745,29 @@ function renderSalesGrid(key) {
 
 /* ───────────── 渲染投影片 ───────────── */
 function render() {
+  const formData = getCurrentFormData();
+
   // 房型坪數（動態列數）
-  const roomRows = Array.from(document.querySelectorAll('.room-input')).map(el =>
-    `<div class="room-row"><b>${el.dataset.label}</b><span>${el.value}</span></div>`
+  const roomRows = formData.rooms.map(([label, value]) =>
+    `<div class="room-row"><b>${label}</b><span>${value}</span></div>`
   ).join('');
 
   // 建材（依分類動態列數）
-  const matTitleEls = Array.from(document.querySelectorAll('.mat-cat-title'));
-  const matInputs = Array.from(document.querySelectorAll('.mat-input'));
-  const matSection = matTitleEls.map((titleEl, ci) => {
-    const items = matInputs.filter(el => Number(el.dataset.cat) === ci);
-    return `
-      <div class="mat-col">
-        <div class="mat-hd">${titleEl.value}</div>
-        ${items.map(el => `
-          <div class="mat-item">
-            ${el.dataset.label ? `<span class="lb">${el.dataset.label}</span>` : ''}
-            <span class="vl">${el.value}</span>
-          </div>
-        `).join('')}
-      </div>
-    `;
-  }).join('');
+  const matSection = formData.materials.map(cat => `
+    <div class="mat-col">
+      <div class="mat-hd">${cat.title}</div>
+      ${cat.items.map(([label, value]) => `
+        <div class="mat-item">
+          ${label ? `<span class="lb">${label}</span>` : ''}
+          <span class="vl">${value}</span>
+        </div>
+      `).join('')}
+    </div>
+  `).join('');
 
   // 公設標籤（動態筆數）
-  const facNames = Array.from(document.querySelectorAll('.fac-input-name'));
-  const facCats = Array.from(document.querySelectorAll('.fac-input-cat'));
-  const facChips = facNames.map((el, i) =>
-    `<span class="fac-chip ${facCats[i].value}">${el.value}</span>`
+  const facChips = formData.facilities.map(([name, cat]) =>
+    `<span class="fac-chip ${cat}">${name}</span>`
   ).join('');
 
   document.getElementById('slide').innerHTML = `
@@ -793,14 +827,68 @@ function render() {
     </div>
     </div>
   `;
-  renderMobileView(getCurrentFormData());
+  renderMobileView(formData);
   fitSlideContent();
   scaleSlide();
-  saveCurrentCase();
+  saveCurrentCase(formData);
 }
 
 function renderMobileView(formData) {
-  document.getElementById('mobile-view').innerHTML = `<p style="padding:24px;text-align:center;color:#777;font-size:14px;">手機版預覽（開發中）</p>`;
+  document.getElementById('mobile-view').innerHTML = `
+    <div class="mv-hero">
+      <img src="${formData.photo}" alt="${formData.name}外觀效果圖">
+      <div class="mv-hero-cap">${formData.photocap}</div>
+    </div>
+    <div class="mv-title">
+      <h1>${formData.name}</h1>
+      <div class="mv-loc">📍 ${formData.basic.address}</div>
+    </div>
+    <div class="mv-statbar">
+      <div class="mv-stat"><div class="mv-stat-lb">開價</div><div class="mv-stat-vl">${formData.askPrice}</div></div>
+      <div class="mv-stat"><div class="mv-stat-lb">成交均價</div><div class="mv-stat-vl">${formData.dealAvg}<span class="mv-stat-sub">${formData.dealRange}</span></div></div>
+      <div class="mv-stat"><div class="mv-stat-lb">價差</div><div class="mv-stat-vl">${formData.priceGap}</div></div>
+    </div>
+    <div class="mv-section">
+      <h2>🏗️ 基本資料</h2>
+      ${[
+        ['總銷金額','totalsales'],['基地面積','landarea'],['樓層規劃','floors'],['公設比','public'],
+        ['規劃戶數','units'],['建蔽率','coverage'],['推案時間','launchtime'],['土地分區','zone'],
+        ['建築結構','structure'],['管理費用','mgmtfee'],['投資興建','developer'],['銷售團隊','salesteam'],
+        ['建築設計','architect'],['營造工程','contractor'],['完工時間','completion'],['交通特色','traffic'],
+        ['基地位置','address'],
+      ].map(([label, key]) => `<div class="mv-row"><b>${label}</b><span>${formData.basic[key]}</span></div>`).join('')}
+    </div>
+    <div class="mv-section">
+      <h2>🏠 產品定位</h2>
+      ${formData.rooms.map(([label, value]) => `
+        <div class="mv-room-highlight">
+          <span class="mv-room-val">${value}</span>
+          <span class="mv-room-lb">${label}</span>
+        </div>
+      `).join('')}
+      <div class="mv-row"><b>車位規劃</b><span>${formData.parking}</span></div>
+      <div class="mv-row"><b>車位價格</b><span>${formData.parkprice}</span></div>
+      <div class="mv-row"><b>樓層高度</b><span>${formData.height}</span></div>
+      <div class="mv-row"><b>付款方式</b><span>${formData.payment}</span></div>
+    </div>
+    <div class="mv-section">
+      <h2>🧱 主要建材</h2>
+      ${formData.materials.map(cat => `
+        <div class="mv-mat-group">
+          <div class="mv-mat-title">${cat.title}</div>
+          ${cat.items.map(([label, value]) => `
+            <div class="mv-mat-line">${label ? `<b>${label}：</b>` : ''}${value}</div>
+          `).join('')}
+        </div>
+      `).join('')}
+    </div>
+    <div class="mv-section">
+      <h2>🌳 公設規劃</h2>
+      <div class="mv-fac-chips">
+        ${formData.facilities.map(([name, cat]) => `<span class="mv-fac-chip ${cat}">${name}</span>`).join('')}
+      </div>
+    </div>
+  `;
 }
 
 /* 依資料量自動縮放 #slide-inner，讓內容剛好塞進固定的 1280×720 畫框 */
