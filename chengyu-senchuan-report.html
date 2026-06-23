@@ -145,7 +145,8 @@
   .sg-wrap { overflow-x:auto; }
   .sg-table { border-collapse:collapse; font-size:12px; text-align:center; }
   .sg-table th, .sg-table td { padding:4px 6px; min-width:64px; }
-  .sg-table thead th { color:#2d8b8b; font-weight:700; font-size:11px; }
+  .sg-table thead th { color:#2d8b8b; font-weight:700; font-size:11px; line-height:1.5; }
+  .sg-col-area { display:block; font-weight:600; color:#9aa6a4; font-size:9.5px; letter-spacing:.2px; }
   .sg-table tbody th { color:#7a8a87; font-weight:700; text-align:right; padding-right:10px; white-space:nowrap; }
   .sg-table thead th:first-child,
   .sg-table tbody th { position:sticky; left:0; background:#fff; z-index:1; }
@@ -362,6 +363,8 @@ const CASES = {
         store: { label:'店面', bg:'#e1f0e1', fg:'#2e6b2e' },
       },
       columns: ['A','B','C','D','E'],
+      // 各戶坪數（含車位權狀）：由內政部實價登錄逐筆交易反推，1車位差額穩定在10.5-10.7坪，扣除後對齊rooms欄位的38/39/40坪三型，查詢日期2026-06-23
+      columnArea: { A:40, B:38, C:40, D:39, E:39 },
       rows: [
         { floor:'15F', cells:{ A:{price:51.9,total:2369,cat:'res'} } },
         { floor:'14F', cells:{ A:{price:50.1,total:2411,cat:'res'} } },
@@ -419,6 +422,8 @@ const CASES = {
         res:   { label:'住宅', bg:'#dcefed', fg:'#1c6b69' },
       },
       columns: ['A1','A2','A3','A6','A7','A8','B1','B2','B3','B5','B6','B7','B8'],
+      // 各戶坪數：樂居看屋筆記逐戶型標註（A1/B1≈35.17、A3/B3≈36.94、A6≈29.21、B6≈27.89、A7/B7≈27.27、A8/B8≈25.62、A2/B2≈24.89、B5≈26.14），查詢日期2026-06-23
+      columnArea: { A1:35.2, A2:24.9, A3:36.9, A6:29.2, A7:27.3, A8:25.6, B1:35.2, B2:24.9, B3:36.9, B5:26.1, B6:27.9, B7:27.3, B8:25.6 },
       rows: [
         { floor:'22F', cells:{ B1:{price:55.6,total:2194,cat:'res'}, B3:{price:57.1,total:2348,cat:'res'}, B6:{price:58.0,total:1843,cat:'res'}, B8:{price:58.0,total:1712,cat:'res'} } },
         { floor:'21F', cells:{ A1:{price:56.6,total:2215,cat:'res'}, A3:{price:58.1,total:2386,cat:'res'}, B3:{price:57.1,total:2348,cat:'res'}, B8:{price:58.1,total:1698,cat:'res'} } },
@@ -477,6 +482,9 @@ const CASES = {
         res:   { label:'住宅', bg:'#dcefed', fg:'#1c6b69' },
       },
       columns: ['A','B','C','D','E','F'],
+      // 各戶坪數（不含車位）：先用內政部實價登錄「棟及號」逐筆比對單價/總價反推對應字母（A=-1號、B=-2號、C=-3號、D=-5號、E=-6號、F=-7號），
+      // 再用同戶不同車位數量的總面積差額（穩定11.13坪/車位）扣除車位算出權狀坪數；F戶34.9坪已用Threads網友權狀截圖交叉核對一致，查詢日期2026-06-23
+      columnArea: { A:37, B:37, C:28, D:28, E:28, F:34 },
       rows: [
         { floor:'14F', cells:{ C:{price:67.5,total:2118,cat:'res'}, D:{price:69.0,total:2155,cat:'res'}, E:{price:67.9,total:2106,cat:'res'} } },
         { floor:'13F', cells:{ D:{price:67.6,total:2169,cat:'res'}, F:{price:79.5,total:3287,cat:'res'} } },
@@ -528,6 +536,10 @@ const CASES = {
         res: { label:'住宅', bg:'#dcefed', fg:'#1c6b69' },
       },
       columns: ['A','A-1','A-2','A-3','A-5','A-6','A-7','B','B-1','B-2','B-3','B-5','B-6','B-7'],
+      // 各戶坪數（不含車位）：A-1~B-7依內政部實價登錄「棟及號」逐筆比對單價/總價反推，扣除車位坪數後對齊rooms欄位的
+      // 2房26.5-26.99坪／3房36.6-37.5坪兩型；無編號的"A"/"B"在主委說查無對應lvr棟號，改用同樓層單價比對最接近的型態
+      // （"A"單價貼近A-1/A-5的2房群、"B"單價貼近B-6/B-7的3房群），查詢日期2026-06-23
+      columnArea: { A:26.8, 'A-1':26.5, 'A-2':26.8, 'A-3':26.8, 'A-5':27.0, 'A-6':37.6, 'A-7':36.7, B:37.5, 'B-1':26.5, 'B-2':26.8, 'B-3':26.8, 'B-5':27.0, 'B-6':37.6, 'B-7':37.6 },
       rows: [
         { floor:'11F', cells:{ 'A-5':{price:43.3,total:1354,cat:'res'} } },
         { floor:'10F', cells:{ 'B-6':{price:42.3,total:1790,cat:'res'} } },
@@ -731,7 +743,10 @@ function renderSalesGrid(key) {
     `<span class="sg-legend-item"><span class="sg-dot" style="background:${cat.fg}"></span>${esc(cat.label)}</span>`
   ).join('');
 
-  const headerHtml = sg.columns.map(col => `<th>${esc(col)}</th>`).join('');
+  const headerHtml = sg.columns.map(col => {
+    const area = sg.columnArea && sg.columnArea[col];
+    return `<th>${esc(col)}${area ? `<span class="sg-col-area">${area}坪</span>` : ''}</th>`;
+  }).join('');
 
   const bodyHtml = sg.rows.map(r => {
     const cellsHtml = sg.columns.map(col => {
