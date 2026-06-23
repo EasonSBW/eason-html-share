@@ -2,6 +2,7 @@
 <html lang="zh-Hant">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>市調簡報製作工具</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -63,6 +64,7 @@
   }
   #slide-wrapper { width:100%; max-width:1280px; }
   #slide-scaler { position:relative; width:100%; padding-bottom:56.25%; overflow:hidden; }
+  #mobile-view { display:none; width:100%; }
 
   .slide {
     position:absolute; top:0; left:0;
@@ -161,12 +163,33 @@
     border:none; border-radius:5px; padding:6px 14px; cursor:pointer; font-size:13px;
   }
 
+  @media (max-width: 768px) {
+    #toolbar h1 .full-title { display: none; }
+    .btn { padding: 10px 18px; font-size: 14px; }
+
+    #main { flex-direction: column; }
+
+    #form-panel {
+      width: 100%; min-width: 0; max-width: none;
+      border-right: none; border-bottom: 1px solid #ddd;
+      padding: 10px 14px; flex-shrink: 0;
+    }
+    #form-panel > *:not(.case-picker) { display: none; }
+    #form-panel #save-status,
+    #form-panel #reset-btn { display: none; }
+
+    #preview-panel { padding:0; display:block; background:#eef0ef; align-items:stretch; }
+    #slide-wrapper { display:none; }
+    #mobile-view { display:block; }
+  }
+
   @media print {
     body { overflow:visible; height:auto; }
     #toolbar, #form-panel { display:none !important; }
     #main { margin:0; height:auto; }
     #preview-panel { background:#fff; padding:0; display:block; }
-    #slide-wrapper { max-width:100%; }
+    #slide-wrapper { max-width:100%; display:block !important; }
+    #mobile-view { display:none !important; }
     #slide-scaler { padding-bottom:0; overflow:visible; }
     .slide {
       position:relative; width:100%; height:auto;
@@ -181,7 +204,7 @@
 <body>
 
 <div id="toolbar">
-  <h1 id="toolbar-title">🏢 市調簡報製作工具</h1>
+  <h1 id="toolbar-title">🏢 <span id="toolbar-case-name"></span> <span class="full-title">市調簡報製作工具</span></h1>
   <button class="btn btn-control" onclick="openControl()">樓層銷控</button>
   <button class="btn btn-pdf" onclick="exportPDF()">匯出 PDF</button>
 </div>
@@ -249,6 +272,7 @@
         <div class="slide" id="slide"></div>
       </div>
     </div>
+    <div id="mobile-view"></div>
   </div>
 
 </div><!-- /main -->
@@ -484,6 +508,10 @@ const facLabels = { sport: '休閒運動', social: '社交聚會', service: '生
 /* ───────────── 工具函式 ───────────── */
 function v(id) { const el = document.getElementById(id); return el ? el.value : ''; }
 function esc(s) { return (s ?? '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+// 本機快取若是在某個欄位還不存在時就被存進去，merge 後該欄位值會是字面上的字串 "undefined"
+// （因為 input.value = undefined 在 DOM 裡會被轉成 "undefined" 文字，render() 又把它存回 localStorage）。
+// 這裡擋掉這個壞值，退回查證過的 CASES 預設，順便讓下一次自動儲存覆寫掉壞掉的快取。
+function safeField(cached, fallback) { return (cached === undefined || cached === null || cached === 'undefined') ? fallback : cached; }
 
 function scaleSlide() {
   const scaler = document.getElementById('slide-scaler');
@@ -557,12 +585,12 @@ function loadCase(key) {
   const c = saved ? { ...CASES[key], ...JSON.parse(saved) } : CASES[key];
   const status = document.getElementById('save-status');
   if (status) status.textContent = saved ? '讀取本機已儲存的修改版本' : '尚未修改（原始查證資料）';
-  document.getElementById('toolbar-title').textContent = `🏢 ${c.name} 市調簡報製作工具`;
+  document.getElementById('toolbar-case-name').textContent = c.name;
   document.getElementById('f-name').value = c.name;
-  document.getElementById('f-askprice').value = c.askPrice;
-  document.getElementById('f-dealrange').value = c.dealRange;
-  document.getElementById('f-dealavg').value = c.dealAvg;
-  document.getElementById('f-pricegap').value = c.priceGap;
+  document.getElementById('f-askprice').value = safeField(c.askPrice, CASES[key].askPrice);
+  document.getElementById('f-dealrange').value = safeField(c.dealRange, CASES[key].dealRange);
+  document.getElementById('f-dealavg').value = safeField(c.dealAvg, CASES[key].dealAvg);
+  document.getElementById('f-pricegap').value = safeField(c.priceGap, CASES[key].priceGap);
   for (const k in c.basic) {
     const el = document.getElementById('f-' + (k === 'launchtime' ? 'launchtime' : k));
     if (el) el.value = c.basic[k];
@@ -765,9 +793,14 @@ function render() {
     </div>
     </div>
   `;
+  renderMobileView(getCurrentFormData());
   fitSlideContent();
   scaleSlide();
   saveCurrentCase();
+}
+
+function renderMobileView(formData) {
+  document.getElementById('mobile-view').innerHTML = `<p style="padding:24px;text-align:center;color:#777;font-size:14px;">手機版預覽（開發中）</p>`;
 }
 
 /* 依資料量自動縮放 #slide-inner，讓內容剛好塞進固定的 1280×720 畫框 */
