@@ -327,6 +327,7 @@ const CASES = {
 
   chengyu: {
     name: '城鈺森川',
+    district: '太平區',
     // 成交均價區間/均價由下方 salesGrid 住宅類 40 筆成交單價直接算出（min–max、平均）；開價來源：Mobile01網友賞屋回報「單坪開價47~53萬」(2025-08-18)，591官方頁寫「價格待定」，屬非官方單一來源；價差＝成交均價－開價區間中位數
     askPrice: '47-53萬/坪', dealRange: '43.3-55.1萬/坪', dealAvg: '48.2萬', priceGap: '-1.8萬/坪',
     basic: {
@@ -382,6 +383,7 @@ const CASES = {
 
   yongshang: {
     name: '永尚謙玥',
+    district: '北屯區',
     // 成交均價區間/均價由下方 salesGrid 住宅類 98 筆成交單價直接算出；開價來源：591官方建案頁標題「開價50~58萬/坪」；價差＝成交均價－開價區間中位數
     askPrice: '50-58萬/坪', dealRange: '49.1-58.3萬/坪', dealAvg: '53.9萬', priceGap: '-0.1萬/坪',
     basic: {
@@ -442,6 +444,7 @@ const CASES = {
 
   panxing: {
     name: '磐興寬悅',
+    district: '北屯區',
     // 成交均價區間/均價由下方 salesGrid 住宅類成交單價算出；33筆中1F那筆100.0萬/坪明顯偏離其他32筆(次高79.5)疑似特殊戶，已排除後計算；開價查無資料(591官方頁寫「價格待定」，樂居/houseprice.tw/大橘團隊等來源都只有成交數字沒有開價)
     askPrice: '待定', dealRange: '66.5-79.5萬/坪', dealAvg: '70.8萬', priceGap: '待定',
     basic: {
@@ -494,6 +497,7 @@ const CASES = {
 
   zhuyin: {
     name: '住寅純萃',
+    district: '沙鹿區',
     // 成交均價區間/均價由下方 salesGrid 住宅類 57 筆成交單價直接算出（min–max、平均），與內政部實價登錄查詢結果交叉核對一致
     askPrice: '待定', dealRange: '39.5-48.9萬/坪', dealAvg: '42.7萬', priceGap: '待定',
     basic: {
@@ -613,7 +617,18 @@ function resetCurrentCase() {
 /* ───────────── 個案切換：動態生成表單 ───────────── */
 function populateCaseSelect() {
   const sel = document.getElementById('case-select');
-  sel.innerHTML = Object.keys(CASES).map(key => `<option value="${key}">${CASES[key].name}</option>`).join('');
+  const districts = [];
+  const byDistrict = {};
+  Object.keys(CASES).forEach(key => {
+    const d = CASES[key].district || '其他';
+    if (!byDistrict[d]) { byDistrict[d] = []; districts.push(d); }
+    byDistrict[d].push(key);
+  });
+  sel.innerHTML = districts.map(d => `
+    <optgroup label="${esc(d)}">
+      ${byDistrict[d].map(key => `<option value="${key}">${esc(CASES[key].name)}</option>`).join('')}
+    </optgroup>
+  `).join('');
 }
 
 function loadCase(key) {
