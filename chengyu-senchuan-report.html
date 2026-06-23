@@ -142,6 +142,9 @@
   .sg-legend { display:flex; gap:14px; }
   .sg-legend-item { font-size:12px; color:#5a6a68; display:flex; align-items:center; gap:5px; }
   .sg-dot { width:9px; height:9px; border-radius:50%; display:inline-block; }
+  .sg-body { display:flex; gap:20px; align-items:flex-start; }
+  .sg-sidebar { flex:0 0 280px; position:sticky; top:0; }
+  .sg-main { flex:1; min-width:0; }
   .sg-wrap { overflow-x:auto; }
   .sg-table { border-collapse:collapse; font-size:12px; text-align:center; }
   .sg-table th, .sg-table td { padding:4px 6px; min-width:64px; }
@@ -151,7 +154,33 @@
   .sg-table thead th:first-child,
   .sg-table tbody th { position:sticky; left:0; background:#fff; z-index:1; }
   .sg-cell { border-radius:6px; padding:5px 4px; font-weight:700; line-height:1.3; }
+  .sg-cell-excluded { outline:1.5px dashed currentColor; outline-offset:-1.5px; opacity:.75; }
   .sg-source { margin-top:14px; font-size:11px; color:#9aa6a4; }
+
+  .sg-stats { background:#fff; border:1px solid #e6ebe9; border-radius:14px; padding:20px; display:flex; flex-direction:column; gap:16px; }
+  .sg-stats-overall { display:flex; }
+  .sg-stat-main { flex:1; text-align:center; }
+  .sg-stat-main + .sg-stat-main { border-left:1px solid #e6ebe9; }
+  .sg-stat-label { font-size:11.5px; color:#7a8a87; font-weight:700; margin-bottom:5px; }
+  .sg-stat-num { font-size:23px; font-weight:800; color:#1a2332; line-height:1.2; }
+  .sg-stat-num small { font-size:12px; font-weight:700; color:#5a6a68; margin-left:2px; }
+  .sg-stat-pill { display:inline-block; margin-top:7px; background:#f0f3f2; color:#5a6a68; font-size:11px; font-weight:700; padding:3px 11px; border-radius:10px; }
+  .sg-stats-divider { height:1px; background:#e6ebe9; }
+  .sg-stats-types { display:flex; flex-direction:column; gap:10px; }
+  .sg-type-row { display:flex; align-items:flex-start; background:#f7f9f8; border-radius:10px; padding:12px 16px; gap:12px; }
+  .sg-type-label { font-size:14px; font-weight:800; color:#1a2332; flex:0 0 auto; }
+  .sg-type-count { display:block; font-size:10px; color:#9aa6a4; font-weight:600; margin-top:1px; }
+  .sg-type-metrics { flex:1; display:flex; flex-direction:column; gap:8px; }
+  .sg-type-stat { text-align:left; display:flex; align-items:baseline; gap:8px; flex-wrap:wrap; }
+  .sg-type-stat .sg-stat-label { font-size:10px; margin-bottom:0; flex:0 0 50px; }
+  .sg-type-stat .sg-stat-num { font-size:15px; }
+  .sg-type-stat .sg-stat-num small { font-size:10px; }
+  .sg-type-stat .sg-stat-pill { font-size:9.5px; padding:2px 8px; margin-top:0; }
+
+  @media (max-width: 768px) {
+    .sg-body { flex-direction:column; }
+    .sg-sidebar { flex:1 1 auto; width:100%; position:static; }
+  }
 
   /* ===== 手機版 mobile-view 元件樣式 ===== */
   .mv-hero { position:relative; width:100%; }
@@ -365,6 +394,7 @@ const CASES = {
       columns: ['A','B','C','D','E'],
       // 各戶坪數（含車位權狀）：由內政部實價登錄逐筆交易反推，1車位差額穩定在10.5-10.7坪，扣除後對齊rooms欄位的38/39/40坪三型，查詢日期2026-06-23
       columnArea: { A:40, B:38, C:40, D:39, E:39 },
+      columnRoomType: { A:'3房', B:'3房', C:'3房', D:'3房', E:'3房' },
       rows: [
         { floor:'15F', cells:{ A:{price:51.9,total:2369,cat:'res'} } },
         { floor:'14F', cells:{ A:{price:50.1,total:2411,cat:'res'} } },
@@ -424,6 +454,7 @@ const CASES = {
       columns: ['A1','A2','A3','A6','A7','A8','B1','B2','B3','B5','B6','B7','B8'],
       // 各戶坪數：樂居看屋筆記逐戶型標註（A1/B1≈35.17、A3/B3≈36.94、A6≈29.21、B6≈27.89、A7/B7≈27.27、A8/B8≈25.62、A2/B2≈24.89、B5≈26.14），查詢日期2026-06-23
       columnArea: { A1:35.2, A2:24.9, A3:36.9, A6:29.2, A7:27.3, A8:25.6, B1:35.2, B2:24.9, B3:36.9, B5:26.1, B6:27.9, B7:27.3, B8:25.6 },
+      columnRoomType: { A1:'3房', A2:'2房', A3:'3房', A6:'2房', A7:'2房', A8:'2房', B1:'3房', B2:'2房', B3:'3房', B5:'2房', B6:'2房', B7:'2房', B8:'2房' },
       rows: [
         { floor:'22F', cells:{ B1:{price:55.6,total:2194,cat:'res'}, B3:{price:57.1,total:2348,cat:'res'}, B6:{price:58.0,total:1843,cat:'res'}, B8:{price:58.0,total:1712,cat:'res'} } },
         { floor:'21F', cells:{ A1:{price:56.6,total:2215,cat:'res'}, A3:{price:58.1,total:2386,cat:'res'}, B3:{price:57.1,total:2348,cat:'res'}, B8:{price:58.1,total:1698,cat:'res'} } },
@@ -485,6 +516,7 @@ const CASES = {
       // 各戶坪數（不含車位）：先用內政部實價登錄「棟及號」逐筆比對單價/總價反推對應字母（A=-1號、B=-2號、C=-3號、D=-5號、E=-6號、F=-7號），
       // 再用同戶不同車位數量的總面積差額（穩定11.13坪/車位）扣除車位算出權狀坪數；F戶34.9坪已用Threads網友權狀截圖交叉核對一致，查詢日期2026-06-23
       columnArea: { A:37, B:37, C:28, D:28, E:28, F:34 },
+      columnRoomType: { A:'2房', B:'2房', C:'2房', D:'2房', E:'2房', F:'2房' },
       rows: [
         { floor:'14F', cells:{ C:{price:67.5,total:2118,cat:'res'}, D:{price:69.0,total:2155,cat:'res'}, E:{price:67.9,total:2106,cat:'res'} } },
         { floor:'13F', cells:{ D:{price:67.6,total:2169,cat:'res'}, F:{price:79.5,total:3287,cat:'res'} } },
@@ -498,7 +530,7 @@ const CASES = {
         { floor:'4F',  cells:{ A:{price:68.6,total:2845,cat:'res'}, F:{price:67.0,total:2589,cat:'res'} } },
         { floor:'3F',  cells:{ F:{price:69.5,total:2677,cat:'res'} } },
         { floor:'2F',  cells:{ B:{price:77.1,total:3175,cat:'res'} } },
-        { floor:'1F',  cells:{ A:{price:100.0,total:4251,cat:'res'} } },
+        { floor:'1F',  cells:{ A:{price:100.0,total:4251,cat:'res',excluded:true} } },
       ],
     },
   },
@@ -540,6 +572,7 @@ const CASES = {
       // 2房26.5-26.99坪／3房36.6-37.5坪兩型；無編號的"A"/"B"在主委說查無對應lvr棟號，改用同樓層單價比對最接近的型態
       // （"A"單價貼近A-1/A-5的2房群、"B"單價貼近B-6/B-7的3房群），查詢日期2026-06-23
       columnArea: { A:26.8, 'A-1':26.5, 'A-2':26.8, 'A-3':26.8, 'A-5':27.0, 'A-6':37.6, 'A-7':36.7, B:37.5, 'B-1':26.5, 'B-2':26.8, 'B-3':26.8, 'B-5':27.0, 'B-6':37.6, 'B-7':37.6 },
+      columnRoomType: { A:'2房', 'A-1':'2房', 'A-2':'2房', 'A-3':'2房', 'A-5':'2房', 'A-6':'3房', 'A-7':'3房', B:'3房', 'B-1':'2房', 'B-2':'2房', 'B-3':'2房', 'B-5':'2房', 'B-6':'3房', 'B-7':'3房' },
       rows: [
         { floor:'11F', cells:{ 'A-5':{price:43.3,total:1354,cat:'res'} } },
         { floor:'10F', cells:{ 'B-6':{price:42.3,total:1790,cat:'res'} } },
@@ -724,6 +757,90 @@ function findCrownCell(sg) {
   return target;
 }
 
+function computeSalesGridStats(sg) {
+  const cells = [];
+  sg.rows.forEach(r => sg.columns.forEach(col => {
+    const cell = r.cells[col];
+    if (cell && cell.cat === 'res' && !cell.excluded) cells.push({ price: cell.price, total: cell.total, roomType: sg.columnRoomType ? sg.columnRoomType[col] : null });
+  }));
+  if (!cells.length) return null;
+  const summarize = list => {
+    const prices = list.map(c => c.price), totals = list.map(c => c.total);
+    return {
+      n: list.length,
+      avgPrice: prices.reduce((a,b) => a+b, 0) / list.length,
+      minPrice: Math.min(...prices), maxPrice: Math.max(...prices),
+      avgTotal: totals.reduce((a,b) => a+b, 0) / list.length,
+      minTotal: Math.min(...totals), maxTotal: Math.max(...totals),
+    };
+  };
+  const byType = {};
+  cells.forEach(c => { if (c.roomType) (byType[c.roomType] = byType[c.roomType] || []).push(c); });
+  return {
+    overall: summarize(cells),
+    types: Object.keys(byType).sort().map(t => ({ type: t, ...summarize(byType[t]) })),
+  };
+}
+
+function parseParkPrice(str) {
+  const m = (str || '').match(/(\d+(?:\.\d+)?)\s*[–-]\s*(\d+(?:\.\d+)?)\s*萬\s*\(均\s*(\d+(?:\.\d+)?)\s*萬\)/);
+  return m ? { min: m[1], max: m[2], avg: m[3] } : null;
+}
+
+function renderSalesGridStats(sg, parkpriceStr) {
+  const stats = computeSalesGridStats(sg);
+  if (!stats) return '';
+  const o = stats.overall;
+  const overallHtml = `
+    <div class="sg-stats-overall">
+      <div class="sg-stat-main">
+        <div class="sg-stat-label">平均單價</div>
+        <div class="sg-stat-num">${o.avgPrice.toFixed(1)}<small>萬/坪</small></div>
+        <div class="sg-stat-pill">${o.minPrice.toFixed(1)} - ${o.maxPrice.toFixed(1)} 萬/坪</div>
+      </div>
+      <div class="sg-stat-main">
+        <div class="sg-stat-label">平均總價</div>
+        <div class="sg-stat-num">${Math.round(o.avgTotal).toLocaleString('en-US')}<small>萬</small></div>
+        <div class="sg-stat-pill">${o.minTotal} - ${o.maxTotal} 萬</div>
+      </div>
+    </div>`;
+  const typesHtml = stats.types.length ? `
+    <div class="sg-stats-divider"></div>
+    <div class="sg-stats-types">
+      ${stats.types.map(t => `
+        <div class="sg-type-row">
+          <div class="sg-type-label">${esc(t.type)}<span class="sg-type-count">共${t.n}筆</span></div>
+          <div class="sg-type-metrics">
+            <div class="sg-type-stat">
+              <div class="sg-stat-label">平均單價</div>
+              <div class="sg-stat-num">${t.avgPrice.toFixed(1)}<small>萬/坪</small></div>
+              <div class="sg-stat-pill">${t.minPrice.toFixed(1)} - ${t.maxPrice.toFixed(1)} 萬/坪</div>
+            </div>
+            <div class="sg-type-stat">
+              <div class="sg-stat-label">平均總價</div>
+              <div class="sg-stat-num">${Math.round(t.avgTotal).toLocaleString('en-US')}<small>萬</small></div>
+              <div class="sg-stat-pill">${t.minTotal} - ${t.maxTotal} 萬</div>
+            </div>
+          </div>
+        </div>
+      `).join('')}
+    </div>` : '';
+  const park = parseParkPrice(parkpriceStr);
+  const parkHtml = park ? `
+    <div class="sg-stats-divider"></div>
+    <div class="sg-type-row">
+      <div class="sg-type-label">平面車位</div>
+      <div class="sg-type-metrics">
+        <div class="sg-type-stat">
+          <div class="sg-stat-label">平均單價</div>
+          <div class="sg-stat-num">${park.avg}<small>萬/位</small></div>
+          <div class="sg-stat-pill">${park.min} - ${park.max} 萬</div>
+        </div>
+      </div>
+    </div>` : '';
+  return `<div class="sg-stats">${overallHtml}${typesHtml}${parkHtml}</div>`;
+}
+
 function renderSalesGrid(key) {
   const root = document.getElementById('sales-grid-root');
   const name = CASES[key].name;
@@ -748,29 +865,40 @@ function renderSalesGrid(key) {
     return `<th>${esc(col)}${area ? `<span class="sg-col-area">${area}坪</span>` : ''}</th>`;
   }).join('');
 
+  let hasExcluded = false;
   const bodyHtml = sg.rows.map(r => {
     const cellsHtml = sg.columns.map(col => {
       const cell = r.cells[col];
       if (!cell) return '<td></td>';
       const cat = sg.categories[cell.cat];
       const crownMark = cell === crown ? '👑' : '';
-      return `<td><div class="sg-cell" style="background:${cat.bg};color:${cat.fg}">${crownMark}${cell.price}<br>${cell.total}萬</div></td>`;
+      const excludedCls = cell.excluded ? ' sg-cell-excluded' : '';
+      const excludedMark = cell.excluded ? '<sup>※</sup>' : '';
+      if (cell.excluded) hasExcluded = true;
+      return `<td><div class="sg-cell${excludedCls}" style="background:${cat.bg};color:${cat.fg}">${crownMark}${cell.price}${excludedMark}<br>${cell.total}萬</div></td>`;
     }).join('');
     return `<tr><th>${esc(r.floor)}</th>${cellsHtml}</tr>`;
   }).join('');
+
+  const excludedNote = hasExcluded ? '　※明顯偏離其他成交價，疑似特殊戶，不列入上方統計平均' : '';
 
   root.innerHTML = `
     <div class="sg-head">
       <h2>📊 ${esc(name)} 樓層銷控表</h2>
       <div class="sg-legend">${legendHtml}</div>
     </div>
-    <div class="sg-wrap">
-      <table class="sg-table">
-        <thead><tr><th></th>${headerHtml}</tr></thead>
-        <tbody>${bodyHtml}</tbody>
-      </table>
-    </div>
-    <div class="sg-source">資料來源：${esc(sg.source)}</div>`;
+    <div class="sg-body">
+      <div class="sg-sidebar">${renderSalesGridStats(sg, CASES[key].parkprice)}</div>
+      <div class="sg-main">
+        <div class="sg-wrap">
+          <table class="sg-table">
+            <thead><tr><th></th>${headerHtml}</tr></thead>
+            <tbody>${bodyHtml}</tbody>
+          </table>
+        </div>
+        <div class="sg-source">資料來源：${esc(sg.source)}${excludedNote}</div>
+      </div>
+    </div>`;
 }
 
 /* ───────────── 渲染投影片 ───────────── */
