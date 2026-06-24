@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>市調簡報製作工具</title>
+<script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -60,9 +62,33 @@
 
   #preview-panel {
     flex:1; overflow:auto; background:#888;
-    display:flex; align-items:flex-start; justify-content:center; padding:20px;
+    display:flex; flex-direction:column; align-items:center; padding:20px; gap:10px;
   }
   #slide-wrapper { width:100%; max-width:1280px; }
+  #page-tabs-bar { width:100%; max-width:1280px; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+  .page-tab {
+    display:flex; align-items:center; gap:6px; padding:6px 14px; border-radius:7px;
+    background:#aab2c4; color:#fff; font-size:12.5px; font-weight:700; cursor:pointer;
+    white-space:nowrap; user-select:none; transition:background .15s;
+  }
+  .page-tab:hover { background:#8d97b2; }
+  .page-tab.active { background:#1a2332; }
+  .page-tab.market-tab { background:#2d8b8b; }
+  .page-tab.market-tab.active { background:#1a2332; }
+  .page-tab .tab-close { opacity:.7; }
+  .page-tab .tab-close:hover { opacity:1; }
+  #add-page-btn {
+    padding:6px 14px; border-radius:7px; border:1px dashed rgba(255,255,255,.6);
+    background:transparent; color:#fff; font-size:12.5px; font-weight:700; cursor:pointer;
+  }
+  #add-page-btn:hover { background:rgba(255,255,255,.15); }
+  .ip-slide { width:100%; height:100%; display:flex; flex-direction:column; background:#f7f9f8; }
+  .ip-header { background:#1a2332; padding:18px 36px; display:flex; align-items:baseline; gap:14px; flex-shrink:0; }
+  .ip-title { font-size:24px; font-weight:800; color:#fff; }
+  .ip-subtitle { font-size:13px; color:#a8dadc; }
+  .ip-body { flex:1; display:flex; align-items:center; justify-content:center; padding:24px; overflow:hidden; }
+  .ip-body img { max-width:100%; max-height:100%; object-fit:contain; }
+  .ip-placeholder { color:#9aa6a4; font-size:14px; }
   #slide-scaler { position:relative; width:100%; padding-bottom:56.25%; overflow:hidden; }
   #mobile-view { display:none; width:100%; }
 
@@ -136,6 +162,26 @@
   .fac-chip.social  { background:#e1e4f2; color:#2e3a6b; }
   .fac-chip.service { background:#f5e9d3; color:#8a5f1f; }
   .fac-chip.green   { background:#e1f0e1; color:#2e6b2e; }
+
+  .upload-btn {
+    font-size:11px; padding:5px 10px; border:1px solid #2d8b8b; border-radius:4px;
+    background:#fff; color:#2d8b8b; cursor:pointer; font-weight:700;
+  }
+  .upload-btn:hover { background:#eef1f8; }
+  .upload-status { font-size:10.5px; color:#2d8b8b; }
+  .upload-status a { color:#b8543f; margin-left:6px; cursor:pointer; text-decoration:underline; }
+
+  .export-menu {
+    display:none; position:absolute; top:48px; right:18px; z-index:150;
+    background:#fff; border-radius:10px; box-shadow:0 8px 24px rgba(0,0,0,.25);
+    overflow:hidden; min-width:160px;
+  }
+  .export-menu.active { display:block; }
+  .export-menu button {
+    display:block; width:100%; text-align:left; padding:10px 16px; border:none;
+    background:#fff; color:#1a2332; font-size:13px; font-weight:600; cursor:pointer;
+  }
+  .export-menu button:hover { background:#eef1f8; color:#2d8b8b; }
 
   .sg-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:8px; padding-right:100px; }
   .sg-head h2 { color:#1a2332; font-size:18px; }
@@ -309,15 +355,18 @@
 
     #preview-panel { padding:0; display:block; background:#eef0ef; align-items:stretch; }
     #slide-wrapper { display:none; }
+    #page-tabs-bar { display:none; }
     #mobile-view { display:block; }
 
     #control-panel { padding:12px; }
     #control-panel .close-btn { padding:10px 18px; font-size:14px; }
   }
 
+  #print-stack { display:none; }
   @media print {
     body { overflow:visible; height:auto; }
     #toolbar, #form-panel { display:none !important; }
+    #page-tabs-bar { display:none !important; }
     #main { margin:0; height:auto; }
     #preview-panel { background:#fff; padding:0; display:block; }
     #slide-wrapper { max-width:100%; display:block !important; }
@@ -329,6 +378,10 @@
       box-shadow:none;
     }
     #slide-inner { transform:none !important; width:100% !important; }
+    body.printing-stack #slide-wrapper { display:none !important; }
+    body.printing-stack #print-stack { display:block !important; }
+    #print-stack .slide { page-break-after: always; }
+    #print-stack .slide:last-child { page-break-after: auto; }
     @page { size: A4 landscape; margin:0; }
   }
 </style>
@@ -338,7 +391,14 @@
 <div id="toolbar">
   <h1 id="toolbar-title">🏢 <span id="toolbar-case-name"></span> <span class="full-title">市調簡報製作工具</span></h1>
   <button class="btn btn-control" onclick="openControl()">樓層銷控</button>
-  <button class="btn btn-pdf" onclick="exportPDF()">匯出 PDF</button>
+  <div style="position:relative">
+    <button class="btn btn-pdf" onclick="openExportMenu()">產出簡報</button>
+    <div class="export-menu" id="export-menu">
+      <button onclick="exportAs('pdf')">📄 PDF</button>
+      <button onclick="exportAs('pptx')">📊 PowerPoint (.pptx)</button>
+      <button onclick="exportAs('keynote')">🎞️ Keynote</button>
+    </div>
+  </div>
 </div>
 
 <div id="main">
@@ -352,6 +412,7 @@
       <button type="button" id="reset-btn" onclick="resetCurrentCase()">↺ 重設為原始查證資料</button>
     </div>
 
+    <div id="form-market-fields">
     <div class="section-title">📌 標題資訊</div>
     <div class="field-row"><label>案名</label><input id="f-name" oninput="render()"></div>
     <div class="field-row"><label>開價</label><input id="f-askprice" oninput="render()"></div>
@@ -394,11 +455,34 @@
 
     <div class="section-title">🖼️ 外觀照片</div>
     <div class="field-row"><label>圖片網址</label><input id="f-photo" oninput="render()"></div>
+    <div class="field-row">
+      <label>本機上傳</label>
+      <button type="button" class="upload-btn" onclick="document.getElementById('photo-upload-input').click()">選擇檔案</button>
+      <span id="photo-upload-status" class="upload-status"></span>
+      <input type="file" id="photo-upload-input" accept="image/*" style="display:none" onchange="handlePhotoUpload(event)">
+    </div>
     <div class="field-row"><label>圖片說明</label><input id="f-photocap" oninput="render()"></div>
+    </div><!-- /form-market-fields -->
+
+    <div id="form-image-fields" style="display:none">
+      <div class="section-title">🖼️ 圖片頁設定</div>
+      <div class="field-row"><label>標題</label><input id="ip-title" oninput="onImagePageFieldInput()"></div>
+      <div class="field-row"><label>副標</label><input id="ip-subtitle" oninput="onImagePageFieldInput()"></div>
+      <div class="field-row"><label>圖片網址</label><input id="ip-url" oninput="onImagePageFieldInput()"></div>
+      <div class="field-row">
+        <label>本機上傳</label>
+        <button type="button" class="upload-btn" onclick="document.getElementById('ip-upload-input').click()">選擇檔案</button>
+        <span id="ip-upload-status" class="upload-status"></span>
+        <input type="file" id="ip-upload-input" accept="image/*" style="display:none" onchange="handleImagePageUpload(event)">
+      </div>
+    </div><!-- /form-image-fields -->
 
   </div><!-- /form-panel -->
 
   <div id="preview-panel">
+    <div id="page-tabs-bar">
+      <div id="page-tabs"></div>
+    </div>
     <div id="slide-wrapper">
       <div id="slide-scaler">
         <div class="slide" id="slide"></div>
@@ -682,10 +766,240 @@ function scaleSlide() {
 }
 window.addEventListener('resize', scaleSlide);
 
-/* ───────────── 本機儲存（localStorage） ───────────── */
-const STORAGE_PREFIX = 'mschk_case_';
+/* ───────────── 本機儲存（IndexedDB） ───────────── */
 const LAST_CASE_KEY = 'mschk_last_case';
+const LEGACY_STORAGE_PREFIX = 'mschk_case_';
+const IDB_NAME = 'mschk_db';
+const IDB_STORE = 'case_overrides';
 let currentCaseKey = null;
+let uploadedPhotoDataURL = null;
+let imagePages = [];   // 目前案子的圖片頁，不含市調總覽頁
+let activePageIdx = 0; // 0 = 市調總覽，1..N 對應 imagePages[idx-1]
+
+function pagesKey(key) { return key + ':pages'; }
+async function idbGetPages(key) { return (await idbGet(pagesKey(key))) || []; }
+async function idbPutPages(key, pages) { return idbPut(pagesKey(key), pages); }
+
+let _pagesSaveTimer = null;
+function persistImagePages() {
+  clearTimeout(_pagesSaveTimer);
+  const key = currentCaseKey;
+  const pages = imagePages;
+  _pagesSaveTimer = setTimeout(() => { idbPutPages(key, pages); }, 400);
+}
+
+function handlePhotoUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    uploadedPhotoDataURL = ev.target.result;
+    renderPhotoUploadStatus();
+    render();
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearPhotoUpload() {
+  uploadedPhotoDataURL = null;
+  document.getElementById('photo-upload-input').value = '';
+  renderPhotoUploadStatus();
+  render();
+}
+
+function renderPhotoUploadStatus() {
+  const el = document.getElementById('photo-upload-status');
+  if (!el) return;
+  el.innerHTML = uploadedPhotoDataURL
+    ? '已上傳本機圖片<a onclick="clearPhotoUpload()">✕ 移除</a>'
+    : '';
+}
+
+function renderPageTabs() {
+  const bar = document.getElementById('page-tabs');
+  if (!bar) return;
+  let html = `<div class="page-tab market-tab ${activePageIdx===0?'active':''}" onclick="switchToPage(0)">市調總覽</div>`;
+  html += imagePages.map((p, i) => `
+    <div class="page-tab ${activePageIdx===i+1?'active':''}"
+      draggable="true"
+      onclick="switchToPage(${i+1})"
+      ondragstart="onPageTabDragStart(event,${i})"
+      ondragover="onPageTabDragOver(event,${i})"
+      ondrop="onPageTabDrop(event,${i})"
+      ondragend="onPageTabDragEnd()">
+      ${esc(p.title || '（圖片頁）')}
+      <span class="tab-close" onclick="event.stopPropagation();deleteImagePage(${i})">×</span>
+    </div>`).join('');
+  html += `<button id="add-page-btn" onclick="addImagePage()">＋ 圖片頁</button>`;
+  bar.innerHTML = html;
+}
+
+let _dragPageIdx = null;
+
+function onPageTabDragStart(e, idx) {
+  _dragPageIdx = idx;
+  e.dataTransfer.effectAllowed = 'move';
+}
+
+function onPageTabDragOver(e, idx) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+}
+
+function onPageTabDrop(e, idx) {
+  e.preventDefault();
+  if (_dragPageIdx === null || _dragPageIdx === idx) return;
+  const activeId = activePageIdx > 0 ? imagePages[activePageIdx - 1].id : null;
+  const moved = imagePages.splice(_dragPageIdx, 1)[0];
+  imagePages.splice(idx, 0, moved);
+  if (activeId !== null) {
+    const newIdx = imagePages.findIndex(p => p.id === activeId);
+    if (newIdx !== -1) activePageIdx = newIdx + 1;
+  }
+  _dragPageIdx = null;
+  persistImagePages();
+  renderPageTabs();
+  render();
+}
+
+function onPageTabDragEnd() {
+  _dragPageIdx = null;
+}
+
+function switchToPage(idx) {
+  activePageIdx = idx;
+  const isImage = idx > 0;
+  document.getElementById('form-market-fields').style.display = isImage ? 'none' : '';
+  document.getElementById('form-image-fields').style.display = isImage ? '' : 'none';
+  if (isImage) applyImagePageForm(imagePages[idx - 1]);
+  renderPageTabs();
+  render();
+}
+
+function addImagePage() {
+  imagePages.push({ id: 'p' + Date.now(), title: '', subtitle: '', imageURL: '', imageDataURL: null });
+  persistImagePages();
+  switchToPage(imagePages.length);
+}
+
+function deleteImagePage(i) {
+  if (!confirm('確定刪除這張圖片頁？')) return;
+  imagePages.splice(i, 1);
+  persistImagePages();
+  switchToPage(0);
+}
+
+function applyImagePageForm(page) {
+  document.getElementById('ip-title').value = page.title || '';
+  document.getElementById('ip-subtitle').value = page.subtitle || '';
+  document.getElementById('ip-url').value = page.imageURL || '';
+  document.getElementById('ip-upload-status').innerHTML = page.imageDataURL
+    ? '已上傳本機圖片<a onclick="clearImagePageUpload()">✕ 移除</a>' : '';
+}
+
+function onImagePageFieldInput() {
+  const p = imagePages[activePageIdx - 1];
+  if (!p) return;
+  p.title = v('ip-title');
+  p.subtitle = v('ip-subtitle');
+  p.imageURL = v('ip-url');
+  persistImagePages();
+  renderPageTabs();
+  render();
+}
+
+function handleImagePageUpload(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  const p = imagePages[activePageIdx - 1];
+  if (!p) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    p.imageDataURL = ev.target.result;
+    document.getElementById('ip-upload-status').innerHTML = '已上傳本機圖片<a onclick="clearImagePageUpload()">✕ 移除</a>';
+    persistImagePages();
+    render();
+  };
+  reader.readAsDataURL(file);
+}
+
+function clearImagePageUpload() {
+  const p = imagePages[activePageIdx - 1];
+  if (!p) return;
+  p.imageDataURL = null;
+  document.getElementById('ip-upload-input').value = '';
+  document.getElementById('ip-upload-status').innerHTML = '';
+  persistImagePages();
+  render();
+}
+
+function renderImagePageSlide() {
+  const p = imagePages[activePageIdx - 1];
+  if (!p) return;
+  const src = p.imageDataURL || p.imageURL;
+  document.getElementById('slide').innerHTML = `
+    <div class="ip-slide">
+      <div class="ip-header">
+        <span class="ip-title">${esc(p.title || '圖片頁')}</span>
+        <span class="ip-subtitle">${esc(p.subtitle || '')}</span>
+      </div>
+      <div class="ip-body">
+        ${src ? `<img src="${src}" alt="${esc(p.title||'')}">` : `<div class="ip-placeholder">請在左側貼圖片網址或上傳本機圖片</div>`}
+      </div>
+    </div>`;
+  scaleSlide();
+}
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(IDB_NAME, 1);
+    req.onupgradeneeded = e => e.target.result.createObjectStore(IDB_STORE);
+    req.onsuccess = e => resolve(e.target.result);
+    req.onerror = e => reject(e.target.error);
+  });
+}
+
+async function idbGet(key) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const req = db.transaction(IDB_STORE, 'readonly').objectStore(IDB_STORE).get(key);
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = e => reject(e.target.error);
+  });
+}
+
+async function idbPut(key, value) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IDB_STORE, 'readwrite');
+    tx.objectStore(IDB_STORE).put(value, key);
+    tx.oncomplete = resolve;
+    tx.onerror = e => reject(e.target.error);
+  });
+}
+
+async function idbDelete(key) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(IDB_STORE, 'readwrite');
+    tx.objectStore(IDB_STORE).delete(key);
+    tx.oncomplete = resolve;
+    tx.onerror = e => reject(e.target.error);
+  });
+}
+
+// 把舊版 localStorage 的覆寫資料搬進 IndexedDB（只搬一次，不刪除舊資料）
+async function migrateLegacyCase(key) {
+  const existing = await idbGet(key);
+  if (existing !== undefined) return;
+  const legacy = localStorage.getItem(LEGACY_STORAGE_PREFIX + key);
+  if (!legacy) return;
+  try {
+    await idbPut(key, JSON.parse(legacy));
+  } catch (e) {
+    console.warn('搬遷舊版本機資料失敗：', key, e);
+  }
+}
 
 function getCurrentFormData() {
   const basic = {};
@@ -712,24 +1026,24 @@ function getCurrentFormData() {
     basic, rooms,
     parking: v('f-parking'), parkprice: v('f-parkprice'), height: v('f-height'), payment: v('f-payment'),
     materials, facilities,
-    photo: v('f-photo'), photocap: v('f-photocap'),
+    photo: v('f-photo'), photocap: v('f-photocap'), photoDataURL: uploadedPhotoDataURL,
   };
 }
 
-function saveCurrentCase(formData) {
+async function saveCurrentCase(formData) {
   if (!currentCaseKey) return;
-  localStorage.setItem(STORAGE_PREFIX + currentCaseKey, JSON.stringify(formData));
+  await idbPut(currentCaseKey, formData);
   const status = document.getElementById('save-status');
   if (status) {
     status.textContent = '已儲存（' + new Date().toLocaleTimeString('zh-TW', {hour:'2-digit', minute:'2-digit'}) + '）';
   }
 }
 
-function resetCurrentCase() {
+async function resetCurrentCase() {
   if (!currentCaseKey) return;
   if (!confirm('確定要捨棄目前在這個個案上的修改，回復成原始查證資料嗎？')) return;
-  localStorage.removeItem(STORAGE_PREFIX + currentCaseKey);
-  loadCase(currentCaseKey);
+  await idbDelete(currentCaseKey);
+  await loadCase(currentCaseKey);
 }
 
 /* ───────────── 個案切換：動態生成表單 ───────────── */
@@ -749,13 +1063,14 @@ function populateCaseSelect() {
   `).join('');
 }
 
-function loadCase(key) {
+async function loadCase(key) {
   currentCaseKey = key;
   closeAbsorptionModal();
   localStorage.setItem(LAST_CASE_KEY, key);
   document.getElementById('case-select').value = key;
-  const saved = localStorage.getItem(STORAGE_PREFIX + key);
-  const c = saved ? { ...CASES[key], ...JSON.parse(saved) } : CASES[key];
+  await migrateLegacyCase(key);
+  const saved = await idbGet(key);
+  const c = saved ? { ...CASES[key], ...saved } : CASES[key];
   const status = document.getElementById('save-status');
   if (status) status.textContent = saved ? '讀取本機已儲存的修改版本' : '尚未修改（原始查證資料）';
   document.getElementById('toolbar-case-name').textContent = c.name;
@@ -774,10 +1089,17 @@ function loadCase(key) {
   document.getElementById('f-payment').value = c.payment;
   document.getElementById('f-photo').value = c.photo;
   document.getElementById('f-photocap').value = c.photocap;
+  uploadedPhotoDataURL = c.photoDataURL || null;
+  renderPhotoUploadStatus();
 
   buildRoomsForm(c.rooms);
   buildMaterialsForm(c.materials);
   buildFacilitiesForm(c.facilities);
+  imagePages = await idbGetPages(key);
+  activePageIdx = 0;
+  document.getElementById('form-market-fields').style.display = '';
+  document.getElementById('form-image-fields').style.display = 'none';
+  renderPageTabs();
   render();
   renderSalesGrid(key);
 }
@@ -1167,6 +1489,7 @@ function renderSalesGrid(key) {
 
 /* ───────────── 渲染投影片 ───────────── */
 function render() {
+  if (activePageIdx > 0) { renderImagePageSlide(); return; }
   const formData = getCurrentFormData();
 
   // 房型坪數（動態列數）
@@ -1227,7 +1550,7 @@ function render() {
       </div>
       <div class="ph-wrap">
         <div class="ph">
-          <img src="${v('f-photo')}" alt="${v('f-name')}外觀效果圖">
+          <img src="${uploadedPhotoDataURL || v('f-photo')}" alt="${v('f-name')}外觀效果圖">
           <div class="cap">${v('f-photocap')}</div>
         </div>
       </div>
@@ -1258,7 +1581,7 @@ function render() {
 function renderMobileView(formData) {
   document.getElementById('mobile-view').innerHTML = `
     <div class="mv-hero">
-      <img src="${formData.photo}" alt="${formData.name}外觀效果圖">
+      <img src="${formData.photoDataURL || formData.photo}" alt="${formData.name}外觀效果圖">
       <div class="mv-hero-cap">${formData.photocap}</div>
     </div>
     <div class="mv-title">
@@ -1325,7 +1648,147 @@ function fitSlideContent() {
   inner.style.width = (1280 / scale) + 'px';
 }
 
-function exportPDF() { window.print(); }
+function openExportMenu() {
+  document.getElementById('export-menu').classList.add('active');
+  document.addEventListener('click', closeExportMenuOnOutsideClick);
+}
+function closeExportMenu() {
+  document.getElementById('export-menu').classList.remove('active');
+  document.removeEventListener('click', closeExportMenuOnOutsideClick);
+}
+function closeExportMenuOnOutsideClick(e) {
+  const menu = document.getElementById('export-menu');
+  if (!menu.contains(e.target) && e.target.textContent !== '產出簡報') closeExportMenu();
+}
+function getImgSize(src) {
+  return new Promise(resolve => {
+    const img = new Image();
+    img.onload = () => resolve([img.naturalWidth, img.naturalHeight]);
+    img.onerror = () => resolve([1280, 720]);
+    img.src = src;
+  });
+}
+function fitContain(iw, ih, bw, bh) {
+  const s = Math.min(bw / iw, bh / ih);
+  return { w: iw * s, h: ih * s, ox: (bw - iw * s) / 2, oy: (bh - ih * s) / 2 };
+}
+async function buildPrintStack() {
+  const savedPageIdx = activePageIdx;
+  const stack = document.createElement('div');
+  stack.id = 'print-stack';
+  const totalPages = imagePages.length + 1;
+  for (let i = 0; i < totalPages; i++) {
+    activePageIdx = i;
+    render();
+    await new Promise(r => setTimeout(r, 30));
+    const clone = document.getElementById('slide').cloneNode(true);
+    clone.removeAttribute('id');
+    stack.appendChild(clone);
+  }
+  activePageIdx = savedPageIdx;
+  render();
+  return stack;
+}
+async function exportPptx() {
+  if (typeof PptxGenJS === 'undefined') {
+    alert('PowerPoint 匯出元件載入失敗，請確認網路連線後重新整理頁面再試一次。');
+    return;
+  }
+  const pptx = new PptxGenJS();
+  pptx.defineLayout({ name: 'SLIDE16x9', width: 10, height: 5.625 });
+  pptx.layout = 'SLIDE16x9';
+
+  const savedPageIdx = activePageIdx;
+
+  // 第 1 頁：市調總覽，截圖保留 100% 設計外觀
+  activePageIdx = 0;
+  render();
+  await new Promise(r => setTimeout(r, 30));
+  const slideEl = document.getElementById('slide');
+  const prevTransform = slideEl.style.transform;
+  slideEl.style.transform = 'scale(1)';
+  await new Promise(r => setTimeout(r, 30));
+
+  let marketImgData = null;
+  try {
+    const canvas = await html2canvas(slideEl, {
+      scale: 2, useCORS: true, allowTaint: true,
+      width: 1280, height: 720, backgroundColor: '#ffffff',
+    });
+    marketImgData = canvas.toDataURL('image/jpeg', 0.95);
+  } catch (e) {
+    console.warn('市調總覽截圖失敗（可能是外觀照片網址不支援跨網域讀取）', e);
+  }
+  slideEl.style.transform = prevTransform;
+
+  const marketSlide = pptx.addSlide();
+  if (marketImgData) {
+    marketSlide.addImage({ data: marketImgData, x: 0, y: 0, w: 10, h: 5.625 });
+  } else {
+    marketSlide.background = { color: 'F4F9F7' };
+    marketSlide.addText(
+      '市調總覽頁截圖失敗（可能是外觀照片網址不支援跨網域讀取）\n建議改用左側「本機上傳」功能上傳照片後，重新匯出一次。',
+      { x: 0.5, y: 2.3, w: 9, h: 1.2, fontSize: 14, color: 'B8543F', align: 'center', valign: 'middle' }
+    );
+  }
+
+  // 第 2 頁起：每張圖片頁用原生文字＋圖片元件（標題在 PowerPoint 裡可直接編輯）
+  for (const p of imagePages) {
+    const pSlide = pptx.addSlide();
+    pSlide.background = { color: 'F7F9F8' };
+    pSlide.addText('', { x: 0, y: 0, w: 10, h: 0.6, fill: { color: '1A2332' } });
+    pSlide.addText(p.title || '圖片頁', {
+      x: 0.3, y: 0.08, w: 6.3, h: 0.44,
+      fontSize: 20, bold: true, color: 'FFFFFF', fontFace: 'PingFang TC', valign: 'middle',
+    });
+    if (p.subtitle) {
+      pSlide.addText(p.subtitle, {
+        x: 6.6, y: 0.15, w: 3.1, h: 0.3,
+        fontSize: 11, color: 'A8DADC', fontFace: 'PingFang TC', align: 'right', valign: 'middle',
+      });
+    }
+    const src = p.imageDataURL || p.imageURL;
+    if (src) {
+      try {
+        const [iw, ih] = await getImgSize(src);
+        const BOX_X = 0.2, BOX_Y = 0.75, BOX_W = 9.6, BOX_H = 4.7;
+        const f = fitContain(iw, ih, BOX_W, BOX_H);
+        pSlide.addImage({
+          ...(src.startsWith('data:') ? { data: src } : { path: src }),
+          x: BOX_X + f.ox, y: BOX_Y + f.oy, w: f.w, h: f.h,
+        });
+      } catch (e) {
+        console.warn('圖片頁圖片載入失敗：', p.title, e);
+      }
+    }
+  }
+
+  activePageIdx = savedPageIdx;
+  render();
+
+  const caseName = CASES[currentCaseKey].name;
+  const dateStr = new Date().toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei' }).replace(/\//g, '-');
+  await pptx.writeFile({ fileName: `${caseName}_市調簡報_${dateStr}.pptx` });
+}
+async function exportAs(format) {
+  closeExportMenu();
+  if (format === 'pdf') {
+    const stack = await buildPrintStack();
+    document.body.appendChild(stack);
+    document.body.classList.add('printing-stack');
+    window.print();
+    document.body.classList.remove('printing-stack');
+    stack.remove();
+    return;
+  }
+  if (format === 'pptx' || format === 'keynote') {
+    await exportPptx();
+    if (format === 'keynote') {
+      alert('已下載 PowerPoint 檔（.pptx）。請用 Keynote 開啟（File → Open），會自動轉換成 Keynote 原生格式。');
+    }
+    return;
+  }
+}
 function openControl() { document.getElementById('control-panel').classList.add('active'); }
 function closeControl() { document.getElementById('control-panel').classList.remove('active'); }
 
