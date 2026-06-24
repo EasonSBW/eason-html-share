@@ -137,7 +137,7 @@
   .fac-chip.service { background:#f5e9d3; color:#8a5f1f; }
   .fac-chip.green   { background:#e1f0e1; color:#2e6b2e; }
 
-  .sg-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:8px; }
+  .sg-head { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; flex-wrap:wrap; gap:8px; padding-right:100px; }
   .sg-head h2 { color:#1a2332; font-size:18px; }
   .sg-head-title { display:flex; align-items:center; gap:12px; }
   .sg-absorb-btn {
@@ -197,6 +197,7 @@
   .txn-date { display:inline-block; background:#eef1f0; color:#5a6a68; font-weight:700; padding:3px 10px; border-radius:6px; font-size:11.5px; }
   .sg-legend-item { font-size:12px; color:#5a6a68; display:flex; align-items:center; gap:5px; }
   .sg-dot { width:9px; height:9px; border-radius:50%; display:inline-block; }
+  .rt-badge { display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; border-radius:50%; font-size:9.5px; font-weight:800; line-height:1; vertical-align:middle; }
   .sg-body { display:flex; gap:20px; align-items:flex-start; }
   .sg-sidebar { flex:0 0 280px; position:sticky; top:0; }
   .sg-main { flex:1; min-width:0; }
@@ -819,6 +820,19 @@ function buildFacilitiesForm(facilities) {
 }
 
 /* ───────────── 樓層銷控表 ───────────── */
+const ROOM_TYPE_COLORS = {
+  '2房': { bg:'#fae3cc', fg:'#a8570c' },
+  '3房': { bg:'#dbe6fb', fg:'#1d4f9e' },
+  '4房': { bg:'#f3dcf0', fg:'#9c2a96' },
+};
+const ROOM_TYPE_FALLBACK = { bg:'#eef1f0', fg:'#5a6a68' };
+
+function roomTypeBadgeHtml(roomType) {
+  const digit = (roomType.match(/\d+/) || [''])[0];
+  const { bg, fg } = ROOM_TYPE_COLORS[roomType] || ROOM_TYPE_FALLBACK;
+  return `<span class="rt-badge" style="background:${bg};color:${fg}">${digit}</span>`;
+}
+
 function findCrownCell(sg) {
   let max = -Infinity, target = null;
   sg.rows.forEach(r => {
@@ -1068,7 +1082,12 @@ function renderSgMain(key) {
 
   const headerHtml = sg.columns.map(col => {
     const area = sg.columnArea && sg.columnArea[col];
-    return `<th>${esc(col)}${area ? `<span class="sg-col-area">${area}坪</span>` : ''}</th>`;
+    const roomType = sg.columnRoomType && sg.columnRoomType[col];
+    const style = roomType ? (() => {
+      const { fg } = ROOM_TYPE_COLORS[roomType] || ROOM_TYPE_FALLBACK;
+      return ` style="color:${fg}"`;
+    })() : '';
+    return `<th${style}>${esc(col)}${area ? `<span class="sg-col-area">${area}坪</span>` : ''}</th>`;
   }).join('');
 
   let hasExcluded = false;
@@ -1121,9 +1140,14 @@ function renderSalesGrid(key) {
   salesGridViewMode = 'grid';
   txnSortState = { key: 'date', dir: 'desc' };
 
-  const legendHtml = Object.values(sg.categories).map(cat =>
+  const categoryLegendHtml = Object.values(sg.categories).map(cat =>
     `<span class="sg-legend-item"><span class="sg-dot" style="background:${cat.fg}"></span>${esc(cat.label)}</span>`
   ).join('');
+  const roomTypes = sg.columnRoomType ? [...new Set(Object.values(sg.columnRoomType))].sort() : [];
+  const roomTypeLegendHtml = roomTypes.map(rt =>
+    `<span class="sg-legend-item">${roomTypeBadgeHtml(rt)}${esc(rt)}</span>`
+  ).join('');
+  const legendHtml = categoryLegendHtml + roomTypeLegendHtml;
 
   root.innerHTML = `
     <div class="sg-head">
