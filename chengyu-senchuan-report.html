@@ -65,23 +65,17 @@
     display:flex; flex-direction:column; align-items:center; padding:20px; gap:10px;
   }
   #slide-wrapper { width:100%; max-width:1280px; }
-  #page-tabs-bar { width:100%; max-width:1280px; display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
-  .page-tab {
-    display:flex; align-items:center; gap:6px; padding:6px 14px; border-radius:7px;
-    background:#aab2c4; color:#fff; font-size:12.5px; font-weight:700; cursor:pointer;
-    white-space:nowrap; user-select:none; transition:background .15s;
+  #page-tabs-bar { width:100%; max-width:1280px; display:flex; align-items:center; gap:8px; }
+  #page-select {
+    flex:1; min-width:0; font-size:13px; padding:7px 10px; border:1px solid #2d8b8b; border-radius:6px;
+    font-weight:700; color:#1a2332; background:#fff;
   }
-  .page-tab:hover { background:#8d97b2; }
-  .page-tab.active { background:#1a2332; }
-  .page-tab.market-tab { background:#2d8b8b; }
-  .page-tab.market-tab.active { background:#1a2332; }
-  .page-tab .tab-close { opacity:.7; }
-  .page-tab .tab-close:hover { opacity:1; }
-  #add-page-btn {
-    padding:6px 14px; border-radius:7px; border:1px dashed rgba(255,255,255,.6);
-    background:transparent; color:#fff; font-size:12.5px; font-weight:700; cursor:pointer;
+  .page-tool-btn {
+    padding:6px 12px; border-radius:6px; border:1px solid rgba(255,255,255,.55);
+    background:transparent; color:#fff; font-size:12.5px; font-weight:700; cursor:pointer; white-space:nowrap;
   }
-  #add-page-btn:hover { background:rgba(255,255,255,.15); }
+  .page-tool-btn:hover:not(:disabled) { background:rgba(255,255,255,.15); }
+  .page-tool-btn:disabled { opacity:.35; cursor:default; }
   .ip-slide { width:100%; height:100%; display:flex; flex-direction:column; background:#f7f9f8; }
   .ip-header { background:#1a2332; padding:18px 36px; display:flex; align-items:baseline; gap:14px; flex-shrink:0; }
   .ip-title { font-size:24px; font-weight:800; color:#fff; }
@@ -481,7 +475,11 @@
 
   <div id="preview-panel">
     <div id="page-tabs-bar">
-      <div id="page-tabs"></div>
+      <select id="page-select" onchange="switchToPage(parseInt(this.value))"></select>
+      <button class="page-tool-btn" id="page-move-up-btn" onclick="moveActivePage(-1)" title="上移">↑</button>
+      <button class="page-tool-btn" id="page-move-down-btn" onclick="moveActivePage(1)" title="下移">↓</button>
+      <button class="page-tool-btn" onclick="addImagePage()">＋ 圖片頁</button>
+      <button class="page-tool-btn" id="delete-page-btn" onclick="deleteImagePage(activePageIdx-1)" title="刪除此頁">🗑 刪除</button>
     </div>
     <div id="slide-wrapper">
       <div id="slide-scaler">
@@ -603,6 +601,17 @@ const CASES = {
     ],
     photo:'https://img1.591.com.tw/house/2025/08/26/175619144339031308.jpg!660x495.water3.jpg',
     photocap:'來源：591（含浮水印・內部測試用，建議之後換成無水印版本）',
+    // 圖片來源：大橘團隊 dajuteam.com.tw（永尚謙玥案頁，圖片取自永尚謙玥網站公開資料，版權歸原所有者所有），查詢日期 2026-06-24
+    imagePages: [
+      { id:'ys1', title:'外觀模擬', subtitle:'永尚謙玥｜北屯機捷特區', imageURL:'https://www.dajuteam.com.tw/upload/web/images/cases/YongShangQianYue/yong-shang-qian-yue-building.jpg', imageDataURL:null },
+      { id:'ys2', title:'空拍環景', subtitle:'敦富大道・千坪角地', imageURL:'https://www.dajuteam.com.tw/upload/web/images/cases/YongShangQianYue/yong-shang-qian-yue-aerial-view.jpg', imageDataURL:null },
+      { id:'ys3', title:'基地位置', subtitle:'北屯區敦富路與南興北二路口', imageURL:'https://www.dajuteam.com.tw/upload/web/images/cases/YongShangQianYue/yong-shang-qian-yue-loc.jpg', imageDataURL:null },
+      { id:'ys4', title:'標準層格局平面圖', subtitle:'7戶2梯', imageURL:'https://www.dajuteam.com.tw/upload/web/images/cases/YongShangQianYue/yong-shang-qian-yue-typical-floor.jpg', imageDataURL:null },
+      { id:'ys5', title:'戶型平面圖', subtitle:'2房／3房・25～37坪', imageURL:'https://www.dajuteam.com.tw/upload/web/images/cases/YongShangQianYue/yong-shang-qian-yue-floor-plan.jpg', imageDataURL:null },
+      { id:'ys6', title:'公設平面圖', subtitle:'', imageURL:'https://www.dajuteam.com.tw/upload/web/images/cases/YongShangQianYue/yong-shang-qian-yue-public.jpg', imageDataURL:null },
+      { id:'ys7', title:'公設模擬圖（一）', subtitle:'', imageURL:'https://www.dajuteam.com.tw/upload/web/images/cases/YongShangQianYue/yong-shang-qian-yue-public01.jpg', imageDataURL:null },
+      { id:'ys8', title:'公設模擬圖（二）', subtitle:'', imageURL:'https://www.dajuteam.com.tw/upload/web/images/cases/YongShangQianYue/yong-shang-qian-yue-public02.jpg', imageDataURL:null },
+    ],
     salesGrid: {
       source: '主委說 trueway.adholic.com.tw（永尚謙玥頁面，銷控表＋交易紀錄分頁交叉核對，98 筆全數比對一致），查詢日期 2026-06-22',
       categories: {
@@ -777,7 +786,13 @@ let imagePages = [];   // 目前案子的圖片頁，不含市調總覽頁
 let activePageIdx = 0; // 0 = 市調總覽，1..N 對應 imagePages[idx-1]
 
 function pagesKey(key) { return key + ':pages'; }
-async function idbGetPages(key) { return (await idbGet(pagesKey(key))) || []; }
+async function idbGetPages(key) {
+  const saved = await idbGet(pagesKey(key));
+  if (saved) return saved;
+  // 還沒有使用者自訂過：退回案子內建的預設圖片頁（深拷貝，避免直接改到 CASES 的原始陣列）
+  const defaults = CASES[key] && CASES[key].imagePages;
+  return defaults ? JSON.parse(JSON.stringify(defaults)) : [];
+}
 async function idbPutPages(key, pages) { return idbPut(pagesKey(key), pages); }
 
 let _pagesSaveTimer = null;
@@ -816,54 +831,32 @@ function renderPhotoUploadStatus() {
 }
 
 function renderPageTabs() {
-  const bar = document.getElementById('page-tabs');
-  if (!bar) return;
-  let html = `<div class="page-tab market-tab ${activePageIdx===0?'active':''}" onclick="switchToPage(0)">市調總覽</div>`;
-  html += imagePages.map((p, i) => `
-    <div class="page-tab ${activePageIdx===i+1?'active':''}"
-      draggable="true"
-      onclick="switchToPage(${i+1})"
-      ondragstart="onPageTabDragStart(event,${i})"
-      ondragover="onPageTabDragOver(event,${i})"
-      ondrop="onPageTabDrop(event,${i})"
-      ondragend="onPageTabDragEnd()">
-      ${esc(p.title || '（圖片頁）')}
-      <span class="tab-close" onclick="event.stopPropagation();deleteImagePage(${i})">×</span>
-    </div>`).join('');
-  html += `<button id="add-page-btn" onclick="addImagePage()">＋ 圖片頁</button>`;
-  bar.innerHTML = html;
+  const sel = document.getElementById('page-select');
+  if (!sel) return;
+  let html = `<option value="0">📋 市調總覽</option>`;
+  html += imagePages.map((p, i) => `<option value="${i+1}">${esc(p.title || ('（圖片頁 ' + (i+1) + '）'))}</option>`).join('');
+  sel.innerHTML = html;
+  sel.value = activePageIdx;
+
+  const delBtn = document.getElementById('delete-page-btn');
+  if (delBtn) delBtn.disabled = activePageIdx === 0;
+  const upBtn = document.getElementById('page-move-up-btn');
+  if (upBtn) upBtn.disabled = activePageIdx <= 1;
+  const downBtn = document.getElementById('page-move-down-btn');
+  if (downBtn) downBtn.disabled = activePageIdx === 0 || activePageIdx === imagePages.length;
 }
 
-let _dragPageIdx = null;
-
-function onPageTabDragStart(e, idx) {
-  _dragPageIdx = idx;
-  e.dataTransfer.effectAllowed = 'move';
-}
-
-function onPageTabDragOver(e, idx) {
-  e.preventDefault();
-  e.dataTransfer.dropEffect = 'move';
-}
-
-function onPageTabDrop(e, idx) {
-  e.preventDefault();
-  if (_dragPageIdx === null || _dragPageIdx === idx) return;
-  const activeId = activePageIdx > 0 ? imagePages[activePageIdx - 1].id : null;
-  const moved = imagePages.splice(_dragPageIdx, 1)[0];
-  imagePages.splice(idx, 0, moved);
-  if (activeId !== null) {
-    const newIdx = imagePages.findIndex(p => p.id === activeId);
-    if (newIdx !== -1) activePageIdx = newIdx + 1;
-  }
-  _dragPageIdx = null;
+function moveActivePage(delta) {
+  if (activePageIdx === 0) return;
+  const from = activePageIdx - 1;
+  const to = from + delta;
+  if (to < 0 || to >= imagePages.length) return;
+  const moved = imagePages.splice(from, 1)[0];
+  imagePages.splice(to, 0, moved);
+  activePageIdx = to + 1;
   persistImagePages();
   renderPageTabs();
   render();
-}
-
-function onPageTabDragEnd() {
-  _dragPageIdx = null;
 }
 
 function switchToPage(idx) {
@@ -883,6 +876,7 @@ function addImagePage() {
 }
 
 function deleteImagePage(i) {
+  if (i < 0 || i >= imagePages.length) return;
   if (!confirm('確定刪除這張圖片頁？')) return;
   imagePages.splice(i, 1);
   persistImagePages();
