@@ -1911,6 +1911,20 @@ async function exportPptx() {
   activePageIdx = savedPageIdx;
   render();
 
+  // 銷控表頁（完整截圖嵌入，同 PDF 做法）
+  if (currentCaseKey && CASES[currentCaseKey]?.salesGrid) {
+    const sgCanvas = await captureSalesGridCanvas();
+    if (sgCanvas) {
+      const sgDataUrl = sgCanvas.toDataURL('image/jpeg', 0.92);
+      const [sgW, sgH] = [sgCanvas.width, sgCanvas.height];
+      const SLIDE_W = 10, SLIDE_H = 5.625;
+      const f = fitContain(sgW, sgH, SLIDE_W, SLIDE_H);
+      const sgSlide = pptx.addSlide();
+      sgSlide.background = { color: 'FFFFFF' };
+      sgSlide.addImage({ data: sgDataUrl, x: f.ox, y: f.oy, w: f.w, h: f.h });
+    }
+  }
+
   const caseName = CASES[currentCaseKey].name;
   const dateStr = new Date().toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei' }).replace(/\//g, '-');
   try {
