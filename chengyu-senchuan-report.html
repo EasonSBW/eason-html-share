@@ -6,6 +6,7 @@
 <title>市調簡報製作工具</title>
 <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body {
@@ -1919,18 +1920,103 @@ async function exportPptx() {
     alert('PowerPoint 匯出失敗，請稍後再試一次。若持續失敗，可能是某張圖片網址有問題，建議改用本機上傳後再匯出。');
   }
 }
+async function captureSalesGridCanvas() {
+  const key = currentCaseKey;
+  if (!key || !CASES[key]?.salesGrid) return null;
+
+  renderSalesGrid(key);
+  const root = document.getElementById('sales-grid-root');
+
+  const captureEl = document.createElement('div');
+  captureEl.style.cssText = [
+    'position:fixed', 'top:0', 'left:-2000px',
+    'width:1280px', 'background:#fff', 'padding:24px',
+    'box-sizing:border-box', 'overflow:visible',
+    'font-family:-apple-system,"PingFang TC","Helvetica Neue",sans-serif',
+  ].join(';');
+  captureEl.innerHTML = root.innerHTML;
+
+  // 移除 overflow 限制，讓整張表完整顯示
+  captureEl.querySelectorAll('.sg-wrap,.txn-wrap').forEach(el => { el.style.overflow = 'visible'; });
+  // 移除 sticky 定位（html2canvas 不支援，會截到錯誤位置）
+  captureEl.querySelectorAll('.sg-table thead th:first-child,.sg-table tbody th,.sg-sidebar').forEach(el => {
+    el.style.position = 'relative';
+    el.style.left = 'auto';
+    el.style.top = 'auto';
+  });
+  // 移除互動按鈕
+  captureEl.querySelectorAll('button').forEach(el => el.remove());
+
+  document.body.appendChild(captureEl);
+  await new Promise(r => setTimeout(r, 100));
+
+  const W = captureEl.scrollWidth;
+  const H = captureEl.scrollHeight;
+  const canvas = await html2canvas(captureEl, {
+    scale: 2, useCORS: true, allowTaint: true,
+    backgroundColor: '#ffffff',
+    width: W, height: H, windowWidth: W, windowHeight: H,
+  });
+
+  document.body.removeChild(captureEl);
+  return canvas;
+}
+
+async function exportPdf() {
+  if (typeof window.jspdf === 'undefined') {
+    alert('PDF 匯出元件載入失敗，請確認網路連線後重新整理頁面再試一次。');
+    return;
+  }
+  const { jsPDF } = window.jspdf;
+  const savedPageIdx = activePageIdx;
+  const totalSlides = imagePages.length + 1;
+  const PAGE_W = 10, PAGE_H = 5.625; // 16:9，單位 inch
+
+  const pdf = new jsPDF({ orientation: 'landscape', unit: 'in', format: [PAGE_W, PAGE_H] });
+
+  for (let i = 0; i < totalSlides; i++) {
+    if (i > 0) pdf.addPage([PAGE_W, PAGE_H]);
+    activePageIdx = i;
+    render();
+    const slideEl = document.getElementById('slide');
+    await waitForImages(slideEl, 4000);
+    const prevTransform = slideEl.style.transform;
+    slideEl.style.transform = 'scale(1)';
+    await new Promise(r => setTimeout(r, 50));
+    try {
+      const canvas = await html2canvas(slideEl, {
+        scale: 2, useCORS: true, allowTaint: true,
+        width: 1280, height: 720, backgroundColor: '#ffffff',
+      });
+      pdf.addImage(canvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, PAGE_W, PAGE_H);
+    } catch (e) {
+      console.warn('投影片截圖失敗（頁碼 ' + i + '）：', e);
+    }
+    slideEl.style.transform = prevTransform;
+  }
+
+  activePageIdx = savedPageIdx;
+  render();
+
+  // 銷控表頁（完整截圖，不裁切）
+  if (currentCaseKey && CASES[currentCaseKey]?.salesGrid) {
+    const sgCanvas = await captureSalesGridCanvas();
+    if (sgCanvas) {
+      const sgPageH = PAGE_W * sgCanvas.height / sgCanvas.width;
+      pdf.addPage([PAGE_W, sgPageH]);
+      pdf.addImage(sgCanvas.toDataURL('image/jpeg', 0.92), 'JPEG', 0, 0, PAGE_W, sgPageH);
+    }
+  }
+
+  const caseName = CASES[currentCaseKey].name;
+  const dateStr = new Date().toLocaleDateString('zh-TW', { timeZone: 'Asia/Taipei' }).replace(/\//g, '-');
+  pdf.save(`${caseName}_市調簡報_${dateStr}.pdf`);
+}
+
 async function exportAs(format) {
   closeExportMenu();
   if (format === 'pdf') {
-    const stack = await buildPrintStack();
-    document.body.appendChild(stack);
-    // 圖片頁的圖通常是外部網址，剛把列印堆疊插進畫面時圖片很可能還沒載完；
-    // 沒等它們載完就直接 window.print()，印出來那幾頁的圖就會是空白。最多等 4 秒。
-    await waitForImages(stack, 4000);
-    document.body.classList.add('printing-stack');
-    window.print();
-    document.body.classList.remove('printing-stack');
-    stack.remove();
+    await exportPdf();
     return;
   }
   if (format === 'pptx' || format === 'keynote') {
