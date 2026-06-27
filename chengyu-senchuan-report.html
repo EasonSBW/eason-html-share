@@ -383,12 +383,13 @@
       overflow:visible; transform:none !important;
       box-shadow:none;
     }
-    #slide-inner { transform:none !important; width:100% !important; }
+    /* 保留 fitSlideContent() 設的 scale transform，不再強制 none */
+    #slide-inner { width:auto !important; }
     body.printing-stack #slide-wrapper { display:none !important; }
     body.printing-stack #print-stack { display:block !important; }
-    #print-stack .slide { page-break-after: always; }
+    #print-stack .slide { page-break-after: always; height:720px !important; overflow:hidden !important; }
     #print-stack .slide:last-child { page-break-after: auto; }
-    @page { size: A4 landscape; margin:0; }
+    @page { size: 1280px 720px; margin:0; }
   }
 </style>
 </head>
