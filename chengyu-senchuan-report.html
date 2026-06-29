@@ -924,9 +924,37 @@ const CASES = {
     },
   },
 
-};
+  hanyuguotu: {
+    name: '漢喻國圖館',
+    district: '南區',
+    // 本案建照 115中都建字第00526號 於 2026-06-02 核發，截至 2026-06-29 仍為 591「預推案」尚未正式公開銷售；
+    // 所有建案規格（樓層、戶數、坪數、建材等）尚未正式公開，待開案後補查。
+    // 開價：FB粉專「國圖館新案」載明「直上大三房 1888萬起（含車位）」（總價，非單價），開價單價待確認；
+    // 成交均價：案子尚未開賣，無實價登錄資料。
+    askPrice: '待確認', dealRange: '待確認', dealAvg: '待確認', priceGap: '待確認',
+    basic: {
+      totalsales: '—', landarea: '待確認', floors: '待確認', public: '待確認',
+      units: '待確認', coverage: '待確認', launchtime: '115年Q2（預計）', zone: '待確認',
+      structure: '待確認', mgmtfee: '待確認', developer: '漢喻開發股份有限公司（大樁建設機構）', salesteam: '自售',
+      architect: '待確認', contractor: '待確認', completion: '待確認',
+      traffic: '步行可達公共資訊圖書館；中興大學、四育國中近在周邊', address: '南區南平路與福南街',
+    },
+    rooms: [ ['格局', '2房 / 3房（坪數待確認）'] ],
+    parking: '待確認', parkprice: '待確認',
+    height: '待確認', payment: '待確認',
+    materials: [
+      { title: '客廳建材', items: [['', '待確認']] },
+      { title: '鋁窗建材', items: [['', '待確認']] },
+      { title: '廚房建材', items: [['', '待確認']] },
+      { title: '衛浴建材', items: [['', '待確認']] },
+      { title: '其他建材', items: [['', '待確認']] },
+    ],
+    facilities: [],
+    photo: 'https://img1.591.com.tw/house/2026/06/23/178219232415963209.jpg!fit.1200x800.jpg',
+    photocap: '來源：591新建案（預推案封面圖，2026-06-23 上傳），預售階段，實際完工外觀以建商公告為準',
+  },
 
-const facLabels = { sport: '休閒運動', social: '社交聚會', service: '生活服務', green: '環境景觀' };
+};
 
 /* ───────────── 工具函式 ───────────── */
 function v(id) { const el = document.getElementById(id); return el ? el.value : ''; }
