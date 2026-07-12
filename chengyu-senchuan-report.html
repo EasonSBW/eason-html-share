@@ -1146,6 +1146,46 @@ const CASES = {
     },
   },
 
+  junfuhui: {
+    name: '均福匯',
+    district: '北屯區',
+    // 開價：591官方建案頁單價欄位標「價格待定」，住展/知虹厝/房地王等來源亦均無單坪開價可查，故askPrice/priceGap填待確認；
+    // 成交均價/區間為591實價登錄＋5168實價登錄比價王＋樂居三方交叉比對之10筆成交單價（42.2-48.7萬/坪，平均45.1萬，與5168站方自算之45.2萬/坪一致）；
+    // 本案規模小(僅26戶)、自售、無代銷，TRUEWAY主委說查無此案資料（案名/建商峰品宸/地址軍福九路皆查無），故無salesGrid可比對；
+    // 車位價格因部分成交紀錄為「房屋+車位」合併總價、無法拆分出獨立車位單價，加上內政部實價登錄官網(lvr.land.moi.gov.tw)本次因Playwright瀏覽器工具技術問題（多次navigate/tabs操作逾時卡死）未能連線查證，parkprice暫填待確認
+    askPrice: '待確認', dealRange: '42.2-48.7萬/坪', dealAvg: '45.1萬', priceGap: '待確認',
+    basic: {
+      totalsales:'待確認', landarea:'約115.95坪', floors:'6F／B1', public:'35%',
+      units:'25戶住家+1戶店面(共26戶)／1棟', coverage:'54.86%', launchtime:'114年(使用執照)', zone:'住三',
+      structure:'RC鋼筋混凝土', mgmtfee:'待確認', developer:'峰品宸建設', salesteam:'自售',
+      architect:'向宇建築師事務所', contractor:'敦鴻營造', completion:'已完工，成交即可交屋',
+      traffic:'鄰台74線快速道路，鄰近台鐵太原站、捷運松竹站；步行可達建功國小/軍功國小，車程2分鐘東山高中(國中部)',
+      address:'北屯區軍福九路627號(十期重劃區)',
+    },
+    rooms: [ ['一房坪數','16–18 坪'], ['二房坪數','18–20 坪'] ],
+    parking:'地下1樓(坡道平面1個＋機械式13個，共14個)', parkprice:'待確認',
+    height:'待確認', payment:'待確認',
+    materials: [
+      { title:'客廳建材', items:[['地坪','待確認'],['房間地坪','待確認'],['玄關門','待確認'],['全屋收納','待確認'],['空調系統','待確認']] },
+      { title:'鋁窗建材', items:[['鋁窗品牌','待確認'],['玻璃厚度','待確認']] },
+      { title:'廚房建材', items:[['系統廚具','待確認'],['抽油煙機','待確認'],['瓦斯爐','待確認']] },
+      { title:'衛浴建材', items:[['衛浴品牌','待確認'],['面盆','待確認'],['馬桶','待確認']] },
+      { title:'其他建材', items:[['結構','RC鋼筋混凝土'],['電梯','待確認'],['社區智能化','待確認']] },
+    ],
+    facilities: [
+      ['接待大廳','service'],['信箱區','service'],['曬被區','service'],
+    ],
+    photo:'https://img.ltn.com.tw/Upload/news/600/2025/12/03/5267002_1_1.jpg',
+    photocap:'2025台中購物節壓軸好宅宣傳圖，內含本案實際外觀照片（來源：自由時報／台中市政府提供），查詢日期2026-07-12；本案為小型自售新成屋，591/知虹厝/台中房地王等房仲網站僅有預設佔位圖，查無其他外觀效果圖',
+    // 圖片來源：自由時報 news.ltn.com.tw 報導（2025-12-03，市府提供），查詢日期 2026-07-12
+    imagePages: [
+      { id:'jfh1', title:'建案外觀(2025台中購物節宣傳圖)', subtitle:'均福匯｜北屯十期重劃區', imageURL:'https://img.ltn.com.tw/Upload/news/600/2025/12/03/5267002_1_1.jpg', imageDataURL:null },
+      { id:'jfh2', title:'實品屋－客廳', subtitle:'2樓好宅實景，挑高3.6米', imageURL:'https://img.ltn.com.tw/Upload/news/600/2025/12/03/5267002_3_1.jpg', imageDataURL:null },
+      { id:'jfh3', title:'實品屋－玄關／落地窗', subtitle:'2樓好宅實景', imageURL:'https://img.ltn.com.tw/Upload/news/600/2025/12/03/5267002_2_1.jpg', imageDataURL:null },
+      { id:'jfh4', title:'實品屋－廚房', subtitle:'2樓好宅實景', imageURL:'https://img.ltn.com.tw/Upload/news/600/2025/12/03/5267002_4_1.jpg', imageDataURL:null },
+    ],
+  },
+
 };
 
 const facLabels = { sport: '休閒運動', social: '社交聚會', service: '生活服務', green: '環境景觀' };
