@@ -1201,6 +1201,60 @@ const CASES = {
     },
   },
 
+  shengmeifengyuan2: {
+    name: '勝美豐原Ⅱ',
+    district: '豐原區',
+    // 開價：591官方建案頁單價/總價/車位價格三欄均標「價格待定」，Mobile01「豐原勝美新建案」討論串內容為2019-2021年舊案(勝美豐原一期)討論、與本案無關，查無其他來源公開開價，故askPrice/priceGap填待確認；
+    // 成交均價/區間：TRUEWAY主委說頁面統計卡片直接提供（22筆住宅類成交，32.6-40.3萬/坪，平均37.2萬），與交易紀錄逐筆加總結果一致
+    askPrice: '待確認', dealRange: '32.6-40.3萬/坪', dealAvg: '37.2萬', priceGap: '待確認',
+    basic: {
+      totalsales: '待確認', landarea: '838.53坪', floors: '20F／B4', public: '33.5%',
+      units: '114戶住家（1幢1棟）', coverage: '29.1%', launchtime: '115年5月', zone: '第二種商業區',
+      structure: 'RC鋼筋混凝土', mgmtfee: '待確認', developer: '勝美建設', salesteam: '峻鑫廣告',
+      architect: '吳六合建築師事務所', contractor: '協侑營造', completion: '2028年上半年',
+      traffic: '鄰國道1號、國道4號交流道，約4分鐘車程可達台鐵豐原車站',
+      address: '台中市豐原區中山路、忠孝街79巷',
+    },
+    rooms: [ ['3房坪數', '38~43坪'], ['4房坪數', '50~52坪'] ],
+    parking: '平面式180個', parkprice: '170–225萬（均198萬）',
+    height: '待確認', payment: '貸款成數80%',
+    materials: [
+      { title:'客廳建材', items:[['地坪','待確認'],['玄關門','待確認'],['全屋收納','待確認'],['空調系統','待確認']] },
+      { title:'鋁窗建材', items:[['鋁窗品牌','待確認'],['玻璃厚度','待確認']] },
+      { title:'廚房建材', items:[['系統廚具','待確認'],['抽油煙機','待確認'],['瓦斯爐','待確認']] },
+      { title:'衛浴建材', items:[['衛浴品牌','待確認'],['面盆','待確認'],['馬桶','待確認']] },
+      { title:'其他建材', items:[['結構','RC鋼筋混凝土'],['電梯','待確認'],['社區智能化','待確認']] },
+    ],
+    facilities: [
+      ['接待大廳','service'],['宅配室','service'],
+      ['交誼廳','social'],
+      ['健身房','sport'],
+      ['中庭花園','green'],
+    ],
+    photo: 'https://img2.591.com.tw/house/2026/06/22/178209816647094506.jpg!660x495.water3.jpg',
+    photocap: '工地空拍圖（來源：591新建案，查詢日期2026-07-12）；本案2026年5月開案、目前結構施工中（至7月初約17樓），591/TRUEWAY均查無官方外觀效果圖，暫以空拍現況圖替代',
+    salesGrid: {
+      source: '主委說 trueway.adholic.com.tw（勝美豐原Ⅱ頁面，交易紀錄分頁，共22筆住宅類成交資料），查詢日期2026-07-12；本案為預售新案（尚未取得使用執照），主委說戶別欄位採原始「棟代號-戶序-樓層」編號（如A1-5樓），非傳統A1/A2字母戶別、每欄僅對應單一樓層交易筆，依主委說原始排版忠實轉錄；cells的area為主委說「面積」原始揭露數值，經比對591官方房型坪數區間（三房38-43坪／四房50-52坪）研判應為含車位登記總坪數、非純淨坪，故未另建columnArea欄位',
+      categories: {
+        res: { label:'住宅', bg:'#dcefed', fg:'#1c6b69' },
+      },
+      columns: ['A1-5樓','A1-8樓','A1-12樓','A1-14樓','A1-16樓','A1-18樓','B1-16樓','C1-5樓','C1-14樓','D1-2樓','D1-8樓','D1-9樓','D1-12樓','E1-5樓','E1-8樓','E1-12樓','F1-2樓','F1-4樓','F1-5樓','F1-9樓','F1-12樓','F1-20樓'],
+      columnRoomType: { 'A1-5樓':'3房','A1-8樓':'3房','A1-12樓':'3房','A1-14樓':'3房','A1-16樓':'3房','A1-18樓':'3房','B1-16樓':'4房','C1-5樓':'4房','C1-14樓':'4房','D1-2樓':'3房','D1-8樓':'3房','D1-9樓':'3房','D1-12樓':'3房','E1-5樓':'3房','E1-8樓':'3房','E1-12樓':'3房','F1-2樓':'3房','F1-4樓':'3房','F1-5樓':'3房','F1-9樓':'3房','F1-12樓':'3房','F1-20樓':'3房' },
+      rows: [
+        { floor:'20F', cells:{ 'F1-20樓':{price:40.1,total:1876,cat:'res',area:51.9,date:'2026-05-30',park:{price:200,count:1,type:'坡道平面(地下三樓)'},roomType:'3房'} } },
+        { floor:'18F', cells:{ 'A1-18樓':{price:40.3,total:2142,cat:'res',area:63.8,date:'2026-06-09',park:{price:390,count:2,type:'坡道平面(地下二樓)'},roomType:'3房'} } },
+        { floor:'16F', cells:{ 'A1-16樓':{price:39.9,total:2125,cat:'res',area:63.8,date:'2026-05-31',park:{price:390,count:2,type:'坡道平面(地下二樓)'},roomType:'3房'}, 'B1-16樓':{price:39.6,total:2447,cat:'res',area:71.7,date:'2026-05-30',park:{price:410,count:2,type:'坡道平面(地下一樓)'},roomType:'4房'} } },
+        { floor:'14F', cells:{ 'C1-14樓':{price:39.0,total:2319,cat:'res',area:71.0,date:'2026-06-08',park:{price:340,count:2,type:'坡道平面(地下四樓)'},roomType:'4房'}, 'A1-14樓':{price:39.1,total:2060,cat:'res',area:63.8,date:'2026-06-03',park:{price:360,count:2,type:'坡道平面(地下三樓)'},roomType:'3房'} } },
+        { floor:'12F', cells:{ 'F1-12樓':{price:38.8,total:1847,cat:'res',area:51.9,date:'2026-06-10',park:{price:225,count:1,type:'坡道平面(地下一樓)'},roomType:'3房'}, 'A1-12樓':{price:38.8,total:1887,cat:'res',area:53.6,date:'2026-06-05',park:{price:200,count:1,type:'坡道平面(地下三樓)'},roomType:'3房'}, 'D1-12樓':{price:39.0,total:1763,cat:'res',area:50.3,date:'2026-06-01',park:{price:200,count:1,type:'坡道平面(地下三樓)'},roomType:'3房'}, 'E1-12樓':{price:39.0,total:1763,cat:'res',area:50.3,date:'2026-06-01',park:{price:200,count:1,type:'坡道平面(地下三樓)'},roomType:'3房'} } },
+        { floor:'9F', cells:{ 'D1-9樓':{price:38.7,total:1767,cat:'res',area:50.3,date:'2026-05-31',park:{price:215,count:1,type:'坡道平面(地下二樓)'},roomType:'3房'}, 'F1-9樓':{price:38.3,total:1960,cat:'res',area:62.1,date:'2026-05-30',park:{price:360,count:2,type:'坡道平面(地下三樓)'},roomType:'3房'} } },
+        { floor:'8F', cells:{ 'A1-8樓':{price:38.2,total:1876,cat:'res',area:53.6,date:'2026-06-02',park:{price:215,count:1,type:'坡道平面(地下二樓)'},roomType:'3房'}, 'D1-8樓':{price:38.4,total:1730,cat:'res',area:50.3,date:'2026-05-31',park:{price:190,count:1,type:'坡道平面(地下四樓)'},roomType:'3房'}, 'E1-8樓':{price:38.4,total:1950,cat:'res',area:60.4,date:'2026-05-26',park:{price:410,count:2,type:'坡道平面(地下一樓)'},roomType:'3房'} } },
+        { floor:'5F', cells:{ 'A1-5樓':{price:32.8,total:1463,cat:'res',area:48.6,date:'2026-06-04',park:{price:200,count:1,type:'坡道平面(地下三樓)'},roomType:'3房'}, 'F1-5樓':{price:33.0,total:1580,cat:'res',area:51.9,date:'2026-05-31',park:{price:200,count:1,type:'坡道平面(地下三樓)'},roomType:'3房'}, 'C1-5樓':{price:32.7,total:2050,cat:'res',area:71.0,date:'2026-05-30',park:{price:390,count:2,type:'坡道平面(地下二樓)'},roomType:'4房'}, 'E1-5樓':{price:35.3,total:1600,cat:'res',area:49.9,date:'2026-05-30',park:{price:200,count:1,type:'坡道平面(地下三樓)'},roomType:'3房'} } },
+        { floor:'4F', cells:{ 'F1-4樓':{price:32.6,total:1553,cat:'res',area:51.9,date:'2026-06-09',park:{price:190,count:1,type:'坡道平面(地下四樓)'},roomType:'3房'} } },
+        { floor:'2F', cells:{ 'F1-2樓':{price:33.2,total:1582,cat:'res',area:52.3,date:'2026-06-08',park:{price:195,count:1,type:'坡道平面(地下四樓)'},roomType:'3房'}, 'D1-2樓':{price:33.5,total:1530,cat:'res',area:49.9,date:'2026-05-30',park:{price:200,count:1,type:'坡道平面(地下三樓)'},roomType:'3房'} } },
+      ],
+    },
+  },
+
 };
 
 const facLabels = { sport: '休閒運動', social: '社交聚會', service: '生活服務', green: '環境景觀' };
