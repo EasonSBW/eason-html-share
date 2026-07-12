@@ -20,8 +20,8 @@
     position:fixed; top:0; left:0; right:0; z-index:100; box-shadow:0 2px 8px rgba(0,0,0,.3);
   }
   #toolbar h1 { font-size:15px; font-weight:700; flex:1; }
-  .btn { padding:7px 16px; border:none; border-radius:5px; cursor:pointer; font-size:13px; font-weight:600; transition:opacity .2s; }
-  .btn:hover { opacity:.85; }
+  .btn { padding:7px 16px; border:none; border-radius:7px; cursor:pointer; font-size:13px; font-weight:700; transition:all .2s; box-shadow:0 2px 6px rgba(0,0,0,.18); }
+  .btn:hover { opacity:.92; transform:translateY(-1px); box-shadow:0 4px 10px rgba(0,0,0,.22); }
   .btn-pdf { background:#e74c3c; color:#fff; }
   .btn-control { background:#2d8b8b; color:#fff; }
 
@@ -99,47 +99,63 @@
     display:flex; flex-direction:column;
   }
 
-  .hd { display:flex; align-items:baseline; gap:14px; padding:14px 36px 6px; flex-shrink:0; }
-  .nm { font-size:31px; font-weight:800; color:#1a2332; }
-  .pr-pills { margin-left:auto; display:flex; gap:8px; flex-wrap:wrap; justify-content:flex-end; }
-  .pr-pill { background:#1a2332; color:#a8dadc; font-size:11px; font-weight:700;
-             padding:5px 11px; border-radius:16px; white-space:nowrap; }
-  .pr-pill b { color:#fff; font-size:12.5px; }
+  /* ── Hero band：深色封面式標題列，取代原本白底標題列 ── */
+  .hero-band { background:#1a2332; padding:20px 36px; display:flex; align-items:center; gap:24px; flex-shrink:0; }
+  .hero-left { display:flex; flex-direction:column; gap:5px; min-width:0; }
+  .eyebrow { font-size:10px; font-weight:800; color:#5fb8b3; letter-spacing:2.2px; text-transform:uppercase; }
+  .hero-name { font-size:32px; font-weight:800; color:#fff; letter-spacing:-.4px; line-height:1.15; white-space:nowrap; }
+  .hero-meta { font-size:11.5px; color:#a8dadc; font-weight:600; }
+  .hero-stats { margin-left:auto; display:flex; align-items:center; gap:22px; flex-shrink:0; }
+  .hero-stat { display:flex; flex-direction:column; align-items:flex-end; gap:3px; }
+  .hero-stat-label { font-size:10px; font-weight:800; color:#7d93a8; letter-spacing:.6px; text-transform:uppercase; white-space:nowrap; }
+  .hero-stat-value { font-size:17px; font-weight:800; color:#fff; white-space:nowrap; }
+  .hero-stat-value small { font-size:11px; font-weight:700; color:#a8dadc; }
+  .hero-stat-main .hero-stat-label { color:#5fd1c9; }
+  .hero-stat-main .hero-stat-value { color:#5fd1c9; font-size:19px; }
+  .hero-stat-divider { width:1px; height:30px; background:rgba(255,255,255,.15); flex-shrink:0; }
 
-  .bd { display:flex; gap:0; padding:0 36px 4px; flex-shrink:0; }
-  .data-col { flex:1.45; display:flex; gap:9px; min-width:0; }
-  .rail { width:4px; border-radius:2px; flex-shrink:0; background:#2d8b8b; }
-  .grp { flex:1; min-width:0; }
-  .grp-label { font-size:11.5px; font-weight:800; color:#2d8b8b; letter-spacing:1px; margin:4px 0 2px; text-transform:uppercase; }
-  .grp-label:first-child { margin-top:0; }
+  /* ── Visual row：大圖＋關鍵數字卡並排，取代原本的密集表格 ── */
+  /* 固定高度：避免 .visual-photo 的高度跟著 <img> 原始尺寸跑（會跟 fitSlideContent() 的量測時機打架） */
+  .visual-row { display:flex; gap:16px; padding:16px 36px 10px; flex-shrink:0; height:290px; }
+  /* object-fit:contain（不裁切，完整呈現外觀圖），留白處用漸層底色襯托，caption 改成獨立實色條，不疊在圖片上 */
+  /* 固定寬度（非 flex 比例）：外觀圖多半接近方形，寬扁的框會讓 contain 留下大片空白，改成接近方形的框 */
+  .visual-photo { flex:0 0 340px; display:flex; flex-direction:column; border-radius:14px; overflow:hidden; height:100%;
+                  background:linear-gradient(160deg,#e4ede9,#cfe1dc); box-shadow:0 10px 26px rgba(26,35,50,.18); }
+  .visual-photo .img-wrap { flex:1; min-height:0; display:flex; align-items:center; justify-content:center; }
+  .visual-photo img { max-width:100%; max-height:100%; object-fit:contain; display:block; }
+  .visual-photo .cap { flex-shrink:0; background:rgba(26,35,50,.92); color:#fff;
+                        font-size:9px; font-weight:600; letter-spacing:.2px; padding:6px 12px; }
 
-  .pair-row { display:grid; grid-template-columns: 84px 1fr 84px 1fr; gap:0 10px; padding:1.6px 0; border-bottom:1px solid #e9eeec; }
-  .pair-row b { font-size:11.5px; color:#7a8a87; font-weight:600; }
-  .pair-row span { font-size:12.5px; color:#1a2332; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .full-row { display:flex; gap:10px; padding:1.6px 0; border-bottom:1px solid #e9eeec; }
-  .full-row b { font-size:11.5px; color:#7a8a87; font-weight:600; flex-shrink:0; width:84px; }
-  .full-row span { font-size:11.5px; color:#1a2332; font-weight:600; }
+  .key-stats-grid { flex:1; height:100%; display:grid; grid-template-columns:1fr 1fr; grid-auto-rows:1fr; gap:10px; min-width:0; }
+  .key-stat { background:#fff; border:1px solid #eef1f0; border-radius:10px; padding:12px 16px;
+              box-shadow:0 2px 8px rgba(26,35,50,.05); min-width:0; min-height:0; overflow:hidden;
+              display:flex; flex-direction:column; justify-content:center; }
+  .key-stat-label { font-size:10.5px; font-weight:800; color:#2d8b8b; letter-spacing:.6px; text-transform:uppercase; margin-bottom:4px; }
+  .key-stat-value { font-size:19px; font-weight:800; color:#1a2332; line-height:1.25; }
+  .key-stat-sub { font-size:10px; color:#7a8a87; font-weight:600; margin-top:2px; }
 
-  .room-row { display:flex; align-items:baseline; gap:10px; padding:1.6px 0; border-bottom:1px solid #e9eeec; }
-  .room-row b { font-size:11.5px; color:#7a8a87; font-weight:600; flex-shrink:0; width:84px; }
-  .room-row span { font-size:14px; color:#1a2332; font-weight:800; }
+  /* ── Spec card：次要規格改回清楚對齊的 label:value 表格（3 欄），取代第一版的標籤雲 ── */
+  .spec-card { margin:4px 36px 0; background:#fbfcfc; border:1px solid #eef1f0; border-radius:10px; padding:8px 14px 5px; }
+  .spec-grid { display:grid; grid-template-columns: 66px 1fr 66px 1fr 66px 1fr; gap:1px 16px; }
+  .spec-grid .sp-k { font-size:11px; color:#7a8a87; font-weight:600; padding:2.5px 0; }
+  .spec-grid .sp-v { font-size:11.5px; color:#1a2332; font-weight:700; padding:2.5px 0;
+                     white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .spec-address { padding:7px 36px 0; font-size:11px; color:#5a6a68; }
+  .spec-address b { color:#2d8b8b; margin-right:6px; }
 
-  .ph-wrap { flex:0.62; padding-left:16px; }
-  .ph { height:100%; min-height:75px; background:#dde8e4; border-radius:12px; overflow:hidden; position:relative; }
-  .ph img { width:100%; height:100%; object-fit:cover; object-position:center 30%; display:block; }
-  .ph .cap { position:absolute; bottom:0; left:0; right:0; background:rgba(26,35,50,.7); color:#fff;
-             font-size:8px; text-align:center; padding:3px 6px; }
-
-  .mat-section { padding:5px 36px 4px; background:#fff; border-top:1px solid #e6ebe9;
+  .mat-section { padding:14px 36px 10px; background:#fafbfb; border-top:1px solid #eef1f0;
                  display:flex; gap:12px; flex-shrink:0; }
-  .mat-col { flex:1; min-width:0; display:flex; flex-direction:column; }
-  .mat-hd { background:#1a2332; color:#a8dadc; font-size:11px; font-weight:800; letter-spacing:.4px;
-            text-align:center; padding:3px 3px; border-radius:6px; margin-bottom:3.5px; }
-  .mat-item { font-size:11px; padding:2px 2px; border-bottom:1px solid #f0f3f2; line-height:1.15; }
-  .mat-item .lb { color:#2d8b8b; font-weight:700; display:block; }
-  .mat-item .vl { color:#1a2332; font-weight:500; }
+  .mat-col { flex:1; min-width:0; display:flex; flex-direction:column;
+             background:#fff; border:1px solid #eef1f0; border-radius:10px; padding:8px 10px 5px;
+             box-shadow:0 2px 8px rgba(26,35,50,.04); }
+  .mat-hd { color:#1a2332; font-size:11px; font-weight:800; letter-spacing:.4px;
+            text-align:left; padding:0 0 5px; margin-bottom:5px; border-bottom:2px solid #2d8b8b; }
+  .mat-item { font-size:11px; padding:2.5px 0; border-bottom:1px solid #f4f6f5; line-height:1.2; }
+  .mat-item:last-child { border-bottom:none; }
+  .mat-item .lb { color:#2d8b8b; font-weight:700; display:block; font-size:9.5px; letter-spacing:.2px; }
+  .mat-item .vl { color:#1a2332; font-weight:600; }
 
-  .fac-section { flex:1; padding:5px 36px 9px; background:#f4f9f7; border-top:1px solid #e6ebe9;
+  .fac-section { flex:1; padding:12px 36px 9px; background:#f4f9f7; border-top:1px solid #e6ebe9;
                  display:flex; flex-direction:column; min-height:0; }
   .fac-top { display:flex; align-items:baseline; justify-content:space-between; margin-bottom:5px; }
   .fac-label { font-size:11px; font-weight:800; color:#2d8b8b; letter-spacing:1px; text-transform:uppercase; }
@@ -152,7 +168,7 @@
   .dot.green { background:#4f9d4f; }
 
   .fac-chips { display:flex; flex-wrap:wrap; gap:7px; align-content:flex-start; }
-  .fac-chip { border-radius:16px; padding:5px 13px; font-size:12.5px; font-weight:700; line-height:1; }
+  .fac-chip { border-radius:16px; padding:5px 13px; font-size:12.5px; font-weight:700; line-height:1; box-shadow:0 1px 3px rgba(26,35,50,.07); }
   .fac-chip.sport   { background:#dcefed; color:#1c6b69; }
   .fac-chip.social  { background:#e1e4f2; color:#2e3a6b; }
   .fac-chip.service { background:#f5e9d3; color:#8a5f1f; }
@@ -1747,10 +1763,19 @@ function render() {
   if (activePageIdx > 0) { renderImagePageSlide(); return; }
   const formData = getCurrentFormData();
 
-  // 房型坪數（動態列數）
-  const roomRows = formData.rooms.map(([label, value]) =>
-    `<div class="room-row"><b>${label}</b><span>${value}</span></div>`
-  ).join('');
+  // 房型坪數（動態列數）→ 關鍵數字卡
+  const roomKeyStats = formData.rooms.map(([label, value]) => `
+    <div class="key-stat"><div class="key-stat-label">${label}</div><div class="key-stat-value">${value}</div></div>
+  `).join('');
+
+  // 次要規格：清楚對齊的 label:value 表格（3 欄），取代第一版容易看不清楚的標籤雲
+  const specGridCells = [
+    ['樓層規劃', v('f-floors')], ['公設比', v('f-public')], ['建蔽率', v('f-coverage')],
+    ['推案時間', v('f-launchtime')], ['土地分區', v('f-zone')], ['建築結構', v('f-structure')],
+    ['管理費用', v('f-mgmtfee')], ['投資興建', v('f-developer')], ['銷售團隊', v('f-salesteam')],
+    ['建築設計', v('f-architect')], ['營造工程', v('f-contractor')], ['完工時間', v('f-completion')],
+    ['交通特色', v('f-traffic')], ['樓層高度', v('f-height')], ['付款方式', v('f-payment')],
+  ].map(([label, value]) => `<span class="sp-k">${label}</span><span class="sp-v">${value}</span>`).join('');
 
   // 建材（依分類動態列數）
   const matSection = formData.materials.map(cat => `
@@ -1772,44 +1797,36 @@ function render() {
 
   document.getElementById('slide').innerHTML = `
     <div id="slide-inner">
-    <div class="hd">
-      <span class="nm">${v('f-name')}</span>
-      <div class="pr-pills">
-        <span class="pr-pill">開價 <b>${v('f-askprice')}</b></span>
-        <span class="pr-pill">成交均價 <b>${v('f-dealrange')} (${v('f-dealavg')})</b></span>
-        <span class="pr-pill">價差 <b>${v('f-pricegap')}</b></span>
+    <div class="hero-band">
+      <div class="hero-left">
+        <div class="eyebrow">市場調查報告 · MARKET SURVEY</div>
+        <div class="hero-name">${v('f-name')}</div>
+        <div class="hero-meta">${v('f-zone')} · ${v('f-structure')} · ${v('f-floors')}</div>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat"><span class="hero-stat-label">開價</span><span class="hero-stat-value">${v('f-askprice')}</span></div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat hero-stat-main"><span class="hero-stat-label">成交均價</span><span class="hero-stat-value">${v('f-dealrange')} <small>(${v('f-dealavg')})</small></span></div>
+        <div class="hero-stat-divider"></div>
+        <div class="hero-stat"><span class="hero-stat-label">價差</span><span class="hero-stat-value">${v('f-pricegap')}</span></div>
       </div>
     </div>
 
-    <div class="bd">
-      <div class="data-col">
-        <div class="rail"></div>
-        <div class="grp">
-          <div class="grp-label">基本資料</div>
-          <div class="pair-row"><b>總銷金額</b><span>${v('f-totalsales')}</span><b>基地面積</b><span>${v('f-landarea')}</span></div>
-          <div class="pair-row"><b>樓層規劃</b><span>${v('f-floors')}</span><b>公設比</b><span>${v('f-public')}</span></div>
-          <div class="pair-row"><b>規劃戶數</b><span>${v('f-units')}</span><b>建蔽率</b><span>${v('f-coverage')}</span></div>
-          <div class="pair-row"><b>推案時間</b><span>${v('f-launchtime')}</span><b>土地分區</b><span>${v('f-zone')}</span></div>
-          <div class="pair-row"><b>建築結構</b><span>${v('f-structure')}</span><b>管理費用</b><span>${v('f-mgmtfee')}</span></div>
-          <div class="pair-row"><b>投資興建</b><span>${v('f-developer')}</span><b>銷售團隊</b><span>${v('f-salesteam')}</span></div>
-          <div class="pair-row"><b>建築設計</b><span>${v('f-architect')}</span><b>營造工程</b><span>${v('f-contractor')}</span></div>
-          <div class="pair-row"><b>完工時間</b><span>${v('f-completion')}</span><b>交通特色</b><span>${v('f-traffic')}</span></div>
-          <div class="full-row"><b>基地位置</b><span>${v('f-address')}</span></div>
-
-          <div class="grp-label">產品定位</div>
-          ${roomRows}
-          <div class="pair-row"><b>車位規劃</b><span>${v('f-parking')}</span><b>車位價格</b><span>${v('f-parkprice')}</span></div>
-          <div class="full-row"><b>樓層高度</b><span>${v('f-height')}</span></div>
-          <div class="full-row"><b>付款方式</b><span>${v('f-payment')}</span></div>
-        </div>
+    <div class="visual-row">
+      <div class="visual-photo">
+        <div class="img-wrap"><img src="${uploadedPhotoDataURL || v('f-photo')}" alt="${v('f-name')}外觀效果圖"></div>
+        <div class="cap">${v('f-photocap')}</div>
       </div>
-      <div class="ph-wrap">
-        <div class="ph">
-          <img src="${uploadedPhotoDataURL || v('f-photo')}" alt="${v('f-name')}外觀效果圖">
-          <div class="cap">${v('f-photocap')}</div>
-        </div>
+      <div class="key-stats-grid">
+        <div class="key-stat"><div class="key-stat-label">總銷金額</div><div class="key-stat-value">${v('f-totalsales')}</div></div>
+        <div class="key-stat"><div class="key-stat-label">規劃戶數</div><div class="key-stat-value">${v('f-units')}</div></div>
+        ${roomKeyStats}
+        <div class="key-stat"><div class="key-stat-label">車位規劃</div><div class="key-stat-value">${v('f-parking')}</div><div class="key-stat-sub">${v('f-parkprice')}</div></div>
       </div>
     </div>
+
+    <div class="spec-card"><div class="spec-grid">${specGridCells}</div></div>
+    <div class="spec-address"><b>📍 基地位置</b>${v('f-address')}</div>
 
     <div class="mat-section">${matSection}</div>
 
