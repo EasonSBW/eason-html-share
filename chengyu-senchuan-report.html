@@ -1151,7 +1151,8 @@ const CASES = {
     district: '北屯區',
     // 開價：591官方建案頁單價欄位標「價格待定」，住展/知虹厝/房地王等來源亦均無單坪開價可查，故askPrice/priceGap填待確認；
     // 成交均價/區間為591實價登錄＋5168實價登錄比價王＋樂居三方交叉比對之10筆成交單價（42.2-48.7萬/坪，平均45.1萬，與5168站方自算之45.2萬/坪一致）；
-    // 本案規模小(僅26戶)、自售、無代銷，TRUEWAY主委說查無此案資料（案名/建商峰品宸/地址軍福九路皆查無），故無salesGrid可比對；
+    // 本案規模小(僅26戶)、自售、無代銷，TRUEWAY主委說查無此案資料（案名/建商峰品宸/地址軍福九路皆查無）；
+    // salesGrid改用5168實價登錄比價王(houseprice.tw)之10筆逐筆成交資料建表，非主委說來源，細節見salesGrid.source註記；
     // 車位價格因部分成交紀錄為「房屋+車位」合併總價、無法拆分出獨立車位單價，加上內政部實價登錄官網(lvr.land.moi.gov.tw)本次因Playwright瀏覽器工具技術問題（多次navigate/tabs操作逾時卡死）未能連線查證，parkprice暫填待確認
     askPrice: '待確認', dealRange: '42.2-48.7萬/坪', dealAvg: '45.1萬', priceGap: '待確認',
     basic: {
@@ -1184,6 +1185,20 @@ const CASES = {
       { id:'jfh3', title:'實品屋－玄關／落地窗', subtitle:'2樓好宅實景', imageURL:'https://img.ltn.com.tw/Upload/news/600/2025/12/03/5267002_2_1.jpg', imageDataURL:null },
       { id:'jfh4', title:'實品屋－廚房', subtitle:'2樓好宅實景', imageURL:'https://img.ltn.com.tw/Upload/news/600/2025/12/03/5267002_4_1.jpg', imageDataURL:null },
     ],
+    salesGrid: {
+      source: '5168實價登錄比價王(houseprice.tw)逐筆成交明細，非主委說(TRUEWAY)來源(該平台查無此案)；共10筆，佔25戶住家中10戶(約4成)；戶號採來源原始「之X」編號(單棟建物，非TRUEWAY慣用A/B字母棟別)；日期僅精確到「YYYY年MM月」(來源未提供確切日) ，故以YYYY-MM表示；部分交易坪數含車位、部分另計車位坪數但無獨立車位單價，故cells未附加park欄位，以免呈現不存在的精確度；查詢日期2026-07-12',
+      categories: {
+        res: { label:'住宅', bg:'#dcefed', fg:'#1c6b69' },
+      },
+      columns: ['1','2','3','6'],
+      rows: [
+        { floor:'6F', cells:{ '6':{price:48.7,total:880,cat:'res',area:18.08,date:'2025-10',roomType:'1房'} } },
+        { floor:'5F', cells:{ '1':{price:46.6,total:850,cat:'res',area:18.23,date:'2026-03',roomType:'1房'}, '2':{price:42.2,total:965,cat:'res',area:22.86,date:'2026-03',roomType:'2房'}, '6':{price:44.8,total:810,cat:'res',area:18.08,date:'2026-04',roomType:'1房'} } },
+        { floor:'4F', cells:{ '3':{price:46.5,total:744,cat:'res',area:16.01,date:'2025-10',roomType:'1房'} } },
+        { floor:'3F', cells:{ '1':{price:43.9,total:931,cat:'res',area:21.23,date:'2025-10',roomType:'1房'}, '3':{price:47.2,total:756,cat:'res',area:16.01,date:'2025-09',roomType:'1房'}, '6':{price:42.6,total:899,cat:'res',area:21.08,date:'2025-09',roomType:'1房'} } },
+        { floor:'2F', cells:{ '1':{price:44.7,total:948,cat:'res',area:21.22,date:'2026-03',roomType:'2房'}, '3':{price:44.1,total:838,cat:'res',area:19.02,date:'2025-08',roomType:'1房'} } },
+      ],
+    },
   },
 
 };
