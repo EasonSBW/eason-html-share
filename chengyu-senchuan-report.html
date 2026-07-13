@@ -1870,6 +1870,7 @@ function showCellTooltip(evt, floor, col) {
     <div><b>樓層</b>${esc(floor)}　${esc(col)}戶</div>
     <div><b>總價</b>${cell.total}萬</div>
     <div><b>單價</b>${cell.price}萬/坪</div>
+    <div><b>坪數</b>${cell.area != null ? cell.area + '坪' : '—'}</div>
     <div>${parkLine}</div>`;
   tip.style.display = 'block';
   positionTooltip(evt);
