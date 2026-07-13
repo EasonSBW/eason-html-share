@@ -1255,6 +1255,64 @@ const CASES = {
     },
   },
 
+  fuyufengyun: {
+    name: '富宇豐云',
+    district: '豐原區',
+    // 591官方頁面仍以代稱「富宇建設水源路案」(H140983)刊登，標示「預推案／尚未開賣」；
+    // 但TRUEWAY主委說已收錄正式案名「富宇豐云」及26筆實登交易(2026-05-09~06-08)，基地地址與591水源路案一致，
+    // Eason於2026-07-13確認案名對應「水源路案」無誤，故採用主委說之正式案名與實登資料。
+    // 開價：591「價格待定」，Mobile01/Threads等論壇亦查無單坪開價，故askPrice/priceGap填待確認；
+    // 成交均價/區間直接取自主委說26筆住宅類實登單價(38.0-46.5萬/坪，平均42.6萬，與主委說站方自算一致)
+    askPrice: '待確認', dealRange: '38.0-46.5萬/坪', dealAvg: '42.6萬', priceGap: '待確認',
+    basic: {
+      totalsales:'—', landarea:'1866.1坪', floors:'19F／B3', public:'住宅34.8%',
+      units:'383戶(住宅)', coverage:'38.2%', launchtime:'115年5月(2026年Q2)', zone:'第三種住宅區、第二種商業區',
+      structure:'RC鋼筋混凝土造', mgmtfee:'待確認', developer:'富宇建設股份有限公司', salesteam:'萬群廣告企劃事業有限公司',
+      architect:'待確認', contractor:'盛傑營造', completion:'待確認',
+      traffic:'近豐原火車站(三陽生活圈)', address:'豐原區水源路669號(水源路、直興街、愛國街口)',
+    },
+    // 建築設計「吳六合建築師事務所」僅見於Threads帳號@allen_newhouse賞屋筆記(非官方單一來源)，故不列入architect正式欄位，待官方公開資料補查後修正
+    rooms: [ ['2房坪數','32.3–46.5 坪(多數32.3–37.6坪)'], ['3房坪數','40.9–49.8 坪'] ],
+    parking:'地下1-3樓，坡道平面式，403個', parkprice:'160–240萬(均205萬)',
+    height:'待確認', payment:'待確認',
+    materials: [
+      { title:'客廳建材', items:[['門鎖品牌','-'],['客廳地坪','-'],['空調系統','-'],['全屋收納','-'],['新風機','-'],['智能系統','-']] },
+      { title:'鋁窗建材', items:[['鋁窗品牌','-'],['玻璃厚度','-']] },
+      { title:'廚房建材', items:[['抽油煙機','-'],['瓦斯爐','-'],['系統廚具','-'],['洗碗機','-'],['背板','-'],['收納櫃','-']] },
+      { title:'衛浴建材', items:[['衛浴系統','-'],['收納','-'],['暖風機','-']] },
+      { title:'其他建材', items:[['電梯','-'],['對講機','-'],['消防系統','-'],['社區智能化APP','-']] },
+    ],
+    facilities: [],
+    photo:'https://img1.591.com.tw/house/2026/01/23/176914249433888108.jpg!fit.1200x800.jpg',
+    photocap:'來源：591新建案「富宇建設水源路案」封面圖，預售階段，實際完工外觀以建商公告為準',
+    salesGrid: {
+      source: '主委說 trueway.adholic.com.tw（富宇豐云頁面，交易紀錄分頁，26筆全數轉錄），查詢日期 2026-07-13',
+      categories: {
+        res:   { label:'住宅', bg:'#dcefed', fg:'#1c6b69' },
+      },
+      columns: ['A1','A2','A3','A5','A6','A7','A8','C7'],
+      columnArea: { A1:40.9, A2:34.3, A3:37.6, A5:34.1, A6:32.3, A7:37.6, A8:32.4, C7:40.9 },
+      columnRoomType: { A1:'3房', A2:'2房', A3:'2房', A5:'2房', A6:'2房', A7:'2房', A8:'2房', C7:'3房' },
+      rows: [
+        { floor:'18F', cells:{ A7:{price:44.6,total:1467,cat:'res',area:37.6,date:'2026-05-17',park:{price:190,count:1,type:'坡道平面(地下三樓)'},roomType:'2房'} } },
+        { floor:'17F', cells:{ A3:{price:43.8,total:1645,cat:'res',area:46.5,date:'2026-05-18',park:{price:390,count:2,type:'坡道平面(地下二樓)'},roomType:'2房'} } },
+        { floor:'15F', cells:{ A3:{price:43.4,total:1458,cat:'res',area:37.6,date:'2026-05-16',park:{price:215,count:1,type:'坡道平面(地下三樓)'},roomType:'2房'}, A6:{price:45.4,total:1275,cat:'res',area:32.3,date:'2026-05-09',park:{price:215,count:1,type:'坡道平面(地下二樓)'},roomType:'2房'} } },
+        { floor:'14F', cells:{ A8:{price:42.0,total:1174,cat:'res',area:32.4,date:'2026-05-10',park:{price:190,count:1,type:'坡道平面(地下三樓)'},roomType:'2房'} } },
+        { floor:'13F', cells:{ A6:{price:45.2,total:1296,cat:'res',area:32.3,date:'2026-05-31',park:{price:240,count:1,type:'坡道平面(地下二樓)'},roomType:'2房'} } },
+        { floor:'12F', cells:{ A3:{price:43.0,total:1446,cat:'res',area:37.6,date:'2026-05-29',park:{price:215,count:1,type:'坡道平面(地下三樓)'},roomType:'2房'}, A7:{price:42.9,total:1443,cat:'res',area:37.6,date:'2026-05-23',park:{price:215,count:1,type:'坡道平面(地下三樓)'},roomType:'2房'} } },
+        { floor:'11F', cells:{ A1:{price:46.5,total:1726,cat:'res',area:40.9,date:'2026-05-22',park:{price:240,count:1,type:'坡道平面(地下二樓)'},roomType:'3房'}, A2:{price:42.1,total:1250,cat:'res',area:34.3,date:'2026-05-13',park:{price:180,count:1,type:'坡道平面(地下二樓)'},roomType:'2房'}, A3:{price:42.9,total:1468,cat:'res',area:37.6,date:'2026-05-20',park:{price:240,count:1,type:'坡道平面(地下二樓)'},roomType:'2房'} } },
+        { floor:'9F', cells:{ A5:{price:44.3,total:1330,cat:'res',area:34.1,date:'2026-06-08',park:{price:215,count:1,type:'坡道平面(地下二樓)'},roomType:'2房'}, A7:{price:42.6,total:1435,cat:'res',area:37.6,date:'2026-05-17',park:{price:215,count:1,type:'坡道平面(地下三樓)'},roomType:'2房'} } },
+        { floor:'8F', cells:{ A5:{price:44.2,total:1301,cat:'res',area:34.1,date:'2026-06-07',park:{price:190,count:1,type:'坡道平面(地下三樓)'},roomType:'2房'}, A7:{price:42.2,total:1398,cat:'res',area:37.6,date:'2026-05-19',park:{price:190,count:1,type:'坡道平面(地下三樓)'},roomType:'2房'} } },
+        { floor:'7F', cells:{ A2:{price:41.0,total:1256,cat:'res',area:34.3,date:'2026-05-30',park:{price:215,count:1,type:'坡道平面(地下三樓)'},roomType:'2房'}, A6:{price:44.4,total:1248,cat:'res',area:32.3,date:'2026-05-19',park:{price:210,count:1,type:'坡道平面(地下一樓)'},roomType:'2房'}, A7:{price:41.8,total:1387,cat:'res',area:37.6,date:'2026-05-23',park:{price:190,count:1,type:'坡道平面(地下三樓)'},roomType:'2房'} } },
+        { floor:'6F', cells:{ A7:{price:41.6,total:1381,cat:'res',area:37.6,date:'2026-05-28',park:{price:190,count:1,type:'坡道平面(地下三樓)'},roomType:'2房'} } },
+        { floor:'5F', cells:{ A2:{price:40.4,total:1216,cat:'res',area:34.3,date:'2026-05-10',park:{price:190,count:1,type:'坡道平面(地下三樓)'},roomType:'2房'} } },
+        { floor:'4F', cells:{ A1:{price:40.0,total:1491,cat:'res',area:40.9,date:'2026-05-24',park:{price:215,count:1,type:'坡道平面(地下三樓)'},roomType:'3房'}, A8:{price:39.3,total:1110,cat:'res',area:32.4,date:'2026-05-16',park:{price:190,count:1,type:'坡道平面(地下三樓)'},roomType:'2房'} } },
+        { floor:'3F', cells:{ A1:{price:40.4,total:1449,cat:'res',area:40.9,date:'2026-06-02',park:{price:160,count:1,type:'坡道平面(地下三樓)'},roomType:'3房'}, C7:{price:38.0,total:1388,cat:'res',area:40.9,date:'2026-05-17',park:{price:175,count:1,type:'坡道平面(地下三樓)'},roomType:'3房'} } },
+        { floor:'2F', cells:{ A1:{price:42.5,total:1781,cat:'res',area:49.8,date:'2026-05-09',park:{price:425,count:2,type:'坡道平面(地下三樓)'},roomType:'3房'}, A7:{price:42.5,total:1686,cat:'res',area:46.5,date:'2026-05-17',park:{price:470,count:2,type:'坡道平面(地下一樓)'},roomType:'2房'} } },
+      ],
+    },
+  },
+
 };
 
 const facLabels = { sport: '休閒運動', social: '社交聚會', service: '生活服務', green: '環境景觀' };
