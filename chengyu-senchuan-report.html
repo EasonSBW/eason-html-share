@@ -60,6 +60,26 @@
   }
   .field-row input:focus, .field-row select:focus { outline:none; border-color:#2d8b8b; }
   .field-row select.fac-input-cat { flex:0 0 92px; }
+  .mat-cat-header { display:flex; align-items:center; gap:6px; }
+  .mat-cat-header input.mat-cat-title {
+    flex:1; font-size:13px; font-weight:700; color:#1a2332; background:transparent;
+    border:1px solid transparent; border-radius:4px; padding:2px 4px; font-family:inherit;
+  }
+  .mat-cat-header input.mat-cat-title:hover, .mat-cat-header input.mat-cat-title:focus {
+    border-color:#2d8b8b; background:#fff; outline:none;
+  }
+  .field-row input.mat-label-input { flex:0 0 78px; font-size:11px; color:#555; }
+  .mini-btn {
+    border:none; border-radius:4px; cursor:pointer; font-size:11px; font-weight:700;
+    padding:4px 7px; flex-shrink:0; transition:opacity .15s;
+  }
+  .mini-btn:hover { opacity:.8; }
+  .mini-btn-del { background:#fbe7e4; color:#b8543f; }
+  .mini-btn-add {
+    display:block; width:100%; margin:2px 0 10px; background:#eef1f8; color:#2d8b8b;
+    border:1px dashed #2d8b8b; padding:6px; font-size:11.5px;
+  }
+  .mini-btn-add-cat { background:#e8f4f4; margin-top:0; }
 
   #preview-panel {
     flex:1; overflow:auto; background:#888;
@@ -1766,11 +1786,16 @@ function getCurrentFormData() {
   const rooms = Array.from(document.querySelectorAll('.room-input')).map(el => [el.dataset.label, el.value]);
 
   const matTitleEls = Array.from(document.querySelectorAll('.mat-cat-title'));
-  const matInputs = Array.from(document.querySelectorAll('.mat-input'));
-  const materials = matTitleEls.map((titleEl, ci) => ({
-    title: titleEl.value,
-    items: matInputs.filter(el => Number(el.dataset.cat) === ci).map(el => [el.dataset.label, el.value]),
-  }));
+  const matLabelInputs = Array.from(document.querySelectorAll('.mat-label-input'));
+  const matValueInputs = Array.from(document.querySelectorAll('.mat-input'));
+  const materials = matTitleEls.map((titleEl, ci) => {
+    const labels = matLabelInputs.filter(el => Number(el.dataset.cat) === ci);
+    const values = matValueInputs.filter(el => Number(el.dataset.cat) === ci);
+    return {
+      title: titleEl.value,
+      items: labels.map((el, ii) => [el.value, values[ii] ? values[ii].value : '']),
+    };
+  });
 
   const facNames = Array.from(document.querySelectorAll('.fac-input-name'));
   const facCats = Array.from(document.querySelectorAll('.fac-input-cat'));
@@ -1874,14 +1899,49 @@ const matIcons = ['🛋️','🪟','🍳','🚿','📦'];
 function buildMaterialsForm(materials) {
   const container = document.getElementById('materials-form-container');
   container.innerHTML = materials.map((cat, ci) => `
-    <div class="section-title" data-mat-title="${ci}">${matIcons[ci] || '🔧'} ${esc(cat.title)}<input type="hidden" class="mat-cat-title" value="${esc(cat.title)}"></div>
+    <div class="section-title mat-cat-header">
+      ${matIcons[ci] || '🔧'}
+      <input type="text" class="mat-cat-title" data-cat="${ci}" value="${esc(cat.title)}" oninput="render()">
+      <button type="button" class="mini-btn mini-btn-del" title="刪除整個分類" onclick="removeMaterialCategory(${ci})">✕</button>
+    </div>
     ${cat.items.map((item, ii) => `
       <div class="field-row">
-        <label>${esc(item[0] || ('項目' + (ii+1)))}</label>
-        <input class="mat-input" data-cat="${ci}" data-label="${esc(item[0]||'')}" value="${esc(item[1])}" oninput="render()">
+        <input class="mat-label-input" data-cat="${ci}" value="${esc(item[0]||'')}" placeholder="項目名稱" oninput="render()">
+        <input class="mat-input" data-cat="${ci}" value="${esc(item[1])}" oninput="render()">
+        <button type="button" class="mini-btn mini-btn-del" title="刪除項目" onclick="removeMaterialItem(${ci},${ii})">✕</button>
       </div>
     `).join('')}
-  `).join('');
+    <button type="button" class="mini-btn mini-btn-add" onclick="addMaterialItem(${ci})">＋ 新增項目</button>
+  `).join('') + `<button type="button" class="mini-btn mini-btn-add mini-btn-add-cat" onclick="addMaterialCategory()">＋ 新增建材分類</button>`;
+}
+
+function addMaterialItem(ci) {
+  const formData = getCurrentFormData();
+  formData.materials[ci].items.push(['', '']);
+  buildMaterialsForm(formData.materials);
+  render();
+}
+
+function removeMaterialItem(ci, ii) {
+  const formData = getCurrentFormData();
+  formData.materials[ci].items.splice(ii, 1);
+  buildMaterialsForm(formData.materials);
+  render();
+}
+
+function addMaterialCategory() {
+  const formData = getCurrentFormData();
+  formData.materials.push({ title:'新建材分類', items:[['', '']] });
+  buildMaterialsForm(formData.materials);
+  render();
+}
+
+function removeMaterialCategory(ci) {
+  const formData = getCurrentFormData();
+  if (!confirm(`確定要刪除整個「${formData.materials[ci].title}」分類嗎？`)) return;
+  formData.materials.splice(ci, 1);
+  buildMaterialsForm(formData.materials);
+  render();
 }
 
 function buildFacilitiesForm(facilities) {
