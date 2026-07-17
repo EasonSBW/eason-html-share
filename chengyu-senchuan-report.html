@@ -1509,18 +1509,19 @@ const CASES = {
     district: '北屯區',
     // 使用者原提供案名為「永豐盛 一品苑」，查證後確認台中北屯區僅有永豐盛建設「一品院」此案（591、housetube、leeho三方來源一致），
     // 苑/院同音(yuàn)，判斷為使用者筆誤，已依實際建案名稱「一品院」收錄，如有誤請告知修正
-    // 591新建案頁面標註「預推案：尚未取得建照或未完成建案銷售備查，依政府法令不得從事銷售行為」，故尚無官方開價、坪數、建材、完工日資訊；
-    // TRUEWAY主委說查無此案交易紀錄(北屯區列表無「一品院」)，屬預期狀態(尚未銷售自然無實登)，故不加salesGrid欄位
-    askPrice: '待確認', dealRange: '待確認', dealAvg: '待確認', priceGap: '待確認',
+    // 591新建案頁面標註「預推案：尚未取得建照或未完成建案銷售備查，依政府法令不得從事銷售行為」，但內政部實價登錄已查到8筆潛銷階段成交(2024/08-2024/12)，
+    // 591頁面「近期成交」預覽僅顯示其中4筆非完整清單；成交均價/區間改為直接依實登資料計算，開價因官方從未公告故仍填「待確認」
+    // TRUEWAY主委說查無此案(北屯區列表無「一品院」)，研判是因案子尚未正式公開銷售備查、非查證疏漏
+    askPrice: '待確認', dealRange: '64.9-71.0萬/坪', dealAvg: '67.5萬', priceGap: '待確認',
     basic: {
       totalsales:'待確認', landarea:'411.5坪', floors:'13F／B2', public:'34.5%',
-      units:'36戶住家', coverage:'23.66%', launchtime:'待確認', zone:'住1-1',
+      units:'36戶住家', coverage:'23.66%', launchtime:'待確認（內政部實登最早一筆成交為2024年8月，研判潛銷不早於此，官方正式開案日仍未公告）', zone:'住1-1',
       structure:'RC鋼筋混凝土', mgmtfee:'待確認', developer:'永豐盛建設', salesteam:'建商自售',
       architect:'黃郁文建築師事務所', contractor:'旺詮營造', completion:'待確認',
       traffic:'鄰74號快速道路，可接國道1號、國道4號', address:'台中市北屯區崇德九路與松觀街口（美和段239地號）',
     },
-    rooms: [ ['3房坪數', '待確認（官方稱純3房規劃，坪數未公告）'] ],
-    parking:'地下平面式43個', parkprice:'待確認',
+    rooms: [ ['3房坪數', '約39-41坪（依內政部實價登錄成交總面積扣除車位反推，不含車位；官方售價尚未公告）'] ],
+    parking:'地下平面式43個', parkprice:'230-240萬(均233萬)',
     height:'待確認', payment:'待確認',
     materials: [
       { title:'客廳建材', items:[['門鎖品牌','待確認'],['客廳地坪','待確認'],['空調系統','待確認'],['全屋收納','待確認'],['新風機','待確認'],['智能系統','待確認']] },
@@ -1535,6 +1536,27 @@ const CASES = {
     ],
     photo:'https://tpl.housetube.tw/img/products/popup/4/9/0/8/7/49087_1130919_3.jpg',
     photocap:'官方效果圖（來源：台中房地王，預推案階段，實際完工外觀以建商公告為準）',
+    salesGrid: {
+      source: '內政部不動產交易實價查詢服務網 lvr.land.moi.gov.tw（預售屋查詢，北屯區＋建案名稱「一品院」，交易期間113年起），查詢日期 2026-07-17；591新建案頁面「近期成交」預覽僅收錄其中4筆，非完整清單，故以內政部逐筆資料為準',
+      categories: {
+        res: { label:'住宅', bg:'#dcefed', fg:'#1c6b69' },
+      },
+      columns: ['A1','A2','A3'],
+      // 各戶坪數（不含車位）：LVR「總面積」欄位為房地+車位合計，同戶號比對1車/2車總面積差額約9.9-10.2坪/車位，扣除後A1≈39.2坪、A3≈41.0坪；
+      // A2僅查到1筆且已解約(無同戶號其他交易可比對車位差額)，暫不列坪數
+      columnArea: { A1:39.2, A3:41.0 },
+      columnRoomType: { A1:'3房', A2:'3房', A3:'3房' },
+      // A2棟0號 113/09/10 成交(2,900萬，66.15萬/坪)於原始交易明細標註「解約」，依慣例排除於銷控表與均價計算之外
+      rows: [
+        { floor:'10F', cells:{ A1:{price:70.97,total:3020,cat:'res',area:49.41,date:'2024-12-31',park:{price:240,count:1,type:'車位'},roomType:'3房'} } },
+        { floor:'9F', cells:{ A1:{price:69.85,total:2976,cat:'res',area:49.41,date:'2024-09-10',park:{price:240,count:1,type:'車位'},roomType:'3房'} } },
+        { floor:'8F', cells:{ A1:{price:68.62,total:2918,cat:'res',area:49.41,date:'2024-12-24',park:{price:230,count:1,type:'車位'},roomType:'3房'} } },
+        { floor:'7F', cells:{ A3:{price:67.61,total:3280,cat:'res',area:61.36,date:'2024-10-14',park:{price:460,count:2,type:'車位'},roomType:'3房'} } },
+        { floor:'6F', cells:{ A3:{price:65.67,total:2969,cat:'res',area:51.13,date:'2024-09-10',park:{price:230,count:1,type:'車位'},roomType:'3房'} } },
+        { floor:'4F', cells:{ A3:{price:64.90,total:2937,cat:'res',area:51.95,date:'2024-08-08',park:{price:230,count:1,type:'車位'},roomType:'3房'} } },
+        { floor:'3F', cells:{ A1:{price:64.95,total:2774,cat:'res',area:48.59,date:'2024-09-23',park:{price:230,count:1,type:'車位'},roomType:'3房'} } },
+      ],
+    },
   },
 
 };
