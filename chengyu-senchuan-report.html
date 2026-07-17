@@ -45,6 +45,11 @@
     background:#fff; color:#b8543f; border:1px solid #d99; border-radius:5px; cursor:pointer;
   }
   #reset-btn:hover { background:#fdf3f1; }
+  #undo-reset-btn {
+    width:100%; margin-top:6px; padding:6px 8px; font-size:11px; font-weight:600;
+    background:#fff; color:#2d8b8b; border:1px solid #2d8b8b; border-radius:5px; cursor:pointer;
+  }
+  #undo-reset-btn:hover { background:#eef8f8; }
   .section-title {
     font-size:13px; font-weight:700; color:#1a2332;
     background:#eef1f8; border-left:4px solid #2d8b8b;
@@ -392,7 +397,8 @@
     }
     #form-panel > *:not(.case-picker) { display: none; }
     #form-panel #save-status,
-    #form-panel #reset-btn { display: none; }
+    #form-panel #reset-btn,
+    #form-panel #undo-reset-btn { display: none; }
 
     #preview-panel { padding:0; display:block; background:#eef0ef; align-items:stretch; }
     #slide-wrapper { display:none; }
@@ -452,6 +458,7 @@
       <select id="case-select" onchange="loadCase(this.value)"></select>
       <div id="save-status">已自動儲存於本機瀏覽器</div>
       <button type="button" id="reset-btn" onclick="resetCurrentCase()">↺ 重設為原始查證資料</button>
+      <button type="button" id="undo-reset-btn" onclick="undoLastReset()" style="display:none;">↩ 復原上次重設</button>
     </div>
 
     <div id="form-market-fields">
@@ -1590,6 +1597,7 @@ let imagePages = [];   // 目前案子的圖片頁，不含市調總覽頁
 let activePageIdx = 0; // 0 = 市調總覽，1..N 對應 imagePages[idx-1]
 
 function pagesKey(key) { return key + ':pages'; }
+function resetBackupKey(key) { return key + ':lastReset'; }
 async function idbGetPages(key) {
   const saved = await idbGet(pagesKey(key));
   if (saved) return saved;
@@ -1844,9 +1852,28 @@ async function saveCurrentCase(formData) {
 
 async function resetCurrentCase() {
   if (!currentCaseKey) return;
-  if (!confirm('確定要捨棄目前在這個個案上的修改，回復成原始查證資料嗎？')) return;
+  if (!confirm('確定要捨棄「' + CASES[currentCaseKey].name + '」這個個案在本機瀏覽器上的所有修改（標題資訊、基本資料、房型、建材、公設、照片等全部欄位），回復成程式碼裡的原始查證資料嗎？\n\n（重設後會有一次「復原上次重設」的機會，但關閉分頁或重設第二次後就無法再復原）')) return;
+  const current = await idbGet(currentCaseKey);
+  if (current) await idbPut(resetBackupKey(currentCaseKey), current);
+  else await idbDelete(resetBackupKey(currentCaseKey));
   await idbDelete(currentCaseKey);
   await loadCase(currentCaseKey);
+}
+
+async function undoLastReset() {
+  if (!currentCaseKey) return;
+  const backup = await idbGet(resetBackupKey(currentCaseKey));
+  if (!backup) return;
+  await idbPut(currentCaseKey, backup);
+  await idbDelete(resetBackupKey(currentCaseKey));
+  await loadCase(currentCaseKey);
+}
+
+async function refreshUndoButton() {
+  const btn = document.getElementById('undo-reset-btn');
+  if (!btn || !currentCaseKey) return;
+  const backup = await idbGet(resetBackupKey(currentCaseKey));
+  btn.style.display = backup ? '' : 'none';
 }
 
 /* ───────────── 個案切換：動態生成表單 ───────────── */
@@ -1905,6 +1932,7 @@ async function loadCase(key) {
   renderPageTabs();
   render();
   renderSalesGrid(key);
+  refreshUndoButton();
 }
 
 function buildRoomsForm(rooms) {
