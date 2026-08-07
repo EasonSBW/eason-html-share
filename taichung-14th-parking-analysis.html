@@ -1,0 +1,617 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>台中十四期 車位價格分析｜分樓層單價與坪數</title>
+<style>
+  :root{
+    --bg:#eef0ef; --card:#ffffff; --line:#e2e6e5; --line2:#eceeed;
+    --ink:#1a2332; --ink2:#4a5a5c; --muted:#8c9a98;
+    --accent:#8e6ad1; --accent-soft:#f3eefb;
+    --teal:#2d8b8b; --amber:#c9973a; --rose:#d1637a;
+    --f0:#b79ce0; --f1:#9a76d6; --f2:#7551b8; --f3:#543585;
+    --heat-ink:#ffffff; --heat-ink-lo:#1a2332;
+    /* 頁首與 tooltip 是「永遠深底」的區塊，色票不能跟著 --ink 翻轉，否則深色模式會變淺底白字 */
+    --header-bg:#1a2332; --header-ink:#ffffff; --header-sub:#b9c8d0; --header-eyebrow:#a4b8c4;
+    --good:#0ca30c; --warn:#fab219;
+    --shadow:0 1px 2px rgba(26,35,50,.05), 0 4px 16px rgba(26,35,50,.06);
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:#131518; --card:#1c1f23; --line:#2b3036; --line2:#23272c;
+      --ink:#e9edec; --ink2:#b3bfbd; --muted:#7e8c8a;
+      --accent:#a98ae0; --accent-soft:#2a2340;
+      --teal:#4fb3b3; --amber:#dcae5c; --rose:#e08496;
+      --f0:#e0d3f5; --f1:#c4a9e8; --f2:#a37fd8; --f3:#8258c4;
+      --heat-ink:#16161a; --heat-ink-lo:#16161a;
+      --header-bg:#0d1013; --header-ink:#e9edec; --header-sub:#98a7a5; --header-eyebrow:#8ea3ae;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.25);
+    }
+  }
+  [data-theme="dark"]{
+    --bg:#131518; --card:#1c1f23; --line:#2b3036; --line2:#23272c;
+    --ink:#e9edec; --ink2:#b3bfbd; --muted:#7e8c8a;
+    --accent:#a98ae0; --accent-soft:#2a2340;
+    --teal:#4fb3b3; --amber:#dcae5c; --rose:#e08496;
+    --f0:#e0d3f5; --f1:#c4a9e8; --f2:#a37fd8; --f3:#8258c4;
+    --heat-ink:#16161a; --heat-ink-lo:#16161a;
+    --header-bg:#0d1013; --header-ink:#e9edec; --header-sub:#98a7a5; --header-eyebrow:#8ea3ae;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 4px 16px rgba(0,0,0,.25);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:-apple-system,'PingFang TC','Helvetica Neue','Noto Sans TC',sans-serif;
+    background:var(--bg); color:var(--ink); line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px 72px}
+
+  /* ── 頁首 ── */
+  header{background:var(--header-bg);color:var(--header-ink);padding:30px 0 26px;margin-bottom:26px}
+  header .wrap{padding-bottom:0}
+  .eyebrow{font-size:12px;letter-spacing:.14em;color:var(--header-eyebrow);font-weight:700;margin-bottom:8px}
+  header h1{font-size:27px;font-weight:800;letter-spacing:-.01em;line-height:1.3}
+  header .sub{font-size:13.5px;color:var(--header-sub);margin-top:9px;max-width:760px}
+  .hmeta{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+  .chip{
+    font-size:11.5px;font-weight:600;padding:4px 11px;border-radius:20px;
+    background:rgba(255,255,255,.09);color:var(--header-sub);border:1px solid rgba(255,255,255,.14)
+  }
+
+  /* ── 區塊 ── */
+  section{margin-bottom:34px}
+  .sec-head{display:flex;align-items:baseline;gap:11px;margin-bottom:5px}
+  .sec-num{
+    font-size:11px;font-weight:800;color:var(--accent);letter-spacing:.1em;
+    background:var(--accent-soft);padding:3px 8px;border-radius:5px;flex-shrink:0
+  }
+  .sec-head h2{font-size:19px;font-weight:800;letter-spacing:-.01em}
+  .sec-desc{font-size:13px;color:var(--ink2);margin-bottom:16px;max-width:840px}
+
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow)}
+  .card-pad{padding:20px 22px}
+
+  /* ── 修正對比 ── */
+  .fixgrid{display:grid;grid-template-columns:1fr auto 1fr;gap:0;align-items:stretch}
+  .fixcell{padding:20px 24px;text-align:center}
+  .fixcell .lab{font-size:11.5px;font-weight:700;color:var(--muted);letter-spacing:.06em;margin-bottom:7px}
+  .fixcell .val{font-size:40px;font-weight:800;letter-spacing:-.025em;line-height:1.05}
+  .fixcell .note{font-size:11.5px;color:var(--ink2);margin-top:7px;line-height:1.5}
+  .fixcell.old .val{color:var(--muted);text-decoration:line-through;text-decoration-thickness:2px;text-decoration-color:var(--rose)}
+  .fixcell.new .val{color:var(--accent)}
+  .fixarrow{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:0 16px;border-left:1px solid var(--line);border-right:1px solid var(--line);
+    background:linear-gradient(180deg,transparent,var(--accent-soft),transparent)
+  }
+  .fixarrow .d{font-size:19px;font-weight:800;color:var(--rose)}
+  .fixarrow .dl{font-size:10.5px;color:var(--muted);font-weight:700;margin-top:2px}
+
+  /* ── KPI ── */
+  .kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px}
+  .kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:15px 16px;box-shadow:var(--shadow)}
+  .kpi .lab{font-size:11.5px;color:var(--muted);font-weight:700;margin-bottom:5px}
+  .kpi .val{font-size:25px;font-weight:800;letter-spacing:-.02em}
+  .kpi .val small{font-size:13px;font-weight:700;margin-left:2px}
+  .kpi .sub{font-size:11.5px;color:var(--ink2);margin-top:3px}
+
+  /* ── 圖表 ── */
+  .chart-wrap{overflow-x:auto}
+  svg{display:block;max-width:100%}
+  svg text{font-family:inherit;fill:var(--ink2)}
+  .ax-line{stroke:var(--line);stroke-width:1}
+  .grid-line{stroke:var(--line2);stroke-width:1}
+  .bar-lab{font-size:12.5px;font-weight:700;fill:var(--ink)}
+  .bar-val{font-size:13px;font-weight:800;fill:var(--ink)}
+  .bar-sub{font-size:11px;fill:var(--muted)}
+  .tick{font-size:11px;fill:var(--muted)}
+  .hit{fill:transparent;cursor:pointer}
+
+  /* ── tooltip ── */
+  #tip{
+    position:fixed;z-index:99;pointer-events:none;opacity:0;transition:opacity .12s;
+    background:var(--header-bg);color:var(--header-ink);border-radius:8px;padding:9px 12px;font-size:12px;
+    line-height:1.55;box-shadow:0 6px 22px rgba(0,0,0,.35);max-width:250px;
+    border:1px solid rgba(255,255,255,.14)
+  }
+  #tip b{font-size:13px}
+  #tip .r{color:var(--header-sub)}
+
+  /* ── 表格 ── */
+  .tbl-tools{display:flex;flex-wrap:wrap;gap:9px;align-items:center;margin-bottom:12px}
+  .tbl-tools input,.tbl-tools select{
+    font:inherit;font-size:12.5px;padding:7px 10px;border:1px solid var(--line);
+    border-radius:7px;background:var(--card);color:var(--ink)
+  }
+  .tbl-tools input{width:190px}
+  .tbl-tools input:focus,.tbl-tools select:focus{outline:2px solid var(--accent);outline-offset:-1px}
+  .tbl-count{font-size:12px;color:var(--muted);font-weight:600;margin-left:auto}
+  .tbl-scroll{overflow-x:auto;border:1px solid var(--line);border-radius:11px;background:var(--card);box-shadow:var(--shadow)}
+  table{border-collapse:separate;border-spacing:0;width:100%;font-size:12.5px}
+  th,td{padding:9px 11px;text-align:right;white-space:nowrap;border-bottom:1px solid var(--line2)}
+  th{
+    background:var(--card);position:sticky;top:0;z-index:2;font-size:11.5px;font-weight:700;
+    color:var(--ink2);cursor:pointer;user-select:none;border-bottom:1.5px solid var(--line)
+  }
+  th:hover{color:var(--accent)}
+  th.l,td.l{text-align:left}
+  tbody tr:hover td{background:var(--accent-soft)}
+  tbody tr:last-child td{border-bottom:none}
+  td.name{font-weight:700;color:var(--ink);position:sticky;left:0;background:var(--card);z-index:1}
+  tbody tr:hover td.name{background:var(--accent-soft)}
+  .zone-tag{font-size:10.5px;color:var(--muted);font-weight:600;margin-left:6px}
+  .num{font-variant-numeric:tabular-nums}
+  .cell-price{font-weight:800;font-variant-numeric:tabular-nums}
+  .cell-sub{display:block;font-size:10.5px;color:var(--muted);font-weight:600;margin-top:1px}
+  .heat{border-radius:6px;padding:4px 7px;display:inline-block;min-width:56px;text-align:center}
+  .dash{color:var(--muted)}
+  .thin{font-weight:600;color:var(--muted)}
+
+  /* ── legend ── */
+  .legend{display:flex;flex-wrap:wrap;gap:14px;margin:14px 0 4px;font-size:12px;color:var(--ink2)}
+  .legend .item{display:flex;align-items:center;gap:6px}
+  .swatch{width:13px;height:13px;border-radius:3px;flex-shrink:0}
+  .scale{display:flex;align-items:center;gap:7px;font-size:11.5px;color:var(--muted)}
+  .scale .ramp{display:flex;border-radius:4px;overflow:hidden}
+  .scale .ramp i{width:22px;height:12px;display:block}
+
+  /* ── 註記 ── */
+  .note-box{
+    background:var(--card);border:1px solid var(--line);border-left:3px solid var(--amber);
+    border-radius:9px;padding:13px 16px;font-size:12.5px;color:var(--ink2);line-height:1.7
+  }
+  .note-box b{color:var(--ink)}
+  .note-box.acc{border-left-color:var(--accent)}
+  .note-box + .note-box{margin-top:10px}
+  .meth{font-size:12.5px;color:var(--ink2);line-height:1.85}
+  .meth h3{font-size:13.5px;color:var(--ink);margin:16px 0 5px;font-weight:800}
+  .meth h3:first-child{margin-top:0}
+  .meth ul{margin:0 0 0 18px}
+  .meth li{margin-bottom:3px}
+  .meth code{
+    font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11.5px;
+    background:var(--bg);padding:1px 5px;border-radius:4px;border:1px solid var(--line)
+  }
+  footer{text-align:center;font-size:11.5px;color:var(--muted);padding-top:26px;border-top:1px solid var(--line);margin-top:34px}
+
+  .toggle{
+    position:fixed;right:18px;bottom:18px;z-index:50;width:42px;height:42px;border-radius:50%;
+    border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer;
+    font-size:17px;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:center
+  }
+  .toggle:hover{border-color:var(--accent)}
+
+  @media (max-width:820px){
+    .kpis{grid-template-columns:repeat(2,1fr)}
+    .fixgrid{grid-template-columns:1fr}
+    .fixarrow{flex-direction:row;gap:8px;border:none;border-top:1px solid var(--line);border-bottom:1px solid var(--line);padding:9px}
+    header h1{font-size:22px}
+    .fixcell .val{font-size:33px}
+  }
+  @media print{
+    .toggle,.tbl-tools{display:none}
+    body{background:#fff}
+    section{break-inside:avoid}
+  }
+</style>
+</head>
+<script>
+  try {
+    const t = localStorage.getItem('park14-theme');
+    if (t) document.documentElement.setAttribute('data-theme', t);
+  } catch(e) {}
+</script>
+<body>
+<div id="tip"></div>
+<button class="toggle" id="themeBtn" title="切換深色／淺色">◐</button>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">台中十四期重劃區（美和庄）· 實價登錄分析</div>
+    <h1>車位價格分析：分樓層單價與坪數</h1>
+    <p class="sub">把實登「車位總價」還原成<strong>單一個車位</strong>的價格，再對上 TRUEWAY 主委說的車位樓層欄位，得到十四期各建案「地下幾樓、一個車位多少錢、幾坪」的完整對照。</p>
+    <div class="hmeta" id="hmeta"></div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <section>
+    <div class="sec-head"><span class="sec-num">00</span><h2>先修正一個算錯的數字</h2></div>
+    <p class="sec-desc">市調工具原本的「車位均價」直接對實登的<strong>車位總價</strong>欄位取平均，但那個欄位是一筆交易<strong>所有車位的合計價</strong>——十四期有 44% 的交易一次買 2 個以上車位，等於把雙車位的錢當成一個車位的價格。改用「合計價 ÷ 車位個數」後：</p>
+    <div class="card fixgrid">
+      <div class="fixcell old">
+        <div class="lab">修正前（每筆交易平均）</div>
+        <div class="val" id="fx-old">—</div>
+        <div class="note">把一次買 2–5 個車位的合計價<br>當成單一車位價格</div>
+      </div>
+      <div class="fixarrow">
+        <div class="d" id="fx-delta">—</div>
+        <div class="dl">高估</div>
+      </div>
+      <div class="fixcell new">
+        <div class="lab">修正後（每個車位）</div>
+        <div class="val" id="fx-new">—</div>
+        <div class="note" id="fx-note">—</div>
+      </div>
+    </div>
+    <div class="kpis" id="kpis"></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">01</span><h2>全區各樓層的單車位行情</h2></div>
+    <p class="sec-desc">越往地下越便宜，這條梯度在十四期非常穩定。棒子長度是均價，右側標的是每層的車位坪數中位數（含車道等共同持分，非車格淨尺寸）。</p>
+    <div class="card card-pad">
+      <div class="chart-wrap"><svg id="floorChart" role="img" aria-label="十四期各車位樓層單車位均價橫向長條圖"></svg></div>
+      <div class="scale" style="margin-top:6px">
+        <span>樓層深度</span>
+        <span class="ramp"><i style="background:var(--f0)"></i><i style="background:var(--f1)"></i><i style="background:var(--f2)"></i><i style="background:var(--f3)"></i></span>
+        <span>淺 → 深</span>
+      </div>
+    </div>
+    <div class="note-box" style="margin-top:12px" id="oneFloorNote"></div>
+    <div class="note-box acc" id="deepNote"></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">02</span><h2>同一個案，樓上樓下差多少</h2></div>
+    <p class="sec-desc">同一個建案內，最上層與最下層車位的價差（棒子兩端）。拆到<strong>相鄰兩層</strong>來看，中位數是 <strong><span id="admGap">—</span></strong>、多數落在 <span id="admQ">—</span>；若是<strong>地下一樓一路到地下三樓</strong>，<span id="b13N">—</span> 個可比較的案子中位差到 <strong><span id="b13">—</span></strong>。這是訂價與談判時最實用的一組數字。只列同案內兩個樓層都有 5 個以上車位成交的案子。</p>
+    <div class="card card-pad">
+      <div class="legend">
+        <div class="item"><span class="swatch" style="background:var(--f0);border:1px solid var(--line)"></span>較高樓層（貴）</div>
+        <div class="item"><span class="swatch" style="background:var(--f3)"></span>較低樓層（便宜）</div>
+      </div>
+      <div class="chart-wrap"><svg id="premChart" role="img" aria-label="各建案車位樓層價差啞鈴圖"></svg></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">03</span><h2>各個案 × 樓層 完整對照表</h2></div>
+    <p class="sec-desc">每格上排是<strong>單車位均價</strong>、下排是<strong>車位個數與坪數中位</strong>。顏色深淺代表該格均價在全區的相對位置。點欄位標題可排序，樣本太少的案子建議只當參考。</p>
+    <div class="tbl-tools">
+      <input type="search" id="q" placeholder="搜尋建案或地段…" aria-label="搜尋建案或地段">
+      <select id="minU" aria-label="最少車位樣本數">
+        <option value="0">全部案子</option>
+        <option value="5">≥ 5 個車位</option>
+        <option value="10" selected>≥ 10 個車位</option>
+        <option value="30">≥ 30 個車位</option>
+      </select>
+      <select id="zoneF" aria-label="地段"><option value="">全部地段</option></select>
+      <div class="scale">
+        <span>均價</span>
+        <span class="ramp"><i style="background:var(--f0)"></i><i style="background:var(--f1)"></i><i style="background:var(--f2)"></i><i style="background:var(--f3)"></i></span>
+        <span>低 → 高</span>
+      </div>
+      <span class="tbl-count" id="cnt"></span>
+    </div>
+    <div class="tbl-scroll"><table id="mainTbl"><thead></thead><tbody></tbody></table></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">04</span><h2>依地段看</h2></div>
+    <p class="sec-desc">同一個重劃區內，各地段的車位行情差距其實不大，最高與最低相差約 33 萬。</p>
+    <div class="card card-pad">
+      <div class="chart-wrap"><svg id="zoneChart" role="img" aria-label="十四期各地段單車位均價長條圖"></svg></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-num">05</span><h2>資料怎麼來的、哪裡要小心</h2></div>
+    <div class="card card-pad meth" id="meth"></div>
+  </section>
+
+  <footer id="foot"></footer>
+</div>
+
+<script>
+const D = {"cases":[{"name":"敘DOS","zone":"仁平段","total":{"deals":16,"units":20,"avg":268.8,"med":275.0,"min":255,"max":275,"ping":9.2,"pingMin":9.2,"pingMax":9.2,"kinds":["坡道平面"],"dateMin":"2025-05-29","dateMax":"2025-08-25"},"floors":{"地下一樓":{"deals":11,"units":15,"avg":275.0,"med":275.0,"min":275,"max":275,"ping":9.2,"pingMin":9.2,"pingMax":9.2,"kinds":["坡道平面"],"dateMin":"2025-05-29","dateMax":"2025-08-25"},"地下二樓":{"deals":5,"units":5,"avg":255.0,"med":255.0,"min":255,"max":255,"ping":9.2,"pingMin":9.2,"pingMax":9.2,"kinds":["坡道平面"],"dateMin":"2025-08-13","dateMax":"2025-08-25"}}},{"name":"磐興寬悅","zone":"榮德段","total":{"deals":33,"units":41,"avg":253.6,"med":250.0,"min":235,"max":280,"ping":11.13,"pingMin":10.2,"pingMax":13.3,"kinds":["坡道平面"],"dateMin":"2025-06-11","dateMax":"2025-12-31"},"floors":{"地下一樓":{"deals":20,"units":25,"avg":257.1,"med":260.0,"min":250,"max":280,"ping":11.13,"pingMin":10.2,"pingMax":13.3,"kinds":["坡道平面"],"dateMin":"2025-06-11","dateMax":"2025-12-31"},"地下二樓":{"deals":13,"units":16,"avg":248.3,"med":250.0,"min":235,"max":260,"ping":11.13,"pingMin":11.1,"pingMax":12.1,"kinds":["坡道平面"],"dateMin":"2025-06-11","dateMax":"2025-10-23"}}},{"name":"豐穗","zone":"榮德段","total":{"deals":8,"units":13,"avg":252.5,"med":250.0,"min":245,"max":265,"ping":7.2,"pingMin":7.1,"pingMax":7.2,"kinds":["坡道平面"],"dateMin":"2022-11-11","dateMax":"2024-08-15"},"floors":{"地下二樓":{"deals":8,"units":13,"avg":252.5,"med":250.0,"min":245,"max":265,"ping":7.2,"pingMin":7.1,"pingMax":7.2,"kinds":["坡道平面"],"dateMin":"2022-11-11","dateMax":"2024-08-15"}}},{"name":"有愛臻邸","zone":"美和段","total":{"deals":41,"units":77,"avg":251.6,"med":250.0,"min":240,"max":270,"ping":10.58,"pingMin":10.6,"pingMax":10.6,"kinds":["坡道平面"],"dateMin":"2024-09-12","dateMax":"2026-04-30"},"floors":{"地下一樓":{"deals":7,"units":14,"avg":262.4,"med":260.0,"min":260,"max":270,"ping":10.58,"pingMin":10.6,"pingMax":10.6,"kinds":["坡道平面"],"dateMin":"2024-09-14","dateMax":"2025-01-07"},"地下二樓":{"deals":18,"units":36,"avg":253.9,"med":250.0,"min":250,"max":270,"ping":10.58,"pingMin":10.6,"pingMax":10.6,"kinds":["坡道平面"],"dateMin":"2024-09-12","dateMax":"2025-12-29"},"地下三樓":{"deals":16,"units":27,"avg":244.4,"med":240.0,"min":240,"max":260,"ping":10.58,"pingMin":10.6,"pingMax":10.6,"kinds":["坡道平面"],"dateMin":"2024-09-14","dateMax":"2026-04-30"}}},{"name":"寶輝GREEN PARK","zone":"美和段","total":{"deals":14,"units":25,"avg":251.4,"med":260.0,"min":170,"max":280,"ping":10.68,"pingMin":10.7,"pingMax":10.7,"kinds":["坡道平面"],"dateMin":"2025-03-04","dateMax":"2026-02-26"},"floors":{"地下一樓":{"deals":5,"units":9,"avg":278.0,"med":280.0,"min":270,"max":280,"ping":10.68,"pingMin":10.7,"pingMax":10.7,"kinds":["坡道平面"],"dateMin":"2025-03-06","dateMax":"2026-02-26"},"地下二樓":{"deals":8,"units":14,"avg":245.0,"med":247.5,"min":215,"max":265,"ping":10.68,"pingMin":10.7,"pingMax":10.7,"kinds":["坡道平面"],"dateMin":"2025-03-04","dateMax":"2025-03-09"},"地下三樓":{"deals":1,"units":2,"avg":170.0,"med":170.0,"min":170,"max":170,"ping":10.68,"pingMin":10.7,"pingMax":10.7,"kinds":["坡道平面"],"dateMin":"2025-03-07","dateMax":"2025-03-07"}}},{"name":"Travel house B","zone":"敦和段","total":{"deals":1,"units":1,"avg":250.0,"med":250.0,"min":250,"max":250,"ping":10.53,"pingMin":10.5,"pingMax":10.5,"kinds":["坡道平面"],"dateMin":"2025-04-19","dateMax":"2025-04-19"},"floors":{"地下一樓":{"deals":1,"units":1,"avg":250.0,"med":250.0,"min":250,"max":250,"ping":10.53,"pingMin":10.5,"pingMax":10.5,"kinds":["坡道平面"],"dateMin":"2025-04-19","dateMax":"2025-04-19"}}},{"name":"Travel house A","zone":"敦和段","total":{"deals":16,"units":16,"avg":249.1,"med":250.0,"min":235,"max":265,"ping":11.56,"pingMin":11.6,"pingMax":11.6,"kinds":["坡道平面"],"dateMin":"2024-08-01","dateMax":"2025-05-02"},"floors":{"一樓":{"deals":6,"units":6,"avg":265.0,"med":265.0,"min":265,"max":265,"ping":11.56,"pingMin":11.6,"pingMax":11.6,"kinds":["坡道平面"],"dateMin":"2024-08-06","dateMax":"2024-09-22"},"地下一樓":{"deals":3,"units":3,"avg":250.0,"med":250.0,"min":250,"max":250,"ping":11.56,"pingMin":11.6,"pingMax":11.6,"kinds":["坡道平面"],"dateMin":"2024-08-07","dateMax":"2024-09-21"},"地下二樓":{"deals":7,"units":7,"avg":235.0,"med":235.0,"min":235,"max":235,"ping":11.56,"pingMin":11.6,"pingMax":11.6,"kinds":["坡道平面"],"dateMin":"2024-08-01","dateMax":"2025-05-02"}}},{"name":"寶輝WATER PARK","zone":"美和段","total":{"deals":14,"units":23,"avg":247.9,"med":247.5,"min":220,"max":290,"ping":11.01,"pingMin":11.0,"pingMax":11.0,"kinds":["坡道平面"],"dateMin":"2025-03-05","dateMax":"2026-01-26"},"floors":{"地下一樓":{"deals":6,"units":11,"avg":267.5,"med":262.5,"min":255,"max":290,"ping":11.01,"pingMin":11.0,"pingMax":11.0,"kinds":["坡道平面"],"dateMin":"2025-03-06","dateMax":"2025-03-28"},"地下二樓":{"deals":4,"units":6,"avg":246.2,"med":240.0,"min":240,"max":265,"ping":11.01,"pingMin":11.0,"pingMax":11.0,"kinds":["坡道平面"],"dateMin":"2025-03-08","dateMax":"2026-01-26"},"地下三樓":{"deals":4,"units":6,"avg":220.0,"med":220.0,"min":220,"max":220,"ping":11.01,"pingMin":11.0,"pingMax":11.0,"kinds":["坡道平面"],"dateMin":"2025-03-05","dateMax":"2025-05-01"}}},{"name":"豐禾","zone":"榮德段","total":{"deals":75,"units":90,"avg":247.2,"med":250.0,"min":220,"max":275,"ping":10.0,"pingMin":10.0,"pingMax":10.2,"kinds":["坡道平面"],"dateMin":"2023-05-28","dateMax":"2025-05-31"},"floors":{"地下一樓":{"deals":10,"units":13,"avg":270.5,"med":270.0,"min":270,"max":275,"ping":10.0,"pingMin":10.0,"pingMax":10.1,"kinds":["坡道平面"],"dateMin":"2023-11-01","dateMax":"2025-05-30"},"地下二樓":{"deals":33,"units":42,"avg":252.0,"med":250.0,"min":230,"max":265,"ping":10.0,"pingMin":10.0,"pingMax":10.2,"kinds":["坡道平面"],"dateMin":"2023-05-28","dateMax":"2025-05-31"},"地下三樓":{"deals":32,"units":35,"avg":235.0,"med":240.0,"min":220,"max":240,"ping":10.0,"pingMin":10.0,"pingMax":10.0,"kinds":["坡道平面"],"dateMin":"2023-06-05","dateMax":"2025-04-20"}}},{"name":"大山謙里","zone":"敦和段","total":{"deals":2,"units":2,"avg":245.0,"med":245.0,"min":240,"max":250,"ping":11.92,"pingMin":11.9,"pingMax":11.9,"kinds":["坡道平面"],"dateMin":"2024-11-05","dateMax":"2025-01-06"},"floors":{"地下一樓":{"deals":1,"units":1,"avg":250.0,"med":250.0,"min":250,"max":250,"ping":11.92,"pingMin":11.9,"pingMax":11.9,"kinds":["坡道平面"],"dateMin":"2025-01-06","dateMax":"2025-01-06"},"地下二樓":{"deals":1,"units":1,"avg":240.0,"med":240.0,"min":240,"max":240,"ping":11.92,"pingMin":11.9,"pingMax":11.9,"kinds":["坡道平面"],"dateMin":"2024-11-05","dateMax":"2024-11-05"}}},{"name":"新業V&A","zone":"美和段","total":{"deals":3,"units":4,"avg":242.5,"med":245.0,"min":230,"max":252,"ping":9.65,"pingMin":8.9,"pingMax":9.6,"kinds":["坡道平面"],"dateMin":"2025-03-08","dateMax":"2025-03-09"},"floors":{"地下一樓":{"deals":2,"units":3,"avg":248.8,"med":248.8,"min":245,"max":252,"ping":9.29,"pingMin":8.9,"pingMax":9.6,"kinds":["坡道平面"],"dateMin":"2025-03-08","dateMax":"2025-03-09"},"地下二樓":{"deals":1,"units":1,"avg":230.0,"med":230.0,"min":230,"max":230,"ping":9.65,"pingMin":9.6,"pingMax":9.6,"kinds":["坡道平面"],"dateMin":"2025-03-08","dateMax":"2025-03-08"}}},{"name":"坤悅·泊岳","zone":"美和段","total":{"deals":3,"units":4,"avg":241.7,"med":240.0,"min":230,"max":255,"ping":9.64,"pingMin":9.6,"pingMax":9.6,"kinds":["坡道平面"],"dateMin":"2025-06-01","dateMax":"2025-06-27"},"floors":{"地下二樓":{"deals":3,"units":4,"avg":241.7,"med":240.0,"min":230,"max":255,"ping":9.64,"pingMin":9.6,"pingMax":9.6,"kinds":["坡道平面"],"dateMin":"2025-06-01","dateMax":"2025-06-27"}}},{"name":"豐謙HOME+","zone":"仁平段","total":{"deals":8,"units":8,"avg":240.0,"med":240.0,"min":230,"max":250,"ping":9.7,"pingMin":9.7,"pingMax":10.0,"kinds":["坡道平面"],"dateMin":"2024-08-03","dateMax":"2024-09-10"},"floors":{"地下一樓":{"deals":1,"units":1,"avg":250.0,"med":250.0,"min":250,"max":250,"ping":9.7,"pingMin":9.7,"pingMax":9.7,"kinds":["坡道平面"],"dateMin":"2024-08-03","dateMax":"2024-08-03"},"地下二樓":{"deals":7,"units":7,"avg":238.6,"med":240.0,"min":230,"max":240,"ping":9.7,"pingMin":9.7,"pingMax":10.0,"kinds":["坡道平面"],"dateMin":"2024-08-03","dateMax":"2024-09-10"}}},{"name":"豐莚","zone":"洲際段","total":{"deals":76,"units":115,"avg":239.6,"med":240.0,"min":215,"max":270,"ping":10.79,"pingMin":10.8,"pingMax":10.8,"kinds":["坡道平面"],"dateMin":"2024-03-29","dateMax":"2026-01-17"},"floors":{"一樓":{"deals":1,"units":2,"avg":265.0,"med":265.0,"min":265,"max":265,"ping":10.79,"pingMin":10.8,"pingMax":10.8,"kinds":["坡道平面"],"dateMin":"2025-08-16","dateMax":"2025-08-16"},"地下一樓":{"deals":22,"units":39,"avg":255.9,"med":260.8,"min":240,"max":270,"ping":10.79,"pingMin":10.8,"pingMax":10.8,"kinds":["坡道平面"],"dateMin":"2024-04-21","dateMax":"2026-01-17"},"地下二樓":{"deals":53,"units":74,"avg":232.4,"med":230.0,"min":215,"max":250,"ping":10.79,"pingMin":10.8,"pingMax":10.8,"kinds":["坡道平面"],"dateMin":"2024-03-29","dateMax":"2025-09-07"}}},{"name":"THE精銳","zone":"美和段","total":{"deals":110,"units":165,"avg":237.5,"med":240.0,"min":180,"max":280,"ping":12.5,"pingMin":12.5,"pingMax":12.5,"kinds":["坡道平面"],"dateMin":"2023-07-13","dateMax":"2025-08-01"},"floors":{"地下一樓":{"deals":24,"units":40,"avg":249.5,"med":250.0,"min":220,"max":280,"ping":12.5,"pingMin":12.5,"pingMax":12.5,"kinds":["坡道平面"],"dateMin":"2023-07-16","dateMax":"2024-06-06"},"地下二樓":{"deals":40,"units":61,"avg":240.8,"med":246.2,"min":190,"max":268,"ping":12.5,"pingMin":12.5,"pingMax":12.5,"kinds":["坡道平面"],"dateMin":"2023-07-15","dateMax":"2024-07-28"},"地下三樓":{"deals":46,"units":64,"avg":228.2,"med":230.0,"min":180,"max":265,"ping":12.5,"pingMin":12.5,"pingMax":12.5,"kinds":["坡道平面"],"dateMin":"2023-07-13","dateMax":"2025-08-01"}}},{"name":"遠雄丰尚","zone":"洲際段","total":{"deals":11,"units":13,"avg":237.3,"med":240.0,"min":210,"max":250,"ping":8.57,"pingMin":8.6,"pingMax":8.6,"kinds":["坡道平面"],"dateMin":"2025-11-27","dateMax":"2026-05-08"},"floors":{"地下一樓":{"deals":7,"units":9,"avg":242.9,"med":240.0,"min":240,"max":250,"ping":8.57,"pingMin":8.6,"pingMax":8.6,"kinds":["坡道平面"],"dateMin":"2025-11-27","dateMax":"2026-05-08"},"地下二樓":{"deals":4,"units":4,"avg":227.5,"med":230.0,"min":210,"max":240,"ping":8.57,"pingMin":8.6,"pingMax":8.6,"kinds":["坡道平面"],"dateMin":"2025-11-27","dateMax":"2026-04-20"}}},{"name":"舜元悟野","zone":"洲際段","total":{"deals":15,"units":22,"avg":236.8,"med":235.0,"min":210,"max":260,"ping":8.56,"pingMin":8.2,"pingMax":9.3,"kinds":["坡道平面"],"dateMin":"2025-08-02","dateMax":"2026-03-14"},"floors":{"地下一樓":{"deals":6,"units":9,"avg":239.6,"med":246.2,"min":210,"max":260,"ping":8.56,"pingMin":8.2,"pingMax":9.3,"kinds":["坡道平面"],"dateMin":"2025-08-02","dateMax":"2026-03-14"},"地下二樓":{"deals":9,"units":13,"avg":235.0,"med":235.0,"min":220,"max":255,"ping":8.56,"pingMin":8.2,"pingMax":8.6,"kinds":["坡道平面"],"dateMin":"2025-08-02","dateMax":"2026-01-06"}}},{"name":"豐邑ONE+","zone":"洲際段","total":{"deals":14,"units":16,"avg":236.4,"med":235.0,"min":225,"max":250,"ping":12.25,"pingMin":11.0,"pingMax":12.3,"kinds":["坡道平面"],"dateMin":"2024-06-20","dateMax":"2025-03-30"},"floors":{"地下一樓":{"deals":2,"units":2,"avg":250.0,"med":250.0,"min":250,"max":250,"ping":12.25,"pingMin":12.3,"pingMax":12.3,"kinds":["坡道平面"],"dateMin":"2024-07-15","dateMax":"2024-11-10"},"地下二樓":{"deals":12,"units":14,"avg":234.2,"med":235.0,"min":225,"max":235,"ping":12.25,"pingMin":11.0,"pingMax":12.3,"kinds":["坡道平面"],"dateMin":"2024-06-20","dateMax":"2025-03-30"}}},{"name":"亞昕之森","zone":"洲際段","total":{"deals":38,"units":43,"avg":235.4,"med":230.0,"min":230,"max":250,"ping":8.77,"pingMin":8.8,"pingMax":9.7,"kinds":["坡道平面"],"dateMin":"2025-07-03","dateMax":"2026-05-04"},"floors":{"地下一樓":{"deals":16,"units":19,"avg":242.2,"med":240.0,"min":240,"max":250,"ping":8.77,"pingMin":8.8,"pingMax":9.7,"kinds":["坡道平面"],"dateMin":"2025-07-03","dateMax":"2026-05-01"},"地下二樓":{"deals":22,"units":24,"avg":230.5,"med":230.0,"min":230,"max":240,"ping":8.77,"pingMin":8.8,"pingMax":8.8,"kinds":["坡道平面"],"dateMin":"2025-07-10","dateMax":"2026-05-04"}}},{"name":"敦泰知遇","zone":"榮德段","total":{"deals":2,"units":4,"avg":235.0,"med":235.0,"min":235,"max":235,"ping":9.35,"pingMin":9.3,"pingMax":9.3,"kinds":["坡道平面"],"dateMin":"2025-01-24","dateMax":"2025-01-24"},"floors":{"地下二樓":{"deals":2,"units":4,"avg":235.0,"med":235.0,"min":235,"max":235,"ping":9.35,"pingMin":9.3,"pingMax":9.3,"kinds":["坡道平面"],"dateMin":"2025-01-24","dateMax":"2025-01-24"}}},{"name":"Travel house C","zone":"敦和段","total":{"deals":1,"units":1,"avg":235.0,"med":235.0,"min":235,"max":235,"ping":11.97,"pingMin":12.0,"pingMax":12.0,"kinds":["坡道平面"],"dateMin":"2025-04-15","dateMax":"2025-04-15"},"floors":{"地下二樓":{"deals":1,"units":1,"avg":235.0,"med":235.0,"min":235,"max":235,"ping":11.97,"pingMin":12.0,"pingMax":12.0,"kinds":["坡道平面"],"dateMin":"2025-04-15","dateMax":"2025-04-15"}}},{"name":"一品院","zone":"美和段","total":{"deals":8,"units":9,"avg":233.8,"med":230.0,"min":230,"max":240,"ping":10.24,"pingMin":9.4,"pingMax":10.2,"kinds":["坡道平面"],"dateMin":"2024-08-08","dateMax":"2024-12-31"},"floors":{"地下一樓":{"deals":2,"units":2,"avg":235.0,"med":235.0,"min":230,"max":240,"ping":10.24,"pingMin":10.2,"pingMax":10.2,"kinds":["坡道平面"],"dateMin":"2024-12-24","dateMax":"2024-12-31"},"地下二樓":{"deals":6,"units":7,"avg":233.3,"med":230.0,"min":230,"max":240,"ping":10.03,"pingMin":9.4,"pingMax":10.2,"kinds":["坡道平面"],"dateMin":"2024-08-08","dateMax":"2024-10-14"}}},{"name":"華固豐匯","zone":"美和段","total":{"deals":51,"units":84,"avg":231.6,"med":230.0,"min":200,"max":270,"ping":10.25,"pingMin":10.3,"pingMax":10.3,"kinds":["坡道平面"],"dateMin":"2024-09-02","dateMax":"2025-05-04"},"floors":{"地下一樓":{"deals":4,"units":6,"avg":265.0,"med":270.0,"min":250,"max":270,"ping":10.25,"pingMin":10.3,"pingMax":10.3,"kinds":["坡道平面"],"dateMin":"2024-09-08","dateMax":"2025-03-16"},"地下二樓":{"deals":16,"units":26,"avg":241.9,"med":240.0,"min":230,"max":260,"ping":10.25,"pingMin":10.3,"pingMax":10.3,"kinds":["坡道平面"],"dateMin":"2024-09-02","dateMax":"2025-03-16"},"地下三樓":{"deals":31,"units":52,"avg":221.9,"med":220.0,"min":200,"max":250,"ping":10.25,"pingMin":10.3,"pingMax":10.3,"kinds":["坡道平面"],"dateMin":"2024-09-02","dateMax":"2025-05-04"}}},{"name":"亞昕一緻","zone":"仁平段","total":{"deals":115,"units":131,"avg":231.1,"med":230.0,"min":205,"max":250,"ping":8.02,"pingMin":8.0,"pingMax":8.9,"kinds":["坡道平面"],"dateMin":"2023-04-06","dateMax":"2025-11-16"},"floors":{"地下一樓":{"deals":51,"units":60,"avg":236.6,"med":240.0,"min":215,"max":250,"ping":8.02,"pingMin":8.0,"pingMax":8.9,"kinds":["坡道平面"],"dateMin":"2023-05-05","dateMax":"2024-12-17"},"地下二樓":{"deals":64,"units":71,"avg":226.8,"med":230.0,"min":205,"max":240,"ping":8.02,"pingMin":8.0,"pingMax":8.9,"kinds":["坡道平面"],"dateMin":"2023-04-06","dateMax":"2025-11-16"}}},{"name":"華固四季匯","zone":"敦和段","total":{"deals":53,"units":68,"avg":227.7,"med":225.0,"min":200,"max":260,"ping":10.99,"pingMin":11.0,"pingMax":11.0,"kinds":["坡道平面"],"dateMin":"2025-09-04","dateMax":"2026-04-24"},"floors":{"地下一樓":{"deals":7,"units":8,"avg":251.4,"med":255.0,"min":245,"max":260,"ping":10.99,"pingMin":11.0,"pingMax":11.0,"kinds":["坡道平面"],"dateMin":"2025-09-07","dateMax":"2026-04-18"},"地下二樓":{"deals":18,"units":23,"avg":241.7,"med":240.0,"min":225,"max":255,"ping":10.99,"pingMin":11.0,"pingMax":11.0,"kinds":["坡道平面"],"dateMin":"2025-09-04","dateMax":"2026-03-01"},"地下三樓":{"deals":28,"units":37,"avg":212.9,"med":212.5,"min":200,"max":230,"ping":10.99,"pingMin":11.0,"pingMax":11.0,"kinds":["坡道平面"],"dateMin":"2025-09-04","dateMax":"2026-04-24"}}},{"name":"青園与溪行","zone":"仁平段","total":{"deals":2,"units":4,"avg":227.5,"med":227.5,"min":225,"max":230,"ping":10.83,"pingMin":10.8,"pingMax":10.8,"kinds":["坡道平面"],"dateMin":"2025-09-22","dateMax":"2025-09-23"},"floors":{"地下二樓":{"deals":2,"units":4,"avg":227.5,"med":227.5,"min":225,"max":230,"ping":10.83,"pingMin":10.8,"pingMax":10.8,"kinds":["坡道平面"],"dateMin":"2025-09-22","dateMax":"2025-09-23"}}},{"name":"V雋","zone":"洲際段","total":{"deals":36,"units":40,"avg":227.4,"med":225.0,"min":210,"max":245,"ping":10.31,"pingMin":10.3,"pingMax":10.3,"kinds":["坡道平面"],"dateMin":"2024-11-06","dateMax":"2026-03-20"},"floors":{"地下一樓":{"deals":14,"units":16,"avg":232.5,"med":235.0,"min":220,"max":245,"ping":10.31,"pingMin":10.3,"pingMax":10.3,"kinds":["坡道平面"],"dateMin":"2024-11-09","dateMax":"2024-12-14"},"地下二樓":{"deals":22,"units":24,"avg":224.1,"med":225.0,"min":210,"max":245,"ping":10.31,"pingMin":10.3,"pingMax":10.3,"kinds":["坡道平面"],"dateMin":"2024-11-06","dateMax":"2026-03-20"}}},{"name":"敦泰一境","zone":"洲際段","total":{"deals":65,"units":90,"avg":226.0,"med":225.0,"min":200,"max":260,"ping":8.42,"pingMin":8.0,"pingMax":8.7,"kinds":["坡道平面"],"dateMin":"2023-07-29","dateMax":"2026-01-13"},"floors":{"地下一樓":{"deals":26,"units":40,"avg":238.0,"med":240.0,"min":218,"max":260,"ping":8.42,"pingMin":8.0,"pingMax":8.7,"kinds":["坡道平面"],"dateMin":"2023-08-17","dateMax":"2026-01-13"},"地下二樓":{"deals":39,"units":50,"avg":217.9,"med":220.0,"min":200,"max":235,"ping":8.42,"pingMin":8.0,"pingMax":8.4,"kinds":["坡道平面"],"dateMin":"2023-07-29","dateMax":"2024-07-31"}}},{"name":"泓瑞洲際之森","zone":"洲際段","total":{"deals":13,"units":13,"avg":225.4,"med":230.0,"min":190,"max":250,"ping":12.32,"pingMin":12.0,"pingMax":12.3,"kinds":["坡道平面"],"dateMin":"2025-09-16","dateMax":"2026-02-09"},"floors":{"地下一樓":{"deals":1,"units":1,"avg":250.0,"med":250.0,"min":250,"max":250,"ping":12.32,"pingMin":12.3,"pingMax":12.3,"kinds":["坡道平面"],"dateMin":"2025-10-07","dateMax":"2025-10-07"},"地下二樓":{"deals":4,"units":4,"avg":230.0,"med":240.0,"min":200,"max":240,"ping":12.32,"pingMin":12.0,"pingMax":12.3,"kinds":["坡道平面"],"dateMin":"2025-09-26","dateMax":"2026-02-09"},"地下三樓":{"deals":8,"units":8,"avg":220.0,"med":230.0,"min":190,"max":230,"ping":12.32,"pingMin":12.0,"pingMax":12.3,"kinds":["坡道平面"],"dateMin":"2025-09-16","dateMax":"2026-01-22"}}},{"name":"大映奕居","zone":"洲際段","total":{"deals":42,"units":47,"avg":225.3,"med":230.0,"min":198,"max":255,"ping":8.45,"pingMin":7.8,"pingMax":8.4,"kinds":["坡道平面"],"dateMin":"2024-10-13","dateMax":"2026-03-11"},"floors":{"地下一樓":{"deals":11,"units":14,"avg":228.2,"med":225.0,"min":208,"max":255,"ping":8.45,"pingMin":7.8,"pingMax":8.4,"kinds":["坡道平面"],"dateMin":"2024-10-13","dateMax":"2025-06-21"},"地下二樓":{"deals":31,"units":33,"avg":224.3,"med":230.0,"min":198,"max":245,"ping":8.45,"pingMin":7.8,"pingMax":8.4,"kinds":["坡道平面"],"dateMin":"2024-10-13","dateMax":"2026-03-11"}}},{"name":"惠宇和慕","zone":"敦和段","total":{"deals":81,"units":102,"avg":223.8,"med":230.0,"min":170,"max":250,"ping":9.54,"pingMin":9.5,"pingMax":9.5,"kinds":["坡道平面"],"dateMin":"2025-07-11","dateMax":"2026-04-19"},"floors":{"地下一樓":{"deals":36,"units":46,"avg":230.7,"med":237.5,"min":200,"max":250,"ping":9.54,"pingMin":9.5,"pingMax":9.5,"kinds":["坡道平面"],"dateMin":"2025-07-11","dateMax":"2026-04-19"},"地下二樓":{"deals":45,"units":56,"avg":218.2,"med":225.0,"min":170,"max":240,"ping":9.54,"pingMin":9.5,"pingMax":9.5,"kinds":["坡道平面"],"dateMin":"2025-07-11","dateMax":"2026-04-12"}}},{"name":"惠宇仁平MY PARK","zone":"仁平段","total":{"deals":110,"units":152,"avg":223.4,"med":225.0,"min":165,"max":260,"ping":9.49,"pingMin":8.7,"pingMax":10.4,"kinds":["坡道平面"],"dateMin":"2024-11-08","dateMax":"2026-04-20"},"floors":{"地下一樓":{"deals":29,"units":40,"avg":240.7,"med":240.0,"min":210,"max":260,"ping":9.49,"pingMin":8.7,"pingMax":9.5,"kinds":["坡道平面"],"dateMin":"2024-11-08","dateMax":"2025-11-02"},"地下二樓":{"deals":40,"units":54,"avg":222.4,"med":225.0,"min":165,"max":235,"ping":9.49,"pingMin":8.7,"pingMax":9.5,"kinds":["坡道平面"],"dateMin":"2024-11-08","dateMax":"2026-04-04"},"地下三樓":{"deals":41,"units":58,"avg":212.1,"med":220.0,"min":180,"max":235,"ping":9.49,"pingMin":8.7,"pingMax":10.4,"kinds":["坡道平面"],"dateMin":"2024-11-08","dateMax":"2026-04-20"}}},{"name":"惠宇洲際","zone":"洲際段","total":{"deals":183,"units":315,"avg":223.3,"med":230.0,"min":195,"max":270,"ping":9.11,"pingMin":9.1,"pingMax":10.9,"kinds":["坡道平面"],"dateMin":"2024-07-11","dateMax":"2026-04-26"},"floors":{"地下一樓":{"deals":91,"units":157,"avg":233.6,"med":230.0,"min":210,"max":270,"ping":9.11,"pingMin":9.1,"pingMax":10.9,"kinds":["坡道平面"],"dateMin":"2024-07-12","dateMax":"2026-04-26"},"地下二樓":{"deals":92,"units":158,"avg":213.1,"med":210.0,"min":195,"max":240,"ping":9.11,"pingMin":9.1,"pingMax":9.9,"kinds":["坡道平面"],"dateMin":"2024-07-11","dateMax":"2026-04-15"}}},{"name":"國泰美禾","zone":"美和段","total":{"deals":108,"units":153,"avg":222.0,"med":220.0,"min":190,"max":250,"ping":8.96,"pingMin":9.0,"pingMax":9.8,"kinds":["坡道平面"],"dateMin":"2023-04-11","dateMax":"2023-05-17"},"floors":{"地下一樓":{"deals":48,"units":70,"avg":231.1,"med":235.0,"min":210,"max":250,"ping":8.96,"pingMin":9.0,"pingMax":9.0,"kinds":["坡道平面"],"dateMin":"2023-04-11","dateMax":"2023-05-17"},"地下二樓":{"deals":60,"units":83,"avg":214.6,"med":215.0,"min":190,"max":222,"ping":8.96,"pingMin":9.0,"pingMax":9.8,"kinds":["坡道平面"],"dateMin":"2023-04-12","dateMax":"2023-05-13"}}},{"name":"青園NEO ONE","zone":"敦和段","total":{"deals":76,"units":83,"avg":220.4,"med":220.0,"min":200,"max":250,"ping":8.44,"pingMin":8.1,"pingMax":10.7,"kinds":["坡道平面"],"dateMin":"2023-11-24","dateMax":"2024-07-15"},"floors":{"一樓":{"deals":1,"units":1,"avg":240.0,"med":240.0,"min":240,"max":240,"ping":8.44,"pingMin":8.4,"pingMax":8.4,"kinds":["坡道平面"],"dateMin":"2024-04-21","dateMax":"2024-04-21"},"地下一樓":{"deals":31,"units":37,"avg":226.1,"med":230.0,"min":205,"max":250,"ping":8.44,"pingMin":8.1,"pingMax":9.6,"kinds":["坡道平面"],"dateMin":"2023-11-24","dateMax":"2024-07-15"},"地下二樓":{"deals":44,"units":45,"avg":216.0,"med":220.0,"min":200,"max":240,"ping":8.44,"pingMin":8.1,"pingMax":10.7,"kinds":["坡道平面"],"dateMin":"2023-11-24","dateMax":"2024-07-15"}}},{"name":"大毅MEHO","zone":"美和段","total":{"deals":21,"units":26,"avg":218.8,"med":215.0,"min":210,"max":250,"ping":13.18,"pingMin":13.2,"pingMax":13.2,"kinds":["坡道平面"],"dateMin":"2024-09-19","dateMax":"2025-02-08"},"floors":{"地下一樓":{"deals":2,"units":3,"avg":242.5,"med":242.5,"min":235,"max":250,"ping":13.18,"pingMin":13.2,"pingMax":13.2,"kinds":["坡道平面"],"dateMin":"2024-09-23","dateMax":"2025-02-08"},"地下二樓":{"deals":9,"units":13,"avg":223.3,"med":230.0,"min":215,"max":230,"ping":13.18,"pingMin":13.2,"pingMax":13.2,"kinds":["坡道平面"],"dateMin":"2024-09-19","dateMax":"2025-01-04"},"地下三樓":{"deals":10,"units":10,"avg":210.0,"med":210.0,"min":210,"max":210,"ping":13.18,"pingMin":13.2,"pingMax":13.2,"kinds":["坡道平面"],"dateMin":"2024-09-19","dateMax":"2025-01-11"}}},{"name":"雙橡園2925","zone":"仁平段","total":{"deals":163,"units":404,"avg":218.5,"med":215.0,"min":100,"max":350,"ping":9.02,"pingMin":9.0,"pingMax":10.9,"kinds":["坡道平面"],"dateMin":"2022-01-07","dateMax":"2022-07-15"},"floors":{"地下一樓":{"deals":47,"units":112,"avg":239.8,"med":245.0,"min":200,"max":350,"ping":9.02,"pingMin":9.0,"pingMax":10.9,"kinds":["坡道平面"],"dateMin":"2022-01-09","dateMax":"2022-07-15"},"地下二樓":{"deals":58,"units":144,"avg":222.1,"med":215.0,"min":170,"max":300,"ping":9.02,"pingMin":9.0,"pingMax":10.9,"kinds":["坡道平面"],"dateMin":"2022-01-10","dateMax":"2022-06-07"},"地下三樓":{"deals":58,"units":148,"avg":197.7,"med":185.0,"min":100,"max":270,"ping":9.02,"pingMin":9.0,"pingMax":10.9,"kinds":["坡道平面"],"dateMin":"2022-01-07","dateMax":"2022-05-26"}}},{"name":"磐興寬境","zone":"榮德段","total":{"deals":141,"units":219,"avg":216.6,"med":215.0,"min":175,"max":260,"ping":9.31,"pingMin":9.3,"pingMax":10.6,"kinds":["坡道平面"],"dateMin":"2023-06-10","dateMax":"2026-01-13"},"floors":{"地下一樓":{"deals":37,"units":54,"avg":235.5,"med":235.0,"min":210,"max":260,"ping":9.31,"pingMin":9.3,"pingMax":10.6,"kinds":["坡道平面"],"dateMin":"2023-06-10","dateMax":"2026-01-03"},"地下二樓":{"deals":48,"units":78,"avg":223.8,"med":225.0,"min":195,"max":250,"ping":9.31,"pingMin":9.3,"pingMax":10.6,"kinds":["坡道平面"],"dateMin":"2023-06-10","dateMax":"2026-01-13"},"地下三樓":{"deals":56,"units":87,"avg":197.9,"med":195.0,"min":175,"max":215,"ping":9.31,"pingMin":9.3,"pingMax":9.4,"kinds":["坡道平面"],"dateMin":"2023-06-10","dateMax":"2024-05-31"}}},{"name":"惠宇覞山","zone":"環中段","total":{"deals":85,"units":153,"avg":215.6,"med":220.0,"min":175,"max":280,"ping":9.9,"pingMin":9.9,"pingMax":12.5,"kinds":["坡道平面"],"dateMin":"2023-03-23","dateMax":"2023-09-05"},"floors":{"地下一樓":{"deals":18,"units":29,"avg":242.5,"med":240.0,"min":235,"max":280,"ping":9.9,"pingMin":9.9,"pingMax":9.9,"kinds":["坡道平面"],"dateMin":"2023-03-23","dateMax":"2023-07-22"},"地下二樓":{"deals":33,"units":61,"avg":219.2,"med":220.0,"min":195,"max":240,"ping":9.9,"pingMin":9.9,"pingMax":9.9,"kinds":["坡道平面"],"dateMin":"2023-03-23","dateMax":"2023-09-05"},"地下三樓":{"deals":34,"units":63,"avg":197.9,"med":200.0,"min":175,"max":220,"ping":9.9,"pingMin":9.9,"pingMax":12.5,"kinds":["坡道平面"],"dateMin":"2023-03-23","dateMax":"2023-06-10"}}},{"name":"悅讀大城-雲詠","zone":"仁平段","total":{"deals":48,"units":52,"avg":214.6,"med":215.0,"min":190,"max":235,"ping":10.94,"pingMin":10.1,"pingMax":13.1,"kinds":["坡道平面"],"dateMin":"2023-04-01","dateMax":"2024-05-31"},"floors":{"地下一樓":{"deals":20,"units":23,"avg":221.1,"med":225.0,"min":200,"max":235,"ping":10.94,"pingMin":10.1,"pingMax":10.9,"kinds":["坡道平面"],"dateMin":"2023-04-29","dateMax":"2024-05-23"},"地下二樓":{"deals":28,"units":29,"avg":210.0,"med":215.0,"min":190,"max":225,"ping":10.94,"pingMin":10.1,"pingMax":13.1,"kinds":["坡道平面"],"dateMin":"2023-04-01","dateMax":"2024-05-31"}}},{"name":"新業大塊藏硯","zone":"美和段","total":{"deals":106,"units":156,"avg":214.4,"med":215.0,"min":190,"max":240,"ping":8.4,"pingMin":7.9,"pingMax":9.3,"kinds":["坡道平面"],"dateMin":"2023-04-15","dateMax":"2024-07-27"},"floors":{"地下一樓":{"deals":50,"units":71,"avg":220.2,"med":220.0,"min":205,"max":240,"ping":8.4,"pingMin":7.9,"pingMax":9.3,"kinds":["坡道平面"],"dateMin":"2023-05-19","dateMax":"2024-07-27"},"地下二樓":{"deals":56,"units":85,"avg":209.2,"med":210.0,"min":190,"max":235,"ping":8.4,"pingMin":8.1,"pingMax":9.3,"kinds":["坡道平面"],"dateMin":"2023-04-15","dateMax":"2024-05-27"}}},{"name":"悅讀大城-築玥","zone":"仁平段","total":{"deals":61,"units":79,"avg":214.1,"med":215.0,"min":180,"max":238,"ping":10.59,"pingMin":9.7,"pingMax":12.7,"kinds":["坡道平面"],"dateMin":"2023-04-05","dateMax":"2024-05-23"},"floors":{"地下一樓":{"deals":26,"units":35,"avg":218.4,"med":222.5,"min":195,"max":238,"ping":10.59,"pingMin":10.6,"pingMax":12.7,"kinds":["坡道平面"],"dateMin":"2023-05-18","dateMax":"2024-05-23"},"地下二樓":{"deals":35,"units":44,"avg":210.9,"med":215.0,"min":180,"max":230,"ping":10.59,"pingMin":9.7,"pingMax":11.6,"kinds":["坡道平面"],"dateMin":"2023-04-05","dateMax":"2024-05-23"}}},{"name":"順天KING'S ROAD","zone":"敦和段","total":{"deals":119,"units":209,"avg":213.4,"med":210.0,"min":162,"max":260,"ping":9.29,"pingMin":9.3,"pingMax":11.1,"kinds":["坡道平面"],"dateMin":"2022-11-03","dateMax":"2026-01-02"},"floors":{"地下一樓":{"deals":13,"units":19,"avg":240.2,"med":245.0,"min":215,"max":260,"ping":9.29,"pingMin":9.3,"pingMax":11.1,"kinds":["坡道平面"],"dateMin":"2023-06-26","dateMax":"2025-09-21"},"地下二樓":{"deals":45,"units":78,"avg":222.2,"med":222.5,"min":190,"max":260,"ping":9.29,"pingMin":9.3,"pingMax":9.3,"kinds":["坡道平面"],"dateMin":"2022-11-03","dateMax":"2026-01-02"},"地下三樓":{"deals":61,"units":112,"avg":201.2,"med":200.0,"min":162,"max":240,"ping":9.29,"pingMin":9.3,"pingMax":9.3,"kinds":["坡道平面"],"dateMin":"2023-01-27","dateMax":"2025-02-14"}}},{"name":"鉑域","zone":"敦和段","total":{"deals":40,"units":45,"avg":210.6,"med":210.0,"min":180,"max":238,"ping":10.58,"pingMin":10.6,"pingMax":10.6,"kinds":["坡道平面"],"dateMin":"2023-04-22","dateMax":"2024-12-29"},"floors":{"地下一樓":{"deals":18,"units":20,"avg":217.4,"med":215.0,"min":200,"max":238,"ping":10.58,"pingMin":10.6,"pingMax":10.6,"kinds":["坡道平面"],"dateMin":"2023-06-11","dateMax":"2024-12-29"},"地下二樓":{"deals":22,"units":25,"avg":205.0,"med":205.0,"min":180,"max":230,"ping":10.58,"pingMin":10.6,"pingMax":10.6,"kinds":["坡道平面"],"dateMin":"2023-04-22","dateMax":"2024-11-02"}}},{"name":"寬展緣森","zone":"美和段","total":{"deals":35,"units":42,"avg":209.6,"med":210.0,"min":178,"max":240,"ping":12.44,"pingMin":12.4,"pingMax":12.4,"kinds":["坡道平面"],"dateMin":"2024-10-25","dateMax":"2026-02-04"},"floors":{"地下一樓":{"deals":9,"units":11,"avg":231.1,"med":230.0,"min":220,"max":240,"ping":12.44,"pingMin":12.4,"pingMax":12.4,"kinds":["坡道平面"],"dateMin":"2024-10-30","dateMax":"2026-02-04"},"地下二樓":{"deals":12,"units":16,"avg":212.7,"med":210.0,"min":205,"max":222,"ping":12.44,"pingMin":12.4,"pingMax":12.4,"kinds":["坡道平面"],"dateMin":"2024-10-30","dateMax":"2025-09-24"},"地下三樓":{"deals":14,"units":15,"avg":193.1,"med":195.0,"min":178,"max":208,"ping":12.44,"pingMin":12.4,"pingMax":12.4,"kinds":["坡道平面"],"dateMin":"2024-10-25","dateMax":"2025-07-05"}}},{"name":"JIA55","zone":"敦和段","total":{"deals":51,"units":51,"avg":209.3,"med":205.0,"min":195,"max":225,"ping":7.6,"pingMin":7.6,"pingMax":7.6,"kinds":["坡道平面"],"dateMin":"2023-05-14","dateMax":"2023-05-29"},"floors":{"地下一樓":{"deals":21,"units":21,"avg":216.0,"med":215.0,"min":205,"max":225,"ping":7.6,"pingMin":7.6,"pingMax":7.6,"kinds":["坡道平面"],"dateMin":"2023-05-14","dateMax":"2023-05-29"},"地下二樓":{"deals":30,"units":30,"avg":204.7,"med":205.0,"min":195,"max":215,"ping":7.6,"pingMin":7.6,"pingMax":7.6,"kinds":["坡道平面"],"dateMin":"2023-05-14","dateMax":"2023-05-26"}}},{"name":"舜元境朗","zone":"榮德段","total":{"deals":50,"units":77,"avg":205.7,"med":200.0,"min":175,"max":245,"ping":8.06,"pingMin":7.7,"pingMax":9.0,"kinds":["坡道平面"],"dateMin":"2022-11-16","dateMax":"2024-07-31"},"floors":{"地下一樓":{"deals":20,"units":33,"avg":210.5,"med":210.0,"min":180,"max":245,"ping":8.06,"pingMin":7.7,"pingMax":8.3,"kinds":["坡道平面"],"dateMin":"2022-11-17","dateMax":"2024-07-31"},"地下二樓":{"deals":30,"units":44,"avg":202.5,"med":200.0,"min":175,"max":235,"ping":8.06,"pingMin":7.7,"pingMax":9.0,"kinds":["坡道平面"],"dateMin":"2022-11-16","dateMax":"2024-06-30"}}},{"name":"亞昕一沐","zone":"洲際段","total":{"deals":96,"units":96,"avg":204.1,"med":200.0,"min":190,"max":250,"ping":8.77,"pingMin":7.3,"pingMax":8.9,"kinds":["坡道平面"],"dateMin":"2022-05-12","dateMax":"2022-11-30"},"floors":{"地下一樓":{"deals":39,"units":39,"avg":210.4,"med":210.0,"min":195,"max":250,"ping":8.77,"pingMin":7.3,"pingMax":8.9,"kinds":["坡道平面"],"dateMin":"2022-05-14","dateMax":"2022-10-31"},"地下二樓":{"deals":57,"units":57,"avg":199.8,"med":200.0,"min":190,"max":200,"ping":8.77,"pingMin":7.3,"pingMax":8.8,"kinds":["坡道平面"],"dateMin":"2022-05-12","dateMax":"2022-11-30"}}},{"name":"元鈞坐忘山","zone":"仁平段","total":{"deals":79,"units":166,"avg":202.3,"med":205.0,"min":175,"max":245,"ping":10.37,"pingMin":10.4,"pingMax":10.4,"kinds":["坡道平面"],"dateMin":"2022-03-24","dateMax":"2023-06-30"},"floors":{"地下一樓":{"deals":20,"units":37,"avg":219.0,"med":220.0,"min":205,"max":245,"ping":10.37,"pingMin":10.4,"pingMax":10.4,"kinds":["坡道平面"],"dateMin":"2022-03-24","dateMax":"2023-06-08"},"地下二樓":{"deals":28,"units":61,"avg":204.5,"med":205.0,"min":190,"max":205,"ping":10.37,"pingMin":10.4,"pingMax":10.4,"kinds":["坡道平面"],"dateMin":"2022-03-24","dateMax":"2023-06-30"},"地下三樓":{"deals":31,"units":68,"avg":189.5,"med":190.0,"min":175,"max":190,"ping":10.37,"pingMin":10.4,"pingMax":10.4,"kinds":["坡道平面"],"dateMin":"2022-03-25","dateMax":"2023-05-26"}}},{"name":"雅正YOUNG","zone":"洲際段","total":{"deals":52,"units":62,"avg":202.2,"med":200.0,"min":175,"max":235,"ping":11.02,"pingMin":10.7,"pingMax":13.2,"kinds":["坡道平面"],"dateMin":"2022-07-21","dateMax":"2025-01-20"},"floors":{"一樓":{"deals":1,"units":1,"avg":200.0,"med":200.0,"min":200,"max":200,"ping":11.02,"pingMin":11.0,"pingMax":11.0,"kinds":["坡道平面"],"dateMin":"2024-02-17","dateMax":"2024-02-17"},"地下一樓":{"deals":18,"units":23,"avg":206.9,"med":210.0,"min":175,"max":235,"ping":11.02,"pingMin":10.7,"pingMax":12.1,"kinds":["坡道平面"],"dateMin":"2022-07-21","dateMax":"2025-01-20"},"地下二樓":{"deals":33,"units":38,"avg":199.6,"med":200.0,"min":175,"max":230,"ping":11.02,"pingMin":10.9,"pingMax":13.2,"kinds":["坡道平面"],"dateMin":"2022-07-21","dateMax":"2025-01-20"}}},{"name":"協勝洲際ONE","zone":"洲際段","total":{"deals":166,"units":192,"avg":201.4,"med":205.0,"min":185,"max":220,"ping":10.31,"pingMin":10.3,"pingMax":10.3,"kinds":["坡道平面"],"dateMin":"2024-08-01","dateMax":"2025-07-20"},"floors":{"地下一樓":{"deals":34,"units":47,"avg":219.8,"med":220.0,"min":213,"max":220,"ping":10.31,"pingMin":10.3,"pingMax":10.3,"kinds":["坡道平面"],"dateMin":"2024-08-09","dateMax":"2024-12-08"},"地下二樓":{"deals":63,"units":72,"avg":204.0,"med":205.0,"min":185,"max":205,"ping":10.31,"pingMin":10.3,"pingMax":10.3,"kinds":["坡道平面"],"dateMin":"2024-08-01","dateMax":"2025-07-20"},"地下三樓":{"deals":69,"units":73,"avg":190.0,"med":190.0,"min":190,"max":190,"ping":10.31,"pingMin":10.3,"pingMax":10.3,"kinds":["坡道平面"],"dateMin":"2024-08-01","dateMax":"2024-09-28"}}},{"name":"圓堡睦霖","zone":"榮德段","total":{"deals":2,"units":2,"avg":200.0,"med":200.0,"min":200,"max":200,"ping":8.25,"pingMin":8.0,"pingMax":8.5,"kinds":["坡道平面"],"dateMin":"2024-02-04","dateMax":"2025-09-08"},"floors":{"地下二樓":{"deals":2,"units":2,"avg":200.0,"med":200.0,"min":200,"max":200,"ping":8.25,"pingMin":8.0,"pingMax":8.5,"kinds":["坡道平面"],"dateMin":"2024-02-04","dateMax":"2025-09-08"}}},{"name":"鴻承壹流","zone":"仁平段","total":{"deals":167,"units":203,"avg":199.7,"med":195.0,"min":190,"max":208,"ping":7.44,"pingMin":7.2,"pingMax":7.4,"kinds":["坡道平面"],"dateMin":"2024-06-17","dateMax":"2024-12-16"},"floors":{"地下一樓":{"deals":71,"units":84,"avg":207.0,"med":208.0,"min":203,"max":208,"ping":7.44,"pingMin":7.2,"pingMax":7.4,"kinds":["坡道平面"],"dateMin":"2024-06-17","dateMax":"2024-12-16"},"地下二樓":{"deals":96,"units":119,"avg":194.2,"med":195.0,"min":190,"max":195,"ping":7.44,"pingMin":7.2,"pingMax":7.4,"kinds":["坡道平面"],"dateMin":"2024-06-17","dateMax":"2024-10-15"}}},{"name":"元城上階綠","zone":"美和段","total":{"deals":72,"units":96,"avg":198.5,"med":195.0,"min":185,"max":230,"ping":8.49,"pingMin":7.8,"pingMax":10.2,"kinds":["坡道平面"],"dateMin":"2022-08-24","dateMax":"2025-01-24"},"floors":{"地下二樓":{"deals":29,"units":44,"avg":205.3,"med":205.0,"min":195,"max":230,"ping":8.49,"pingMin":7.8,"pingMax":10.2,"kinds":["坡道平面"],"dateMin":"2022-09-23","dateMax":"2024-09-08"},"地下三樓":{"deals":43,"units":52,"avg":193.8,"med":195.0,"min":185,"max":230,"ping":8.49,"pingMin":7.8,"pingMax":8.5,"kinds":["坡道平面"],"dateMin":"2022-08-24","dateMax":"2025-01-24"}}},{"name":"織森","zone":"美和段","total":{"deals":81,"units":167,"avg":197.6,"med":200.0,"min":185,"max":220,"ping":9.27,"pingMin":9.3,"pingMax":9.3,"kinds":["坡道平面"],"dateMin":"2021-11-26","dateMax":"2024-01-10"},"floors":{"地下一樓":{"deals":8,"units":20,"avg":218.1,"med":220.0,"min":215,"max":220,"ping":9.27,"pingMin":9.3,"pingMax":9.3,"kinds":["坡道平面"],"dateMin":"2021-11-26","dateMax":"2021-12-30"},"地下二樓":{"deals":36,"units":73,"avg":202.5,"med":203.3,"min":200,"max":205,"ping":9.27,"pingMin":9.3,"pingMax":9.3,"kinds":["坡道平面"],"dateMin":"2021-11-26","dateMax":"2024-01-10"},"地下三樓":{"deals":37,"units":74,"avg":188.2,"med":190.0,"min":185,"max":210,"ping":9.27,"pingMin":9.3,"pingMax":9.3,"kinds":["坡道平面"],"dateMin":"2021-11-26","dateMax":"2022-07-28"}}},{"name":"磐興寬心","zone":"仁平段","total":{"deals":102,"units":154,"avg":183.5,"med":180.0,"min":165,"max":205,"ping":8.56,"pingMin":8.0,"pingMax":9.4,"kinds":["坡道平面"],"dateMin":"2022-03-07","dateMax":"2023-12-12"},"floors":{"地下一樓":{"deals":44,"units":68,"avg":192.8,"med":195.0,"min":180,"max":205,"ping":8.56,"pingMin":8.0,"pingMax":9.4,"kinds":["坡道平面"],"dateMin":"2022-03-07","dateMax":"2023-12-12"},"地下二樓":{"deals":58,"units":86,"avg":176.3,"med":180.0,"min":165,"max":190,"ping":8.56,"pingMin":8.0,"pingMax":9.4,"kinds":["坡道平面"],"dateMin":"2022-03-07","dateMax":"2023-11-30"}}},{"name":"林鼎樸御","zone":"環中段","total":{"deals":116,"units":190,"avg":178.0,"med":175.0,"min":150,"max":230,"ping":10.82,"pingMin":10.8,"pingMax":10.8,"kinds":["坡道平面"],"dateMin":"2021-12-18","dateMax":"2024-07-19"},"floors":{"地下一樓":{"deals":23,"units":39,"avg":201.7,"med":203.3,"min":185,"max":230,"ping":10.82,"pingMin":10.8,"pingMax":10.8,"kinds":["坡道平面"],"dateMin":"2021-12-21","dateMax":"2022-08-09"},"地下二樓":{"deals":42,"units":70,"avg":175.7,"med":170.0,"min":150,"max":200,"ping":10.82,"pingMin":10.8,"pingMax":10.8,"kinds":["坡道平面"],"dateMin":"2021-12-18","dateMax":"2024-07-19"},"地下三樓":{"deals":51,"units":81,"avg":169.1,"med":170.0,"min":150,"max":190,"ping":10.82,"pingMin":10.8,"pingMax":10.8,"kinds":["坡道平面"],"dateMin":"2021-12-18","dateMax":"2022-06-30"}}},{"name":"新業大塊森濤","zone":"美和段","total":{"deals":82,"units":154,"avg":177.5,"med":177.5,"min":155,"max":200,"ping":7.9,"pingMin":7.7,"pingMax":10.3,"kinds":["坡道平面"],"dateMin":"2021-12-12","dateMax":"2023-12-16"},"floors":{"地下一樓":{"deals":37,"units":69,"avg":184.0,"med":182.5,"min":175,"max":200,"ping":7.9,"pingMin":7.7,"pingMax":10.3,"kinds":["坡道平面"],"dateMin":"2021-12-14","dateMax":"2023-12-16"},"地下二樓":{"deals":45,"units":85,"avg":172.2,"med":170.0,"min":155,"max":190,"ping":7.9,"pingMin":7.7,"pingMax":10.3,"kinds":["坡道平面"],"dateMin":"2021-12-12","dateMax":"2023-11-18"}}},{"name":"國泰MOST+","zone":"仁平段","total":{"deals":1,"units":1,"avg":160.0,"med":160.0,"min":160,"max":160,"ping":7.33,"pingMin":7.3,"pingMax":7.3,"kinds":["坡道平面"],"dateMin":"2021-11-30","dateMax":"2021-11-30"},"floors":{"地下二樓":{"deals":1,"units":1,"avg":160.0,"med":160.0,"min":160,"max":160,"ping":7.33,"pingMin":7.3,"pingMax":7.3,"kinds":["坡道平面"],"dateMin":"2021-11-30","dateMax":"2021-11-30"}}},{"name":"米蘭公寓","zone":"美和段","total":{"deals":8,"units":8,"avg":138.1,"med":100.0,"min":100,"max":240,"ping":2.51,"pingMin":2.5,"pingMax":7.5,"kinds":["一樓機械","坡道平面","坡道機械"],"dateMin":"2024-07-02","dateMax":"2024-12-06"},"floors":{"一樓":{"deals":8,"units":8,"avg":138.1,"med":100.0,"min":100,"max":240,"ping":2.51,"pingMin":2.5,"pingMax":7.5,"kinds":["一樓機械","坡道平面","坡道機械"],"dateMin":"2024-07-02","dateMax":"2024-12-06"}}},{"name":"裕觀樂樂","zone":"敦和段","total":{"deals":18,"units":18,"avg":101.7,"med":70.0,"min":70,"max":300,"ping":3.39,"pingMin":3.4,"pingMax":3.4,"kinds":["一樓平面","升降機械"],"dateMin":"2023-09-23","dateMax":"2025-10-31"},"floors":{"一樓":{"deals":18,"units":18,"avg":101.7,"med":70.0,"min":70,"max":300,"ping":3.39,"pingMin":3.4,"pingMax":3.4,"kinds":["一樓平面","升降機械"],"dateMin":"2023-09-23","dateMax":"2025-10-31"}}}],"overall":{"deals":3406,"units":5016,"avg":215.0,"med":215.0,"min":70,"max":350,"ping":9.29,"pingMin":2.5,"pingMax":13.3,"kinds":["一樓平面","一樓機械","升降機械","坡道平面","坡道機械"],"dateMin":"2021-11-26","dateMax":"2026-05-08"},"floorAll":{"一樓":{"deals":35,"units":36,"avg":149.4,"med":100.0,"min":70,"max":300,"ping":3.39,"pingMin":2.5,"pingMax":11.6,"kinds":["一樓平面","一樓機械","升降機械","坡道平面","坡道機械"],"dateMin":"2023-09-23","dateMax":"2025-10-31"},"地下一樓":{"deals":1070,"units":1568,"avg":227.1,"med":230.0,"min":175,"max":350,"ping":9.11,"pingMin":7.2,"pingMax":13.3,"kinds":["坡道平面"],"dateMin":"2021-11-26","dateMax":"2026-05-08"},"地下二樓":{"deals":1630,"units":2340,"avg":213.8,"med":212.5,"min":150,"max":300,"ping":9.16,"pingMin":7.1,"pingMax":13.2,"kinds":["坡道平面"],"dateMin":"2021-11-26","dateMax":"2026-05-04"},"地下三樓":{"deals":671,"units":1072,"avg":202.0,"med":200.0,"min":100,"max":270,"ping":10.0,"pingMin":7.8,"pingMax":13.2,"kinds":["坡道平面"],"dateMin":"2021-11-26","dateMax":"2026-04-30"}},"zoneAll":{"仁平段":{"deals":872,"units":1374,"avg":212.2,"med":208.0,"min":100,"max":350,"ping":9.02,"pingMin":7.2,"pingMax":13.1,"kinds":["坡道平面"],"dateMin":"2021-11-30","dateMax":"2026-04-20"},"敦和段":{"deals":458,"units":596,"avg":214.5,"med":217.5,"min":70,"max":300,"ping":9.29,"pingMin":3.4,"pingMax":12.0,"kinds":["一樓平面","升降機械","坡道平面"],"dateMin":"2022-11-03","dateMax":"2026-04-24"},"榮德段":{"deals":311,"units":446,"avg":227.1,"med":230.0,"min":175,"max":280,"ping":9.31,"pingMin":7.1,"pingMax":13.3,"kinds":["坡道平面"],"dateMin":"2022-11-11","dateMax":"2026-01-13"},"洲際段":{"deals":807,"units":1064,"avg":218.5,"med":220.0,"min":175,"max":270,"ping":9.11,"pingMin":7.3,"pingMax":13.2,"kinds":["坡道平面"],"dateMin":"2022-05-12","dateMax":"2026-05-08"},"環中段":{"deals":201,"units":343,"avg":193.9,"med":195.0,"min":150,"max":280,"ping":10.82,"pingMin":9.9,"pingMax":12.5,"kinds":["坡道平面"],"dateMin":"2021-12-18","dateMax":"2024-07-19"},"美和段":{"deals":757,"units":1193,"avg":215.5,"med":215.0,"min":100,"max":290,"ping":9.27,"pingMin":2.5,"pingMax":13.2,"kinds":["一樓機械","坡道平面","坡道機械"],"dateMin":"2021-11-26","dateMax":"2026-04-30"}},"floorOrder":["一樓","地下一樓","地下二樓","地下三樓","地下四樓","地下五樓含以下"],"unmatched":32,"mixed":19,"mismatch":[["織森","2021-12-28",400,2245.0,2],["雙橡園2925","2022-04-29",540,480.0,2],["裕觀樂樂","2024-02-02",80,70.0,1]],"txWithPark":3457,"premium":[{"name":"惠宇覞山","top":"地下一樓","bot":"地下三樓","topAvg":242.5,"botAvg":197.9,"gap":44.6,"pct":22.5,"units":153},{"name":"寶輝WATER PARK","top":"地下一樓","bot":"地下三樓","topAvg":267.5,"botAvg":220.0,"gap":47.5,"pct":21.6,"units":23},{"name":"雙橡園2925","top":"地下一樓","bot":"地下三樓","topAvg":239.8,"botAvg":197.7,"gap":42.1,"pct":21.3,"units":404},{"name":"寬展緣森","top":"地下一樓","bot":"地下三樓","topAvg":231.1,"botAvg":193.1,"gap":38.0,"pct":19.7,"units":42},{"name":"華固豐匯","top":"地下一樓","bot":"地下三樓","topAvg":265.0,"botAvg":221.9,"gap":43.1,"pct":19.4,"units":84},{"name":"順天KING'S ROAD","top":"地下一樓","bot":"地下三樓","topAvg":240.2,"botAvg":201.2,"gap":39.0,"pct":19.4,"units":209},{"name":"林鼎樸御","top":"地下一樓","bot":"地下三樓","topAvg":201.7,"botAvg":169.1,"gap":32.6,"pct":19.3,"units":190},{"name":"磐興寬境","top":"地下一樓","bot":"地下三樓","topAvg":235.5,"botAvg":197.9,"gap":37.6,"pct":19.0,"units":219},{"name":"華固四季匯","top":"地下一樓","bot":"地下三樓","topAvg":251.4,"botAvg":212.9,"gap":38.5,"pct":18.1,"units":68},{"name":"織森","top":"地下一樓","bot":"地下三樓","topAvg":218.1,"botAvg":188.2,"gap":29.9,"pct":15.9,"units":167},{"name":"協勝洲際ONE","top":"地下一樓","bot":"地下三樓","topAvg":219.8,"botAvg":190.0,"gap":29.8,"pct":15.7,"units":192},{"name":"元鈞坐忘山","top":"地下一樓","bot":"地下三樓","topAvg":219.0,"botAvg":189.5,"gap":29.5,"pct":15.6,"units":166},{"name":"豐禾","top":"地下一樓","bot":"地下三樓","topAvg":270.5,"botAvg":235.0,"gap":35.5,"pct":15.1,"units":90},{"name":"寶輝GREEN PARK","top":"地下一樓","bot":"地下二樓","topAvg":278.0,"botAvg":245.0,"gap":33.0,"pct":13.5,"units":25},{"name":"惠宇仁平MY PARK","top":"地下一樓","bot":"地下三樓","topAvg":240.7,"botAvg":212.1,"gap":28.6,"pct":13.5,"units":152},{"name":"豐莚","top":"地下一樓","bot":"地下二樓","topAvg":255.9,"botAvg":232.4,"gap":23.5,"pct":10.1,"units":115},{"name":"惠宇洲際","top":"地下一樓","bot":"地下二樓","topAvg":233.6,"botAvg":213.1,"gap":20.5,"pct":9.6,"units":315},{"name":"磐興寬心","top":"地下一樓","bot":"地下二樓","topAvg":192.8,"botAvg":176.3,"gap":16.5,"pct":9.4,"units":154},{"name":"THE精銳","top":"地下一樓","bot":"地下三樓","topAvg":249.5,"botAvg":228.2,"gap":21.3,"pct":9.3,"units":165},{"name":"敦泰一境","top":"地下一樓","bot":"地下二樓","topAvg":238.0,"botAvg":217.9,"gap":20.1,"pct":9.2,"units":90},{"name":"敘DOS","top":"地下一樓","bot":"地下二樓","topAvg":275.0,"botAvg":255.0,"gap":20.0,"pct":7.8,"units":20},{"name":"國泰美禾","top":"地下一樓","bot":"地下二樓","topAvg":231.1,"botAvg":214.6,"gap":16.5,"pct":7.7,"units":153},{"name":"有愛臻邸","top":"地下一樓","bot":"地下三樓","topAvg":262.4,"botAvg":244.4,"gap":18.0,"pct":7.4,"units":77},{"name":"新業大塊森濤","top":"地下一樓","bot":"地下二樓","topAvg":184.0,"botAvg":172.2,"gap":11.8,"pct":6.9,"units":154},{"name":"鴻承壹流","top":"地下一樓","bot":"地下二樓","topAvg":207.0,"botAvg":194.2,"gap":12.8,"pct":6.6,"units":203},{"name":"大毅MEHO","top":"地下二樓","bot":"地下三樓","topAvg":223.3,"botAvg":210.0,"gap":13.3,"pct":6.3,"units":26},{"name":"鉑域","top":"地下一樓","bot":"地下二樓","topAvg":217.4,"botAvg":205.0,"gap":12.4,"pct":6.0,"units":45},{"name":"元城上階綠","top":"地下二樓","bot":"地下三樓","topAvg":205.3,"botAvg":193.8,"gap":11.5,"pct":5.9,"units":96},{"name":"惠宇和慕","top":"地下一樓","bot":"地下二樓","topAvg":230.7,"botAvg":218.2,"gap":12.5,"pct":5.7,"units":102},{"name":"JIA55","top":"地下一樓","bot":"地下二樓","topAvg":216.0,"botAvg":204.7,"gap":11.3,"pct":5.5,"units":51},{"name":"悅讀大城-雲詠","top":"地下一樓","bot":"地下二樓","topAvg":221.1,"botAvg":210.0,"gap":11.1,"pct":5.3,"units":52},{"name":"新業大塊藏硯","top":"地下一樓","bot":"地下二樓","topAvg":220.2,"botAvg":209.2,"gap":11.0,"pct":5.3,"units":156},{"name":"亞昕一沐","top":"地下一樓","bot":"地下二樓","topAvg":210.4,"botAvg":199.8,"gap":10.6,"pct":5.3,"units":96},{"name":"亞昕之森","top":"地下一樓","bot":"地下二樓","topAvg":242.2,"botAvg":230.5,"gap":11.7,"pct":5.1,"units":43},{"name":"青園NEO ONE","top":"地下一樓","bot":"地下二樓","topAvg":226.1,"botAvg":216.0,"gap":10.1,"pct":4.7,"units":83},{"name":"亞昕一緻","top":"地下一樓","bot":"地下二樓","topAvg":236.6,"botAvg":226.8,"gap":9.8,"pct":4.3,"units":131},{"name":"舜元境朗","top":"地下一樓","bot":"地下二樓","topAvg":210.5,"botAvg":202.5,"gap":8.0,"pct":4.0,"units":77},{"name":"V雋","top":"地下一樓","bot":"地下二樓","topAvg":232.5,"botAvg":224.1,"gap":8.4,"pct":3.7,"units":40},{"name":"雅正YOUNG","top":"地下一樓","bot":"地下二樓","topAvg":206.9,"botAvg":199.6,"gap":7.3,"pct":3.7,"units":62},{"name":"悅讀大城-築玥","top":"地下一樓","bot":"地下二樓","topAvg":218.4,"botAvg":210.9,"gap":7.5,"pct":3.6,"units":79},{"name":"磐興寬悅","top":"地下一樓","bot":"地下二樓","topAvg":257.1,"botAvg":248.3,"gap":8.8,"pct":3.5,"units":41},{"name":"舜元悟野","top":"地下一樓","bot":"地下二樓","topAvg":239.6,"botAvg":235.0,"gap":4.6,"pct":2.0,"units":22},{"name":"大映奕居","top":"地下一樓","bot":"地下二樓","topAvg":228.2,"botAvg":224.3,"gap":3.9,"pct":1.7,"units":47}],"heatBins":[207.0,226.1,241.7],"adjGapMed":14.3,"adjGapQ":[10.3,20.0],"b13Med":37,"b13N":16,"oldAvg":316.2,"multiPct":43.7,"caseCount":61,"matchPct":98.5,"deepCase":{"name":"洲際W","zone":"TRUEWAY 標為仁美段，市調工具歸在待確認段","b4":10,"b5":3},"dateRange":"2021-11-26 ～ 2026-05-08","builtAt":"2026-08-07"};
+</script>
+<script>
+/* ═══ 共用 ═══ */
+const $ = s => document.querySelector(s);
+const FO = D.floorOrder;
+const FVAR = {'一樓':'--f0','地下一樓':'--f1','地下二樓':'--f2','地下三樓':'--f3','地下四樓':'--f3','地下五樓含以下':'--f3'};
+const cssv = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const fmt = (n,d=0) => n==null ? '—' : Number(n).toLocaleString('zh-TW',{minimumFractionDigits:d,maximumFractionDigits:d});
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ═══ tooltip ═══ */
+const tip = $('#tip');
+function showTip(e, html){
+  tip.innerHTML = html; tip.style.opacity = 1;
+  const r = tip.getBoundingClientRect();
+  let x = e.clientX + 14, y = e.clientY - r.height - 10;
+  if (x + r.width > innerWidth - 8) x = e.clientX - r.width - 14;
+  if (y < 8) y = e.clientY + 18;
+  tip.style.left = x + 'px'; tip.style.top = y + 'px';
+}
+const hideTip = () => tip.style.opacity = 0;
+function bindTip(el, html){
+  el.addEventListener('mousemove', e => showTip(e, html));
+  el.addEventListener('mouseleave', hideTip);
+  el.setAttribute('tabindex','0');
+  el.addEventListener('focus', e => {
+    const b = el.getBoundingClientRect();
+    showTip({clientX:b.left+b.width/2, clientY:b.top}, html);
+  });
+  el.addEventListener('blur', hideTip);
+}
+const svgEl = (n,a={}) => { const e = document.createElementNS('http://www.w3.org/2000/svg',n);
+  for (const k in a) e.setAttribute(k, a[k]); return e; };
+
+/* ═══ 頁首 meta ═══ */
+const o = D.overall;
+$('#hmeta').innerHTML = [
+  `資料期間 ${D.dateRange}`,
+  `${D.caseCount} 個建案`,
+  `${fmt(o.deals)} 筆交易／${fmt(o.units)} 個車位`,
+  `更新於 ${D.builtAt}`
+].map(t => `<span class="chip">${t}</span>`).join('');
+
+/* ═══ 00 修正對比 ═══ */
+$('#fx-old').textContent = fmt(D.oldAvg,1);
+$('#fx-new').textContent = fmt(o.avg,1);
+$('#fx-delta').textContent = '+' + Math.round((D.oldAvg/o.avg-1)*100) + '%';
+$('#fx-note').innerHTML = `${fmt(o.deals)} 筆交易共 ${fmt(o.units)} 個車位<br>單位：萬元／個`;
+
+$('#kpis').innerHTML = [
+  ['單車位中位價', fmt(o.med,1)+'<small> 萬</small>', `半數成交落在此價位上下`],
+  ['價格區間', fmt(o.min)+'–'+fmt(o.max)+'<small> 萬</small>', `最低多為機械式、最高為豪宅案平面車位`],
+  ['車位坪數中位', fmt(o.ping,2)+'<small> 坪</small>', `含車道持分，區間 ${fmt(o.pingMin,1)}–${fmt(o.pingMax,1)} 坪`],
+  ['多車位交易占比', D.multiPct+'<small> %</small>', `就是這個比例把舊算法拉高的`],
+].map(([l,v,s]) => `<div class="kpi"><div class="lab">${l}</div><div class="val">${v}</div><div class="sub">${s}</div></div>`).join('');
+
+/* ═══ 01 全區樓層梯度 ═══ */
+(function(){
+  const rows = FO.filter(f => D.floorAll[f]).map(f => ({f, ...D.floorAll[f]}));
+  const W = 860, padL = 96, padR = 200, rowH = 54, padT = 26, padB = 34;
+  const H = padT + rows.length*rowH + padB;
+  const max = Math.max(...rows.map(r => r.avg)) * 1.06;
+  const plotW = W - padL - padR;
+  const x = v => padL + v/max*plotW;
+  const svg = svgEl('svg',{viewBox:`0 0 ${W} ${H}`, width:W, height:H});
+
+  [0,50,100,150,200,250].forEach(v => {
+    if (v > max) return;
+    svg.appendChild(svgEl('line',{x1:x(v),x2:x(v),y1:padT-8,y2:padT+rows.length*rowH,class:'grid-line'}));
+    const t = svgEl('text',{x:x(v),y:H-14,'text-anchor':'middle',class:'tick'});
+    t.textContent = v; svg.appendChild(t);
+  });
+  const xl = svgEl('text',{x:padL+plotW/2,y:H-1,'text-anchor':'middle',class:'tick'});
+  xl.textContent = '單車位均價（萬元）'; svg.appendChild(xl);
+
+  rows.forEach((r,i) => {
+    const y = padT + i*rowH, bh = 22, by = y + (rowH-bh)/2 - 4;
+    const lab = svgEl('text',{x:padL-13,y:by+15,'text-anchor':'end',class:'bar-lab'});
+    lab.textContent = r.f; svg.appendChild(lab);
+    const cnt = svgEl('text',{x:padL-13,y:by+30,'text-anchor':'end',class:'bar-sub'});
+    cnt.textContent = fmt(r.units)+' 個車位'; svg.appendChild(cnt);
+
+    svg.appendChild(svgEl('rect',{x:padL,y:by,width:Math.max(x(r.avg)-padL,3),height:bh,rx:4,
+      fill:cssv(FVAR[r.f]||'--f2')}));
+    const v = svgEl('text',{x:x(r.avg)+10,y:by+16,class:'bar-val'});
+    v.textContent = fmt(r.avg,1)+' 萬'; svg.appendChild(v);
+    const s = svgEl('text',{x:x(r.avg)+10,y:by+31,class:'bar-sub'});
+    s.textContent = r.ping ? `坪數中位 ${fmt(r.ping,2)} 坪` : '坪數不足'; svg.appendChild(s);
+
+    const hit = svgEl('rect',{x:padL,y:y,width:plotW+padR-10,height:rowH,class:'hit'});
+    bindTip(hit, `<b>${r.f}</b><br>
+      單車位均價 <b>${fmt(r.avg,1)} 萬</b>　中位 ${fmt(r.med,1)} 萬<br>
+      <span class="r">區間</span> ${fmt(r.min)}–${fmt(r.max)} 萬<br>
+      <span class="r">樣本</span> ${fmt(r.deals)} 筆／${fmt(r.units)} 個車位<br>
+      <span class="r">坪數</span> ${r.ping ? fmt(r.ping,2)+' 坪（'+fmt(r.pingMin,1)+'–'+fmt(r.pingMax,1)+'）' : '—'}<br>
+      <span class="r">型式</span> ${r.kinds.join('、')}`);
+    svg.appendChild(hit);
+  });
+  svg.appendChild(svgEl('line',{x1:padL,x2:padL,y1:padT-8,y2:padT+rows.length*rowH,class:'ax-line'}));
+  $('#floorChart').replaceWith(svg); svg.id = 'floorChart';
+})();
+
+const f1 = D.floorAll['一樓'];
+$('#oneFloorNote').innerHTML = f1
+  ? `<b>「一樓」這一列不要直接跟地下樓層比。</b>全區只有 ${f1.units} 個一樓車位成交，而且混了${f1.kinds.join('、')}等不同型式——坪數中位只有 ${fmt(f1.ping,2)} 坪（地下平面車位約 9 坪），機械式車位單價本來就低。均價 ${fmt(f1.avg,1)} 萬是這幾種混在一起的結果，個別案子請看下方對照表。`
+  : '';
+
+$('#deepNote').innerHTML = `<b>為什麼最深只到地下三樓？</b>
+  十四期有揭露車位價格的成交，最深就是地下三樓。唯一挖更深的是<b>${D.deepCase.name}</b>（${D.deepCase.zone}），
+  有 ${D.deepCase.b4} 筆地下四樓、${D.deepCase.b5} 筆地下五樓含以下的成交紀錄，
+  但這 ${D.deepCase.b4 + D.deepCase.b5} 筆的車位價格在實登上<b>全部登錄為 0</b>——車位價包在房價裡沒有單獨拆開，算不出單價，所以沒有進入統計。<br>
+  也因此，這張表反映的是「<b>有成交、而且車位價有單獨揭露</b>的樓層」，不等於建物實際開挖到幾層。
+  某案挖到地下四樓但該層車位還沒賣、或成交時車位價沒拆開，這份資料就看不到。`;
+
+/* ═══ 02 樓層溢價 dumbbell ═══ */
+(function(){
+  const rows = D.premium;
+  $('#admGap').textContent = fmt(D.adjGapMed,1) + ' 萬';
+  $('#admQ').textContent = fmt(D.adjGapQ[0]) + '–' + fmt(D.adjGapQ[1]) + ' 萬';
+  $('#b13').textContent = fmt(D.b13Med) + ' 萬';
+  $('#b13N').textContent = D.b13N;
+  const W = 860, padL = 132, padR = 92, rowH = 26, padT = 30, padB = 50;
+  const H = padT + rows.length*rowH + padB;
+  const all = rows.flatMap(r => [r.topAvg, r.botAvg]);
+  const lo = Math.floor(Math.min(...all)/20)*20 - 10, hi = Math.ceil(Math.max(...all)/20)*20 + 10;
+  const plotW = W - padL - padR;
+  const x = v => padL + (v-lo)/(hi-lo)*plotW;
+  const svg = svgEl('svg',{viewBox:`0 0 ${W} ${H}`, width:W, height:H});
+  const yBot = padT + rows.length*rowH;
+
+  // 43 列很長，捲到下半部時看不到頂端刻度，所以上下各放一組。
+  for (let v = Math.ceil(lo/25)*25; v <= hi; v += 25){
+    svg.appendChild(svgEl('line',{x1:x(v),x2:x(v),y1:padT-10,y2:yBot,class:'grid-line'}));
+    [padT-16, yBot+18].forEach(y => {
+      const t = svgEl('text',{x:x(v),y:y,'text-anchor':'middle',class:'tick'});
+      t.textContent = v; svg.appendChild(t);
+    });
+  }
+  const xl = svgEl('text',{x:padL+plotW/2,y:yBot+36,'text-anchor':'middle',class:'tick'});
+  xl.textContent = '單車位均價（萬元）'; svg.appendChild(xl);
+
+  rows.forEach((r,i) => {
+    const y = padT + i*rowH + rowH/2;
+    const nm = svgEl('text',{x:padL-12,y:y+4,'text-anchor':'end',class:'bar-lab',style:'font-size:11.5px'});
+    nm.textContent = r.name.length > 11 ? r.name.slice(0,10)+'…' : r.name; svg.appendChild(nm);
+    svg.appendChild(svgEl('line',{x1:x(r.botAvg),x2:x(r.topAvg),y1:y,y2:y,
+      stroke:cssv('--muted'),'stroke-width':2,'stroke-opacity':.32}));
+    svg.appendChild(svgEl('circle',{cx:x(r.botAvg),cy:y,r:5.5,fill:cssv('--f3'),stroke:cssv('--card'),'stroke-width':2}));
+    svg.appendChild(svgEl('circle',{cx:x(r.topAvg),cy:y,r:5.5,fill:cssv('--f0'),stroke:cssv('--card'),'stroke-width':2}));
+    const g = svgEl('text',{x:x(r.topAvg)+12,y:y+4,class:'bar-sub',style:'font-size:11px;font-weight:700'});
+    g.textContent = '+' + fmt(r.gap) + ' 萬'; svg.appendChild(g);
+
+    const hit = svgEl('rect',{x:0,y:padT+i*rowH,width:W,height:rowH,class:'hit'});
+    bindTip(hit, `<b>${esc(r.name)}</b><br>
+      ${r.top} <b>${fmt(r.topAvg,1)} 萬</b><br>
+      ${r.bot} <b>${fmt(r.botAvg,1)} 萬</b><br>
+      <span class="r">價差</span> ${fmt(r.gap,1)} 萬（${r.pct}%）<br>
+      <span class="r">全案樣本</span> ${fmt(r.units)} 個車位`);
+    svg.appendChild(hit);
+  });
+  svg.appendChild(svgEl('line',{x1:padL,x2:padL,y1:padT-10,y2:yBot,class:'ax-line'}));
+  $('#premChart').replaceWith(svg); svg.id = 'premChart';
+})();
+
+/* ═══ 03 主表 ═══ */
+// 用四分位切點分箱（不是線性映射），四個色階各佔約 1/4 的格子，
+// 線性映射會讓 220–260 那一團全部落進同一個最深色，看不出高低。
+const HEAT = ['--f0','--f1','--f2','--f3'];
+function heatStyle(v){
+  let i = 0;
+  while (i < D.heatBins.length && v >= D.heatBins[i]) i++;
+  // 直接寫 var()，表格才會跟著主題自動換色（SVG 是畫的時候寫死，才需要重載）
+  return `background:var(${HEAT[i]});color:var(${i >= 2 ? '--heat-ink' : '--heat-ink-lo'})`;
+}
+const COLS = [
+  {k:'name', l:'建案', cls:'l'},
+  {k:'avg',  l:'全案均價'},
+  {k:'units',l:'車位數'},
+  {k:'ping', l:'坪數中位'},
+  ...FO.filter(f => D.cases.some(c => c.floors[f])).map(f => ({k:'f:'+f, l:f, floor:f})),
+];
+let sortK = 'avg', sortD = -1;
+const zones = [...new Set(D.cases.map(c => c.zone))].sort();
+$('#zoneF').insertAdjacentHTML('beforeend', zones.map(z => `<option>${z}</option>`).join(''));
+
+function val(c, k){
+  if (k === 'name') return c.name;
+  if (k.startsWith('f:')){ const f = c.floors[k.slice(2)]; return f ? f.avg : null; }
+  return c.total[k];
+}
+function renderTable(){
+  const q = $('#q').value.trim().toLowerCase();
+  const mu = +$('#minU').value, zf = $('#zoneF').value;
+  let rows = D.cases.filter(c =>
+    c.total.units >= mu && (!zf || c.zone === zf) &&
+    (!q || (c.name + c.zone).toLowerCase().includes(q)));
+  rows.sort((a,b) => {
+    const x = val(a,sortK), y = val(b,sortK);
+    if (x == null && y == null) return 0;
+    if (x == null) return 1; if (y == null) return -1;
+    return (x > y ? 1 : x < y ? -1 : 0) * sortD;
+  });
+  $('#mainTbl').querySelector('thead').innerHTML = '<tr>' + COLS.map(c =>
+    `<th class="${c.cls||''}" data-k="${c.k}">${c.l}${sortK===c.k ? (sortD===-1?' ▼':' ▲') : ''}</th>`).join('') + '</tr>';
+  $('#mainTbl').querySelector('tbody').innerHTML = rows.map(c => {
+    const cells = COLS.map(col => {
+      if (col.k === 'name')
+        return `<td class="l name">${esc(c.name)}<span class="zone-tag">${esc(c.zone)}</span></td>`;
+      if (col.k === 'avg')
+        return `<td><span class="cell-price num">${fmt(c.total.avg,1)}</span><span class="cell-sub">${fmt(c.total.min)}–${fmt(c.total.max)}</span></td>`;
+      if (col.k === 'units')
+        return `<td class="num thin">${fmt(c.total.units)}<span class="cell-sub">${fmt(c.total.deals)} 筆</span></td>`;
+      if (col.k === 'ping')
+        return `<td class="num thin">${c.total.ping ? fmt(c.total.ping,2) : '—'}</td>`;
+      const f = c.floors[col.floor];
+      if (!f) return '<td class="dash">—</td>';
+      return `<td><span class="heat num" style="${heatStyle(f.avg)}" data-tip="${esc(c.name)}｜${col.floor}｜均 ${fmt(f.avg,1)} 萬｜中位 ${fmt(f.med,1)}｜區間 ${fmt(f.min)}-${fmt(f.max)}｜${fmt(f.deals)} 筆 ${fmt(f.units)} 位｜坪數 ${f.ping?fmt(f.ping,2)+' 坪':'—'}｜${f.kinds.join('、')}">${fmt(f.avg,1)}</span><span class="cell-sub">${fmt(f.units)} 位${f.ping ? ' · '+fmt(f.ping,2)+' 坪' : ''}</span></td>`;
+    }).join('');
+    return `<tr>${cells}</tr>`;
+  }).join('') || `<tr><td colspan="${COLS.length}" style="text-align:center;color:var(--muted);padding:26px">查無符合的建案</td></tr>`;
+  $('#cnt').textContent = `${rows.length} 案／${fmt(rows.reduce((a,c) => a+c.total.units, 0))} 個車位`;
+
+  $('#mainTbl').querySelectorAll('th').forEach(th => th.onclick = () => {
+    const k = th.dataset.k;
+    if (sortK === k) sortD *= -1; else { sortK = k; sortD = k === 'name' ? 1 : -1; }
+    renderTable();
+  });
+  $('#mainTbl').querySelectorAll('[data-tip]').forEach(el => {
+    const p = el.dataset.tip.split('｜');
+    bindTip(el, `<b>${p[0]}</b>　${p[1]}<br>` + p.slice(2).map((s,i) =>
+      i === 0 ? s : `<span class="r">${s}</span>`).join('<br>'));
+  });
+}
+['#q','#minU','#zoneF'].forEach(s => $(s).addEventListener('input', renderTable));
+renderTable();
+
+/* ═══ 04 地段 ═══ */
+(function(){
+  const rows = Object.entries(D.zoneAll).map(([z,s]) => ({z, ...s})).sort((a,b) => b.avg - a.avg);
+  const W = 860, padL = 84, padR = 172, rowH = 40, padT = 20, padB = 32;
+  const H = padT + rows.length*rowH + padB;
+  const max = Math.max(...rows.map(r => r.avg))*1.06, plotW = W - padL - padR;
+  const x = v => padL + v/max*plotW;
+  const svg = svgEl('svg',{viewBox:`0 0 ${W} ${H}`, width:W, height:H});
+  [0,50,100,150,200].forEach(v => {
+    svg.appendChild(svgEl('line',{x1:x(v),x2:x(v),y1:padT-6,y2:padT+rows.length*rowH,class:'grid-line'}));
+    const t = svgEl('text',{x:x(v),y:H-12,'text-anchor':'middle',class:'tick'}); t.textContent = v; svg.appendChild(t);
+  });
+  const xl = svgEl('text',{x:padL+plotW/2,y:H-1,'text-anchor':'middle',class:'tick'});
+  xl.textContent = '單車位均價（萬元）'; svg.appendChild(xl);
+  rows.forEach((r,i) => {
+    const y = padT + i*rowH, bh = 18, by = y + (rowH-bh)/2 - 3;
+    const lab = svgEl('text',{x:padL-12,y:by+13,'text-anchor':'end',class:'bar-lab',style:'font-size:12px'});
+    lab.textContent = r.z; svg.appendChild(lab);
+    svg.appendChild(svgEl('rect',{x:padL,y:by,width:Math.max(x(r.avg)-padL,3),height:bh,rx:4,fill:cssv('--f2')}));
+    const v = svgEl('text',{x:x(r.avg)+10,y:by+9,class:'bar-val',style:'font-size:12.5px','dominant-baseline':'middle'});
+    v.textContent = `${fmt(r.avg,1)} 萬`; svg.appendChild(v);
+    const s = svgEl('text',{x:x(r.avg)+74,y:by+9,class:'bar-sub','dominant-baseline':'middle'});
+    s.textContent = `${fmt(r.units)} 位`; svg.appendChild(s);
+    const hit = svgEl('rect',{x:0,y:y,width:W,height:rowH,class:'hit'});
+    bindTip(hit, `<b>${r.z}</b><br>單車位均價 <b>${fmt(r.avg,1)} 萬</b>　中位 ${fmt(r.med,1)}<br>
+      <span class="r">區間</span> ${fmt(r.min)}–${fmt(r.max)} 萬<br>
+      <span class="r">樣本</span> ${fmt(r.deals)} 筆／${fmt(r.units)} 個車位<br>
+      <span class="r">坪數中位</span> ${r.ping ? fmt(r.ping,2)+' 坪' : '—'}`);
+    svg.appendChild(hit);
+  });
+  svg.appendChild(svgEl('line',{x1:padL,x2:padL,y1:padT-6,y2:padT+rows.length*rowH,class:'ax-line'}));
+  $('#zoneChart').replaceWith(svg); svg.id = 'zoneChart';
+})();
+
+/* ═══ 05 方法論 ═══ */
+$('#meth').innerHTML = `
+<h3>兩個資料源，各出各的欄位</h3>
+<ul>
+  <li><b>價格與車位個數</b>：內政部不動產交易實價查詢服務網「預售屋買賣」開放資料（<code>plvr.land.moi.gov.tw</code>），民 105S3–115S2 共 18 季，依「編號」去重。這是官方原始成交資料，價格以它為準。</li>
+  <li><b>車位樓層與車位面積</b>：TRUEWAY 主委說完整資料集（<code>trueway.adholic.com.tw/data/main.csv</code>）。內政部的開放資料<b>沒有車位樓層欄位</b>（只有「坡道平面／升降機械」這類型式），樓層資訊只有這個來源有。</li>
+  <li>兩邊以「建案名稱＋交易日期＋交易總價」對應，${D.matchPct}% 的交易配對成功（${fmt(D.overall.deals)} / ${fmt(D.txWithPark)} 筆）。</li>
+</ul>
+<h3>單車位價格怎麼算</h3>
+<ul>
+  <li>實登的「車位總價」是一筆交易<b>全部車位的合計價</b>，所以單價 = 車位總價 ÷ 車位個數（個數取自「交易筆棟數」欄位的<code>車位N</code>）。</li>
+  <li>坪數 = 車位移轉總面積 ÷ 車位個數 × 0.3025。這是<b>權狀登記面積</b>，含車道與車位共同持分，不是車格本身的尺寸；地下平面車位大多落在 9 坪上下。</li>
+  <li>一次買多個車位、但登記在<b>同一樓層同一型式</b>者，除以個數後納入該樓層；跨樓層的 ${D.mixed} 筆因為合計價無法拆到各層，已排除。</li>
+</ul>
+<h3>已知的限制，看數字時要記得</h3>
+<ul>
+  <li><b>兩來源價格不一致時一律採用內政部。</b>核對發現 TRUEWAY 有 ${D.mismatch.length} 筆車位價與官方檔不符，最誇張的是織森 2021-12-28 那筆記成 2,245 萬（官方是 400 萬／2 位），已改以官方為準。</li>
+  <li><b>樣本少的案子只能參考。</b>表格預設只顯示 10 個車位以上的案子，可自行放寬；個位數樣本的均價很容易被一兩筆特殊交易帶偏。</li>
+  <li><b>這是預售屋檔的資料。</b>已完工交屋的案子，後續轉售會轉入「不動產買賣」成屋檔，不在這份統計裡。</li>
+  <li><b>不含解約回補。</b>同一戶若解約後重售，兩筆都在原始資料中，本統計未特別剔除。</li>
+  <li>「一樓」樓層混雜平面與機械式車位，坪數與單價都跟地下樓層不同基準，不宜直接並列比較。</li>
+</ul>`;
+
+$('#foot').innerHTML = `台中十四期重劃區車位價格分析　·　資料期間 ${D.dateRange}　·　產出於 ${D.builtAt}（台北時間）<br>
+價格：內政部實價登錄開放資料　·　車位樓層／面積：TRUEWAY 主委說　·　與市調工具「十四期」區域分析同一份底稿`;
+
+/* ═══ 深淺色 ═══ */
+// SVG 的顏色是產生當下讀 CSS 變數寫死進去的，切換主題後整頁重畫一次最單純。
+$('#themeBtn').onclick = () => {
+  const cur = document.documentElement.getAttribute('data-theme')
+    || (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  const next = cur === 'dark' ? 'light' : 'dark';
+  try { localStorage.setItem('park14-theme', next); } catch(e) {}
+  document.documentElement.setAttribute('data-theme', next);
+  location.reload();
+};
+</script>
+</body>
+</html>
