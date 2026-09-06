@@ -1,0 +1,838 @@
+<!doctype html><html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style></head><body>
+<title>城鈺深晴2 工作進度表</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@500;700&family=Noto+Sans+TC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+:root{
+  --paper:#F2F4EF;
+  --surface:#FFFFFF;
+  --surface-2:#FAFBF8;
+  --ink:#1E241F;
+  --ink-2:#5C6560;
+  --ink-3:#8B938B;
+  --rule:#DCE0D6;
+  --rule-strong:#AAB2A6;
+  --seal:#C4392E;
+  --seal-soft:#FBEDEB;
+  --ok:#3E7A54;
+  --g1:#7A6A3E; --g2:#3E6B6A; --g3:#585480; --g4:#8A5A34; --g5:#C4392E; --g6:#4E5A6B;
+  --shadow:0 1px 2px rgba(30,36,31,.06), 0 8px 24px rgba(30,36,31,.05);
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  background:var(--paper);
+  color:var(--ink);
+  font-family:"Noto Sans TC","PingFang TC","Helvetica Neue",Arial,sans-serif;
+  font-size:15px;
+  line-height:1.65;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1560px;margin:0 auto;padding:34px 26px 72px}
+
+/* ---------- header ---------- */
+.masthead{display:flex;flex-wrap:wrap;align-items:flex-end;gap:22px 34px;padding-bottom:18px;border-bottom:2px solid var(--ink)}
+.stamp{
+  font-family:"Noto Serif TC",serif;font-weight:700;font-size:12px;letter-spacing:.28em;
+  color:var(--seal);border:1.5px solid var(--seal);border-radius:2px;
+  padding:4px 9px 4px 12px;align-self:center;white-space:nowrap;
+}
+.titleblock h1{
+  font-family:"Noto Serif TC",serif;font-weight:700;font-size:34px;line-height:1.2;
+  margin:0;letter-spacing:.02em;text-wrap:balance;
+}
+.titleblock p{margin:4px 0 0;color:var(--ink-2);font-size:14px}
+.period{margin-left:auto;text-align:right}
+.period .k{font-size:11px;letter-spacing:.18em;color:var(--ink-3);display:block;margin-bottom:3px}
+.dates{display:inline-flex;align-items:center;gap:8px}
+.dates input[type="date"]{
+  font-family:"IBM Plex Mono",monospace;font-size:15px;font-weight:600;color:var(--ink);
+  background:var(--surface);border:1px solid var(--rule-strong);border-radius:3px;
+  padding:3px 7px;cursor:pointer;
+}
+.dates input[type="date"]:hover{border-color:var(--seal)}
+.dates input[type="date"]:focus-visible{outline:2px solid var(--seal);outline-offset:1px}
+.dates .dash{color:var(--ink-3)}
+.roc{
+  display:block;margin-top:4px;font-family:"IBM Plex Mono",monospace;font-size:12.5px;
+  color:var(--ink-2);font-variant-numeric:tabular-nums;letter-spacing:.02em;
+}
+
+.meta{display:flex;flex-wrap:wrap;gap:0 30px;margin:16px 0 20px}
+.meta div{display:flex;align-items:baseline;gap:8px}
+.meta dt{font-size:11px;letter-spacing:.16em;color:var(--ink-3)}
+.meta dd{margin:0;font-family:"IBM Plex Mono",monospace;font-weight:600;font-size:16px;font-variant-numeric:tabular-nums}
+.meta dd small{font-family:"Noto Sans TC",sans-serif;font-weight:400;font-size:12px;color:var(--ink-2);margin-left:2px}
+
+/* ---------- toolbar ---------- */
+.toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px;margin:0 0 12px}
+.legend{display:flex;flex-wrap:wrap;gap:14px;align-items:center;font-size:13px;color:var(--ink-2)}
+.legend b{font-family:"IBM Plex Mono",monospace;color:var(--ink);font-size:15px;margin-right:4px}
+.legend .tip{font-size:12px;color:var(--ink-3);padding-left:6px;border-left:1px solid var(--rule)}
+.status{
+  display:inline-flex;align-items:center;gap:7px;font-size:12.5px;color:var(--ink-2);
+  margin-left:auto;white-space:nowrap;
+}
+.status::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--ink-3)}
+.status[data-s="ok"]{color:var(--ok)} .status[data-s="ok"]::before{background:var(--ok)}
+.status[data-s="busy"]::before{background:var(--seal)}
+.status[data-s="warn"]{color:var(--seal)} .status[data-s="warn"]::before{background:var(--seal)}
+.btn{
+  font:inherit;font-size:13px;color:var(--ink-2);background:var(--surface);
+  border:1px solid var(--rule-strong);border-radius:3px;padding:4px 12px;cursor:pointer;
+}
+.btn:hover{color:var(--seal);border-color:var(--seal)}
+.btn:focus-visible{outline:2px solid var(--seal);outline-offset:2px}
+
+/* ---------- grid ---------- */
+.scroller{
+  overflow:auto;max-height:74vh;background:var(--surface);
+  border:2px solid var(--ink-2);border-radius:3px;box-shadow:var(--shadow);
+  scroll-padding-bottom:26px;scroll-padding-top:70px;
+}
+/* 留一段空白，否則最後一列會被 macOS 的浮動捲軸蓋住 */
+.sizer{width:max-content;padding-bottom:18px}
+table{border-collapse:separate;border-spacing:0;font-variant-numeric:tabular-nums}
+th,td{padding:0;margin:0}
+
+thead th{position:sticky;background:var(--surface-2);z-index:3}
+thead tr:first-child th{top:0;height:30px}
+thead tr:nth-child(2) th{top:30px;height:36px}
+th.corner{
+  left:0;top:0;z-index:5;width:236px;min-width:236px;
+  border-right:2px solid var(--rule-strong);border-bottom:1px solid var(--rule);
+  text-align:left;padding:0 14px;
+  font-family:"Noto Serif TC",serif;font-size:14px;font-weight:700;letter-spacing:.06em;
+}
+th.corner em{font-style:normal;font-weight:400;font-size:11px;color:var(--ink-3);letter-spacing:.1em;margin-left:8px}
+th.month{
+  font-family:"Noto Serif TC",serif;font-size:15px;font-weight:700;letter-spacing:.1em;
+  border-bottom:1px solid var(--rule);border-left:2px solid var(--rule-strong);color:var(--ink);
+}
+th.day{
+  width:26px;min-width:26px;border-bottom:1.5px solid var(--rule-strong);
+  border-left:1px solid var(--rule);
+  font-family:"IBM Plex Mono",monospace;font-size:11px;font-weight:600;color:var(--ink-2);
+  line-height:1.15;padding-top:3px;vertical-align:top;
+}
+th.day.m0{border-left:2px solid var(--rule-strong)}
+th.day span{display:block;font-family:"Noto Sans TC",sans-serif;font-weight:400;font-size:10px;color:var(--ink-3)}
+th.day.we{background:var(--seal-soft);color:var(--seal)}
+th.day.we span{color:var(--seal)}
+th.day.today{background:var(--seal);color:#fff;border-left-color:var(--seal)}
+th.day.today span{color:rgba(255,255,255,.82)}
+
+tbody th.catcell{
+  position:sticky;left:0;z-index:2;background:var(--surface-2);
+  width:40px;min-width:40px;max-width:40px;
+  border-right:1px solid var(--rule);border-bottom:2px solid var(--ink-2);
+  box-shadow:inset 3px 0 0 var(--gc);
+  text-align:center;vertical-align:middle;font-weight:400;
+}
+.gnm{
+  display:inline-block;writing-mode:vertical-rl;
+  font-family:"Noto Serif TC",serif;font-weight:700;font-size:13px;letter-spacing:.18em;
+  color:var(--gc);padding:3px 1px;border-radius:2px;
+}
+
+.gnm:focus{outline:none;background:#fff;box-shadow:inset 0 0 0 2px var(--seal)}
+.catinner{display:flex;flex-direction:column;align-items:center;gap:7px}
+
+tbody th.rowhead{
+  position:sticky;left:40px;z-index:2;background:var(--surface);
+  width:196px;min-width:196px;max-width:196px;text-align:left;
+  padding:0 7px 0 0;border-right:2px solid var(--rule-strong);
+  border-bottom:1px solid var(--rule);font-weight:400;font-size:14px;
+  white-space:nowrap;
+}
+.rowinner{display:flex;align-items:center;gap:0;width:100%}
+/* 大分類之間的分隔線：整條貫穿到最右邊，顏色要比一般列線深才分得出來 */
+tr.lastrow th.rowhead,tr.lastrow td{border-bottom:2px solid var(--ink-2)}
+tr.addrow{height:24px}
+tr.addrow th.rowhead{background:var(--surface-2);padding-left:14px}
+tr.addrow td.pad{background:var(--surface-2);border-left:2px solid var(--rule-strong)}
+.bar{flex:none;width:4px;height:15px;margin-right:10px;border-radius:1px;background:var(--gc)}
+.nm{
+  flex:1 1 auto;min-width:0;overflow:hidden;
+  white-space:nowrap;border-radius:2px;padding:1px 3px;
+}
+
+.nm:focus{outline:none;background:#fff;box-shadow:inset 0 0 0 2px var(--seal);overflow-x:auto}
+.del,.delg{
+  flex:none;width:20px;height:20px;line-height:18px;text-align:center;padding:0;
+  border:1px solid transparent;border-radius:50%;background:none;color:var(--ink-3);
+  font-size:15px;cursor:pointer;opacity:.32;
+}
+tr.item:hover .del,tbody th.catcell:hover .delg{opacity:1}
+.del:hover,.delg:hover{color:var(--seal);border-color:var(--seal);opacity:1}
+.del:focus-visible,.delg:focus-visible{opacity:1;outline:2px solid var(--seal);outline-offset:1px}
+tr.item{height:29px}
+/* 子項：縮排、樹狀符號、字色稍淡，跟父項分得開 */
+tr.item.sub th.rowhead{color:var(--ink-2)}
+tr.item.sub .bar{opacity:.4;margin-left:24px}
+.tree{flex:none;width:16px;color:var(--ink-3);font-size:11px;line-height:1}
+.fold{
+  flex:none;width:18px;height:18px;line-height:16px;text-align:center;padding:0;
+  border:none;border-radius:2px;background:none;color:var(--ink-3);
+  font-size:10px;cursor:pointer;
+}
+.fold:hover{color:var(--seal);background:var(--surface-2)}
+.fold:focus-visible{outline:2px solid var(--seal);outline-offset:1px}
+.addsub{
+  flex:none;width:20px;height:20px;line-height:17px;text-align:center;padding:0;
+  border:1px solid transparent;border-radius:50%;background:none;color:var(--ink-3);
+  font-size:14px;cursor:pointer;opacity:0;
+}
+tr.item:hover .addsub{opacity:.45}
+.addsub:hover{opacity:1;color:var(--seal);border-color:var(--seal)}
+.addsub:focus-visible{opacity:1;outline:2px solid var(--seal);outline-offset:1px}
+.kidcount{flex:none;font-size:11px;color:var(--ink-3);margin-left:4px}
+tr.item:hover th.rowhead{color:var(--gc)}
+td.cell{
+  width:26px;min-width:26px;border-left:1px solid var(--rule);border-bottom:1px solid var(--rule);
+  text-align:center;cursor:default;font-family:"IBM Plex Mono",monospace;font-size:15px;
+  color:var(--gc);line-height:1;user-select:none;
+}
+td.cell.m0{border-left:2px solid var(--rule-strong)}
+td.cell.we{background:var(--seal-soft)}
+td.cell.today{box-shadow:inset 2px 0 0 var(--seal),inset -2px 0 0 var(--seal)}
+
+
+
+.del,.delg,.addsub{display:none!important}
+.addbtn{
+  font:inherit;font-size:11px;letter-spacing:.04em;color:var(--ink-3);background:none;
+  border:1px dashed var(--rule-strong);border-radius:2px;padding:0 8px;cursor:pointer;
+}
+.addbtn:hover{color:var(--seal);border-color:var(--seal);border-style:solid}
+.addgroup{margin-top:10px}
+
+.toast{
+  position:fixed;left:50%;bottom:26px;transform:translateX(-50%);z-index:20;
+  display:flex;align-items:center;gap:14px;
+  background:var(--ink);color:#F6F8F4;font-size:13.5px;
+  padding:9px 12px 9px 16px;border-radius:4px;
+  box-shadow:0 6px 24px rgba(30,36,31,.28);max-width:calc(100vw - 32px);
+}
+.toast[hidden]{display:none}
+.toast .undo{
+  font:inherit;font-size:13px;color:#F6F8F4;background:none;
+  border:1px solid rgba(246,248,244,.45);border-radius:3px;padding:2px 10px;cursor:pointer;
+}
+.toast .undo:hover{border-color:#F6F8F4;background:rgba(246,248,244,.12)}
+.toast .undo:focus-visible{outline:2px solid var(--seal);outline-offset:1px}
+.toast.warn{background:var(--seal)}
+
+@media (max-width:640px){
+  .wrap{padding:22px 14px 56px}
+  .titleblock h1{font-size:26px}
+  .period{margin-left:0;text-align:left}
+  .status{margin-left:0}
+  th.corner{width:172px;min-width:172px}
+  tbody th.rowhead{width:132px;min-width:132px;max-width:132px}
+  .nm{max-width:92px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="masthead">
+    <span class="stamp">成屋接手</span>
+      <span class="stamp" style="border-color:#5C6560;color:#5C6560">唯讀快照</span>
+    <div class="titleblock">
+      <h1>城鈺深晴2　工作進度表</h1>
+      <p>台中市太平區・長億特區　電梯別墅 7 戶　／　前手代銷銷售中，預計 9 月中後接手</p>
+    </div>
+    <div class="period">
+      <span class="k">預計進場期間</span>
+      <span class="dates">
+        <input type="date" id="from" aria-label="起始日">
+        <span class="dash">—</span>
+        <input type="date" id="to" aria-label="結束日">
+      </span>
+      <span class="roc" id="roc">—</span>
+    </div>
+  </header>
+
+  <dl class="meta">
+    <div><dt>工作項目</dt><dd id="m-items">–<small>項</small></dd></div>
+    <div><dt>分類</dt><dd id="m-groups">–<small>大類</small></dd></div>
+    <div><dt>已標記</dt><dd id="m-marks">–<small>格</small></dd></div>
+  </dl>
+
+  <div class="toolbar">
+    <div class="legend">
+      <span><b>○</b>開始</span>
+      <span><b>◎</b>發包設計</span>
+      <span><b>●</b>完成</span>
+      <span class="tip">唯讀檢視・進度以 Eason 端為準</span>
+    </div>
+    <button class="btn" id="pdf" type="button" hidden>匯出 PDF（A3 橫式）</button>
+    
+    
+    <span class="status" id="status" data-s="idle">連線中…</span>
+  </div>
+
+  <div class="scroller" id="scroller">
+    <div class="sizer"><table id="grid"></table></div>
+  </div>
+  
+  <div class="toast" id="toast" role="status" hidden></div>
+
+</div>
+
+<script>
+const FROZEN = {"groups": ["業主配合", "現場部份", "企劃、印刷", "引導", "銷售", "交接項目"], "items": [{"g": 0, "id": "i1", "lv": 0, "t": "與前手代銷交接"}, {"g": 0, "id": "i2", "lv": 0, "t": "底價表"}, {"g": 0, "id": "i3", "lv": 0, "t": "開價表"}, {"g": 0, "id": "i4", "lv": 0, "t": "分坪表"}, {"g": 0, "id": "i5", "lv": 0, "t": "付款方式確定"}, {"g": 0, "id": "i6", "lv": 0, "t": "合約書"}, {"g": 0, "id": "nmtjr8e05", "lv": 0, "t": "委銷合約簽任"}, {"g": 1, "id": "i7", "lv": 0, "t": "現場接待處"}, {"g": 1, "id": "i8", "lv": 0, "t": "現場整理清潔"}, {"g": 1, "id": "i10", "lv": 0, "t": "實品屋佈置"}, {"g": 1, "id": "nmtpmw3d2", "lv": 1, "t": "廠商遴選"}, {"g": 1, "id": "nmtpmw7i0", "lv": 1, "t": "設計圖面"}, {"g": 1, "id": "nmtpmwnni", "lv": 1, "t": "進場施作"}, {"g": 1, "id": "nmtpmwoh4", "lv": 1, "t": "軟裝進場"}, {"g": 1, "id": "i11", "lv": 0, "t": "戶外照明"}, {"g": 1, "id": "i12", "lv": 0, "t": "現場戶外旗幟"}, {"g": 1, "id": "i13", "lv": 0, "t": "一期園藝整理"}, {"g": 1, "id": "i14", "lv": 0, "t": "冷氣"}, {"g": 1, "id": "i15", "lv": 0, "t": "飲水機"}, {"g": 1, "id": "i16", "lv": 0, "t": "影印機"}, {"g": 2, "id": "i18", "lv": 0, "t": "企劃會議"}, {"g": 2, "id": "i19", "lv": 0, "t": "攝影計畫＆空拍"}, {"g": 2, "id": "i20", "lv": 0, "t": "傢配圖檢視與討論"}, {"g": 2, "id": "i21", "lv": 0, "t": "銷平檢視與討論"}, {"g": 2, "id": "i22", "lv": 0, "t": "交通生活動線圖檢視與討論"}, {"g": 2, "id": "i23", "lv": 0, "t": "生活機能圖檢視與討論"}, {"g": 2, "id": "i24", "lv": 0, "t": "海報檢視與討論"}, {"g": 2, "id": "i25", "lv": 0, "t": "臉書檢視與討論"}, {"g": 2, "id": "i26", "lv": 0, "t": "591檢視與討論"}, {"g": 2, "id": "i27", "lv": 0, "t": "名片"}, {"g": 2, "id": "i28", "lv": 0, "t": "買賣合約書"}, {"g": 2, "id": "i29", "lv": 0, "t": "銷控表、表單"}, {"g": 3, "id": "i30", "lv": 0, "t": "POP檢視與建議"}, {"g": 3, "id": "i32", "lv": 0, "t": "手舉牌"}, {"g": 4, "id": "i35", "lv": 0, "t": "人員進駐"}, {"g": 4, "id": "nmtjtos6x", "lv": 0, "t": "舊客資檢視"}, {"g": 4, "id": "nmtjtq2nm", "lv": 0, "t": "人員銷講"}, {"g": 5, "id": "nmtpm6119", "lv": 0, "t": "銷售週報"}, {"g": 5, "id": "nmtpm6a28", "lv": 0, "t": "客戶資料"}, {"g": 5, "id": "nmtpm6ftn", "lv": 0, "t": "臉書權限"}, {"g": 5, "id": "nmtpm6u43", "lv": 0, "t": "POP定點表"}, {"g": 5, "id": "nmtpm75gt", "lv": 0, "t": "合約書範本"}, {"g": 5, "id": "nmtpmacmr", "lv": 0, "t": "現場輔銷道具點交"}, {"g": 5, "id": "nmtpmb219", "lv": 0, "t": "公司資產設備點交"}, {"g": 5, "id": "nmtpmdb95", "lv": 0, "t": "廠商名冊"}, {"g": 5, "id": "nmtpmeejh", "lv": 0, "t": "廣告預算表"}, {"g": 5, "id": "nmtpmfsaq", "lv": 0, "t": "競案市調資料"}], "marks": {"i10|2026-10-01": "○", "i10|2026-10-09": "◎", "i10|2026-10-30": "●", "i11|2026-10-01": "○", "i11|2026-10-09": "◎", "i11|2026-10-23": "●", "i12|2026-10-01": "○", "i12|2026-10-09": "◎", "i12|2026-10-16": "●", "i13|2026-10-01": "○", "i13|2026-10-02": "◎", "i13|2026-10-09": "●", "i14|2026-09-01": "●", "i15|2026-09-01": "●", "i16|2026-09-01": "●", "i18|2026-09-14": "○", "i18|2026-09-15": "◎", "i19|2026-09-21": "○", "i19|2026-09-24": "◎", "i19|2026-10-01": "●", "i1|2026-10-01": "●", "i20|2026-09-07": "○", "i20|2026-09-10": "●", "i21|2026-09-07": "○", "i21|2026-09-10": "●", "i22|2026-09-07": "○", "i22|2026-09-10": "●", "i23|2026-09-07": "○", "i23|2026-09-10": "●", "i24|2026-09-07": "○", "i24|2026-09-10": "●", "i25|2026-09-07": "○", "i25|2026-09-10": "●", "i26|2026-09-07": "○", "i26|2026-09-10": "●", "i27|2026-09-16": "○", "i27|2026-09-23": "◎", "i27|2026-09-28": "●", "i28|2026-09-07": "○", "i28|2026-09-11": "●", "i29|2026-09-07": "○", "i29|2026-09-11": "●", "i2|2026-09-11": "○", "i2|2026-09-17": "●", "i30|2026-10-01": "○", "i30|2026-10-08": "●", "i32|2026-10-01": "○", "i32|2026-10-08": "◎", "i32|2026-10-16": "●", "i35|2026-10-01": "●", "i3|2026-09-11": "○", "i3|2026-09-17": "●", "i4|2026-09-11": "○", "i4|2026-09-17": "●", "i5|2026-09-11": "○", "i5|2026-09-17": "●", "i6|2026-09-11": "○", "i6|2026-09-17": "●", "i7|2026-09-21": "○", "i7|2026-10-01": "◎", "i7|2026-10-09": "●", "i8|2026-10-01": "○", "i8|2026-10-05": "●", "nmtjr8e05|2026-09-30": "●", "nmtjtos6x|2026-10-01": "○", "nmtjtos6x|2026-10-07": "●", "nmtjtq2nm|2026-10-05": "●", "nmtjtq2nm|2026-10-06": "●", "nmtpm6119|2026-09-28": "○", "nmtpm6119|2026-10-01": "●", "nmtpm6a28|2026-09-28": "○", "nmtpm6a28|2026-10-01": "●", "nmtpm6ftn|2026-09-28": "○", "nmtpm6ftn|2026-10-01": "●", "nmtpm6u43|2026-09-28": "○", "nmtpm6u43|2026-10-01": "●", "nmtpm75gt|2026-09-28": "○", "nmtpm75gt|2026-10-01": "●", "nmtpmacmr|2026-09-28": "○", "nmtpmacmr|2026-10-01": "●", "nmtpmb219|2026-09-28": "○", "nmtpmb219|2026-10-01": "●", "nmtpmdb95|2026-09-28": "○", "nmtpmdb95|2026-10-01": "●", "nmtpmeejh|2026-09-28": "○", "nmtpmeejh|2026-10-01": "●", "nmtpmfsaq|2026-09-28": "○", "nmtpmfsaq|2026-10-01": "●", "nmtpmw3d2|2026-09-07": "○", "nmtpmw3d2|2026-09-11": "●", "nmtpmw7i0|2026-09-14": "○", "nmtpmw7i0|2026-09-25": "●", "nmtpmwnni|2026-10-01": "○", "nmtpmwnni|2026-10-23": "●", "nmtpmwoh4|2026-10-23": "○", "nmtpmwoh4|2026-10-30": "●"}, "range": {"from": "2026-09-01", "to": "2026-10-31"}};
+const SNAPSHOT_AT = '2026-09-06 18:17';
+const GROUPS = ['業主配合', '現場部份', '企劃、印刷', '引導', '銷售', '交接項目'];
+const GC = ['var(--g1)','var(--g2)','var(--g3)','var(--g4)','var(--g5)','var(--g6)'];
+const GC_HEX = ['#7A6A3E','#3E6B6A','#585480','#8A5A34','#C4392E','#4E5A6B'];  // 匯出 PDF 用（html2canvas 不吃 CSS 變數的間接引用）
+
+/* 預設項目＝2026-09-06 從雲端取回的實際內容。
+   id 一律沿用雲端既有的，按下「還原預設項目」時已標記的格子才對得回來。
+   第四欄是層級：省略＝父項，1＝子項（從屬於前一個父項，靠順序決定）。 */
+const DEFAULT_ITEMS = [
+  /* 業主配合 */
+  ['i1', 0, '與前手代銷交接'],
+  ['i2', 0, '底價表'],
+  ['i3', 0, '開價表'],
+  ['i4', 0, '分坪表'],
+  ['i5', 0, '付款方式確定'],
+  ['i6', 0, '合約書'],
+  ['nmtjr8e05', 0, '委銷合約簽任'],
+  /* 現場部份 */
+  ['i7', 1, '現場接待處'],
+  ['i8', 1, '現場整理清潔'],
+  ['i10', 1, '實品屋佈置'],
+  ['nmtpmw3d2', 1, '廠商遴選', 1],
+  ['nmtpmw7i0', 1, '設計圖面', 1],
+  ['nmtpmwnni', 1, '進場施作', 1],
+  ['nmtpmwoh4', 1, '軟裝進場', 1],
+  ['i11', 1, '戶外照明'],
+  ['i12', 1, '現場戶外旗幟'],
+  ['i13', 1, '一期園藝整理'],
+  ['i14', 1, '冷氣'],
+  ['i15', 1, '飲水機'],
+  ['i16', 1, '影印機'],
+  /* 企劃、印刷 */
+  ['i18', 2, '企劃會議'],
+  ['i19', 2, '攝影計畫＆空拍'],
+  ['i20', 2, '傢配圖檢視與討論'],
+  ['i21', 2, '銷平檢視與討論'],
+  ['i22', 2, '交通生活動線圖檢視與討論'],
+  ['i23', 2, '生活機能圖檢視與討論'],
+  ['i24', 2, '海報檢視與討論'],
+  ['i25', 2, '臉書檢視與討論'],
+  ['i26', 2, '591檢視與討論'],
+  ['i27', 2, '名片'],
+  ['i28', 2, '買賣合約書'],
+  ['i29', 2, '銷控表、表單'],
+  /* 引導 */
+  ['i30', 3, 'POP檢視與建議'],
+  ['i32', 3, '手舉牌'],
+  /* 銷售 */
+  ['i35', 4, '人員進駐'],
+  ['nmtjtos6x', 4, '舊客資檢視'],
+  ['nmtjtq2nm', 4, '人員銷講'],
+  /* 交接項目 */
+  ['nmtpm6119', 5, '銷售週報'],
+  ['nmtpm6a28', 5, '客戶資料'],
+  ['nmtpm6ftn', 5, '臉書權限'],
+  ['nmtpm6u43', 5, 'POP定點表'],
+  ['nmtpm75gt', 5, '合約書範本'],
+  ['nmtpmacmr', 5, '現場輔銷道具點交'],
+  ['nmtpmb219', 5, '公司資產設備點交'],
+  ['nmtpmdb95', 5, '廠商名冊'],
+  ['nmtpmeejh', 5, '廣告預算表'],
+  ['nmtpmfsaq', 5, '競案市調資料'],
+].map(([id, g, t, lv]) => ({id, g, t, lv: lv || 0}));
+
+/* ---------- 日期軸 ---------- */
+const WD = ['日','一','二','三','四','五','六'];
+const DEFAULT_RANGE = {from:'2026-09-01', to:'2026-10-31'};
+const MAX_DAYS = 400;
+const pad = n => String(n).padStart(2,'0');
+const iso = d => d.getFullYear() + '-' + pad(d.getMonth()+1) + '-' + pad(d.getDate());
+const parseISO = s => { const [y,m,d] = String(s).split('-').map(Number); return new Date(y, m-1, d); };
+const roc = d => (d.getFullYear()-1911) + '.' + pad(d.getMonth()+1) + '.' + pad(d.getDate());
+
+let days = [], months = [], todayISO = iso(new Date());
+
+function buildAxis(){
+  const a = parseISO(state.range.from), b = parseISO(state.range.to);
+  days = [];
+  for (const d = new Date(a); d <= b; d.setDate(d.getDate()+1)) days.push(new Date(d));
+  months = [];
+  days.forEach(d => {
+    if (d.getDate() === 1 || !months.length){
+      const y = d.getFullYear(), m = d.getMonth()+1;
+      const newYear = months.length && parseISO(state.range.from).getFullYear() !== y && m === 1;
+      months.push({label: (months.length === 0 || newYear ? (y-1911) + '年' : '') + m + '月', n:0});
+    }
+    months[months.length-1].n++;
+  });
+}
+const dayCls = i => {
+  const d = days[i], out = [];
+  if (d.getDate() === 1) out.push('m0');
+  if (d.getDay() === 0 || d.getDay() === 6) out.push('we');
+  if (iso(d) === todayISO) out.push('today');
+  return out.join(' ');
+};
+
+/* ---------- 狀態 ---------- */
+const LKEY = 'shenqing2-q-v2';
+const CYCLE = ['','○','◎','●'];
+const gc = gi => GC[gi % GC.length];
+let state = {range:{...DEFAULT_RANGE}, groups: GROUPS.slice(), items: DEFAULT_ITEMS.map(o => ({...o})), marks: {}, collapsed: {}};
+
+/* 舊資料的標記是用「第幾欄」存的，日期一改就會對錯格，改存實際日期 */
+function migrate(s){
+  if (!s.range){
+    const base = parseISO(DEFAULT_RANGE.from), out = {};
+    Object.entries(s.marks || {}).forEach(([k,v]) => {
+      const i = k.lastIndexOf('|'), tail = k.slice(i+1);
+      if (/^\d+$/.test(tail)){
+        const d = new Date(base); d.setDate(d.getDate() + Number(tail));
+        out[k.slice(0,i) + '|' + iso(d)] = v;
+      } else out[k] = v;
+    });
+    s.marks = out;
+    s.range = {...DEFAULT_RANGE};
+  }
+  if (!s.collapsed) s.collapsed = {};          /* 舊資料沒有折疊狀態 */
+  (s.items || []).forEach(it => { if (it.lv == null) it.lv = 0; });  /* 舊項目一律當父項 */
+  return s;
+}
+let doc = null, docExists = false, editing = false, pending = false;
+
+const statusEl = document.getElementById('status');
+const setStatus = (text, s) => { statusEl.textContent = text; statusEl.dataset.s = s; };
+
+const readLocal = () => { try { return JSON.parse(localStorage.getItem(LKEY) || 'null'); } catch(e) { return null; } };
+const saveLocal = () => { try { localStorage.setItem(LKEY, JSON.stringify(state)); } catch(e) {} };
+
+/* 舊版（v1）本機標記搬過來，只在雲端還沒有資料時做一次 */
+function legacyMarks(){
+  let old = null;
+  try { old = JSON.parse(localStorage.getItem('shenqing2-q-marks-v1') || 'null'); } catch(e) {}
+  if (!old) return null;
+  const byName = {};
+  state.items.forEach(it => byName[GROUPS[it.g] + '|' + it.t] = it.id);
+  const out = {}, base = parseISO(DEFAULT_RANGE.from);
+  Object.entries(old).forEach(([k,v]) => {
+    const i = k.lastIndexOf('|');
+    const id = byName[k.slice(0,i)], n = Number(k.slice(i+1));
+    if (!id || !v || !Number.isInteger(n)) return;
+    const d = new Date(base); d.setDate(d.getDate() + n);
+    out[id + '|' + iso(d)] = v;
+  });
+  return Object.keys(out).length ? out : null;
+}
+
+/* ---------- 寫入 ---------- */
+async function push(patch){ return;            /* 唯讀快照，不寫入 */
+  /* eslint-disable */
+  saveLocal();
+  if (!doc) { setStatus('未連線・僅存這台電腦', 'warn'); return; }
+  setStatus('儲存中…', 'busy');
+  try {
+    if (docExists) await doc.update(patch);
+    else { await doc.set(state); docExists = true; }
+    setStatus('已同步', 'ok');
+  } catch (e) {
+    if (e && (e.code === 'invalid_argument' || e.code === 'revoked')) setStatus('唯讀・這次修改沒有存上去', 'warn');
+    else setStatus('儲存失敗，請重試', 'warn');
+  }
+}
+const pushMark = (k,v) => push({marks:{[k]:v}});
+const pushItems = () => push({items: state.items, groups: state.groups});
+
+/* ---------- 畫格線 ---------- */
+const esc = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const grid = document.getElementById('grid');
+const scroller = document.getElementById('scroller');
+
+/* 父項底下緊接著的子項。從屬關係由順序決定，不另存 parent id。 */
+function kidsOf(arr, it){
+  if ((it.lv || 0) !== 0) return [];
+  const i = arr.indexOf(it), out = [];
+  for (let j = i + 1; j < arr.length && (arr[j].lv || 0) === 1; j++) out.push(arr[j]);
+  return out;
+}
+
+/* 折疊中的父項，其子項不出現在表格裡（rowspan 也要跟著算） */
+function visibleItems(gi){
+  const arr = state.items.filter(it => it.g === gi);
+  let hide = false;
+  return arr.filter(it => {
+    if ((it.lv || 0) === 0){ hide = !!state.collapsed[it.id]; return true; }
+    return !hide;
+  });
+}
+
+function render(){
+  buildAxis();
+  const sl = scroller.scrollLeft, st = scroller.scrollTop;
+  let h = '<thead><tr><th class="corner" colspan="2" rowspan="2">分類<em>工作項目</em></th>';
+  months.forEach(m => h += `<th class="month" colspan="${m.n}">${m.label}</th>`);
+  h += '</tr><tr>';
+  days.forEach((d,i) => h += `<th class="day ${dayCls(i)}">${d.getDate()}<span>${WD[d.getDay()]}</span></th>`);
+  h += '</tr></thead><tbody>';
+
+  state.groups.forEach((gname, gi) => {
+    const all = state.items.filter(it => it.g === gi);
+    const items = visibleItems(gi);
+    const cat = `<th class="catcell" rowspan="${Math.max(1, items.length)}" style="--gc:${gc(gi)}"><span class="catinner">` +
+      `<span class="gnm" data-ro data-g="${gi}">${esc(gname)}</span>` +
+      `<button class="delg" data-delg="${gi}" type="button" title="刪除這個分類" aria-label="刪除分類 ${esc(gname)}">×</button></span></th>`;
+
+    items.forEach((it, n) => {
+      const sub = (it.lv || 0) === 1;
+      const kids = kidsOf(all, it);
+      const col = !!state.collapsed[it.id];
+      h += `<tr class="item${sub ? ' sub' : ''}${n === items.length - 1 ? ' lastrow' : ''}" style="--gc:${gc(gi)}">` + (n === 0 ? cat : '') +
+           `<th class="rowhead"><span class="rowinner"><span class="bar"></span>` +
+           (sub ? '<span class="tree" aria-hidden="true">└</span>' : '') +
+           (kids.length
+              ? `<button class="fold" data-fold="${it.id}" type="button" aria-expanded="${!col}" title="${col ? '展開' : '收合'}細項">${col ? '▸' : '▾'}</button>`
+              : '') +
+           `<span class="nm" data-ro data-id="${it.id}">${esc(it.t)}</span>` +
+           (kids.length && col ? `<span class="kidcount">${kids.length}</span>` : '') +
+           (sub ? '' : `<button class="addsub" data-addsub="${it.id}" type="button" title="在底下新增細項" aria-label="在「${esc(it.t)}」底下新增細項">＋</button>`) +
+           `<button class="del" data-del="${it.id}" type="button" title="刪除這一列" aria-label="刪除 ${esc(it.t)}">×</button></span></th>`;
+      for (let i = 0; i < days.length; i++){
+        const k = it.id + '|' + iso(days[i]);
+        h += `<td class="cell ${dayCls(i)}">${state.marks[k] || ''}</td>`;
+      }
+      h += '</tr>';
+    });
+
+    /* 唯讀版不輸出新增列 */
+  });
+  h += '</tbody>';
+  grid.innerHTML = h;
+  scroller.scrollLeft = sl; scroller.scrollTop = st;
+
+  document.getElementById('m-items').firstChild.data = String(state.items.length);
+  document.getElementById('m-groups').firstChild.data = String(state.groups.length);
+  document.getElementById('m-marks').firstChild.data =
+    String(Object.values(state.marks).filter(Boolean).length);
+
+  document.getElementById('from').value = state.range.from;
+  document.getElementById('to').value = state.range.to;
+  document.getElementById('roc').textContent =
+    `${roc(days[0])} — ${roc(days[days.length-1])}　共 ${days.length} 天`;
+}
+
+/* ---------- 提示條（沙箱裡沒有 confirm 可用，改成先做、可復原） ---------- */
+const toastEl = document.getElementById('toast');
+let snapshot = null, toastTimer = null;
+
+const pushAll = () => push({range: state.range, groups: state.groups, items: state.items, marks: state.marks});
+const takeSnapshot = () => { snapshot = JSON.parse(JSON.stringify(state)); };
+
+function toast(msg, undoable){
+  clearTimeout(toastTimer);
+  toastEl.className = 'toast' + (undoable ? '' : ' warn');
+  toastEl.textContent = '';
+  toastEl.appendChild(Object.assign(document.createElement('span'), {textContent: msg}));
+  if (undoable){
+    const b = Object.assign(document.createElement('button'),
+      {className:'undo', type:'button', textContent:'復原'});
+    b.addEventListener('click', () => {
+      if (!snapshot) return;
+      state = snapshot; snapshot = null;
+      render(); pushAll(); hideToast();
+    });
+    toastEl.appendChild(b);
+  }
+  toastEl.hidden = false;
+  toastTimer = setTimeout(hideToast, undoable ? 10000 : 4500);
+}
+function hideToast(){ clearTimeout(toastTimer); toastEl.hidden = true; snapshot = null; }
+
+/* ---------- 互動 ---------- */
+grid.addEventListener('click', e => {
+  /* 唯讀版只留折疊，其餘互動一律不處理 */
+  const f = e.target.closest('[data-fold]');
+  if (f){ state.collapsed[f.dataset.fold] = !state.collapsed[f.dataset.fold]; render(); }
+  return;
+  /* eslint-disable */
+  const add = e.target.closest('[data-add]');
+  if (add){
+    const gi = +add.dataset.add;
+    const id = 'n' + Date.now().toString(36);
+    const last = state.items.map(it => it.g).lastIndexOf(gi);
+    state.items.splice(last < 0 ? state.items.length : last + 1, 0, {id, g:gi, t:'新項目', lv:0});
+    render(); pushItems();
+    const el = grid.querySelector(`.nm[data-id="${id}"]`);
+    if (el){ el.scrollIntoView({block:'nearest'}); el.focus(); getSelection().selectAllChildren(el); }
+    return;
+  }
+  const fold = e.target.closest('[data-fold]');
+  if (fold){
+    const id = fold.dataset.fold;
+    state.collapsed[id] = !state.collapsed[id];
+    render(); saveLocal();             /* 只存這台電腦，不推雲端 */
+    return;
+  }
+
+  const addsub = e.target.closest('[data-addsub]');
+  if (addsub){
+    const pid = addsub.dataset.addsub;
+    const pi = state.items.findIndex(x => x.id === pid);
+    if (pi < 0) return;
+    const g = state.items[pi].g;
+    let j = pi + 1;                                   /* 插在既有子項之後 */
+    while (j < state.items.length && state.items[j].g === g && (state.items[j].lv || 0) === 1) j++;
+    const id = 'n' + Date.now().toString(36);
+    state.items.splice(j, 0, {id, g, t:'新細項', lv:1});
+    state.collapsed[pid] = false;                     /* 收合中就先展開，否則看不到 */
+    render(); pushItems();
+    const el = grid.querySelector(`.nm[data-id="${id}"]`);
+    if (el){ el.scrollIntoView({block:'nearest'}); el.focus(); getSelection().selectAllChildren(el); }
+    return;
+  }
+
+  const del = e.target.closest('[data-del]');
+  if (del){
+    const id = del.dataset.del;
+    const it = state.items.find(x => x.id === id);
+    if (!it) return;
+    takeSnapshot();
+    /* 刪父項時連同底下的子項一起刪，否則子項會變成孤兒接到別人底下 */
+    const kids = kidsOf(state.items.filter(x => x.g === it.g), it);
+    const kill = new Set([id, ...kids.map(k => k.id)]);
+    state.items = state.items.filter(x => !kill.has(x.id));
+    Object.keys(state.marks).forEach(k => {
+      if (kill.has(k.slice(0, k.lastIndexOf('|')))) state.marks[k] = '';
+    });
+    delete state.collapsed[id];
+    render(); pushAll();
+    toast(kids.length ? `已刪除「${it.t}」和底下 ${kids.length} 個細項` : `已刪除「${it.t}」`, true);
+    return;
+  }
+  const delg = e.target.closest('[data-delg]');
+  if (delg){
+    const gi = +delg.dataset.delg;
+    const gname = state.groups[gi];
+    const n = state.items.filter(it => it.g === gi).length;
+    takeSnapshot();
+    state.items.filter(it => it.g === gi).forEach(it => {
+      Object.keys(state.marks).forEach(k => { if (k.startsWith(it.id + '|')) state.marks[k] = ''; });
+    });
+    state.items.filter(it => it.g === gi).forEach(it => { delete state.collapsed[it.id]; });
+    state.items = state.items.filter(it => it.g !== gi).map(it => ({...it, g: it.g > gi ? it.g - 1 : it.g}));
+    state.groups.splice(gi, 1);
+    render(); pushAll();
+    toast(n ? `已刪除分類「${gname}」和底下 ${n} 個項目` : `已刪除分類「${gname}」`, true);
+    return;
+  }
+  const td = e.target.closest('td.cell');
+  /* Safari 點擊不會自動聚焦非表單元素，要自己來，否則按 Delete 沒有作用 */
+  if (td){ td.focus({preventScroll:true}); bump(td); }
+});
+
+function setMark(td, v){
+  const k = td.dataset.k;
+  if ((state.marks[k] || '') === v) return;
+  state.marks[k] = v;
+  td.textContent = v;
+  document.getElementById('m-marks').firstChild.data =
+    String(Object.values(state.marks).filter(Boolean).length);
+  pushMark(k, v);
+}
+const bump = td =>
+  setMark(td, CYCLE[(CYCLE.indexOf(state.marks[td.dataset.k] || '') + 1) % CYCLE.length]);
+
+const current = el => el.classList.contains('gnm')
+  ? state.groups[+el.dataset.g]
+  : (state.items.find(x => x.id === el.dataset.id) || {}).t;
+
+/* 中文輸入法組字中的 Enter 是「選字」，不能拿來當作編輯結束 */
+let composing = false;
+grid.addEventListener('compositionstart', () => { composing = true; });
+grid.addEventListener('compositionend', () => { composing = false; });
+
+grid.addEventListener('keydown', e => {
+  return;
+  /* eslint-disable */
+  if (composing || e.isComposing || e.keyCode === 229) return;
+  const td = e.target.closest('td.cell');
+  if (td){
+    if (e.key === 'Enter' || e.key === ' '){
+      e.preventDefault();
+      bump(td);
+      return;
+    }
+    if (e.key === 'Delete' || e.key === 'Backspace'){ e.preventDefault(); setMark(td, ''); return; }
+    if (e.key === '1' || e.key === '2' || e.key === '3'){
+      e.preventDefault(); setMark(td, CYCLE[Number(e.key)]); return;
+    }
+    const step = {ArrowRight:[0,1], ArrowLeft:[0,-1], ArrowDown:[1,0], ArrowUp:[-1,0]}[e.key];
+    if (step){
+      e.preventDefault();
+      const cells = [...grid.querySelectorAll('td.cell')];
+      const perRow = days.length, i = cells.indexOf(td);
+      const next = cells[i + step[0]*perRow + step[1]];
+      if (next && (step[0] || Math.floor(i/perRow) === Math.floor((i+step[1])/perRow))) next.focus();
+      return;
+    }
+  }
+  const el = e.target.closest('.nm,.gnm');
+  if (!el) return;
+  if (e.key === 'Enter'){ e.preventDefault(); el.blur(); }
+  if (e.key === 'Escape'){ el.textContent = current(el) ?? ''; el.blur(); }
+});
+grid.addEventListener('focusin', e => { if (e.target.closest('.nm,.gnm')) editing = true; });
+grid.addEventListener('focusout', e => {
+  const el = e.target.closest('.nm,.gnm');
+  if (!el) return;
+  /* 有些輸入法在失焦後才送出組字，等它送完再讀文字 */
+  if (composing){ composing = false; setTimeout(() => el.dispatchEvent(new FocusEvent('focusout', {bubbles:true})), 0); return; }
+  editing = false;
+  const was = current(el);
+  const t = el.textContent.replace(/\s+/g,' ').trim();
+  if (!t || was === undefined){ el.textContent = was ?? ''; }
+  else if (t !== was){
+    if (el.classList.contains('gnm')) state.groups[+el.dataset.g] = t;
+    else state.items.find(x => x.id === el.dataset.id).t = t;
+    el.textContent = t;
+    pushItems();
+  }
+  if (pending){ pending = false; render(); }
+});
+
+
+
+['from','to'].forEach(which => {
+  document.getElementById(which).addEventListener('change', e => {
+    const next = {...state.range, [which]: e.target.value};
+    const a = parseISO(next.from), b = parseISO(next.to);
+    if (!next.from || !next.to || isNaN(a) || isNaN(b)){ render(); return; }
+    if (b < a){ toast('結束日不能早於起始日', false); render(); return; }
+    const n = Math.round((b - a) / 86400000) + 1;
+    if (n > MAX_DAYS){ toast(`區間太長（${n} 天），最多 ${MAX_DAYS} 天`, false); render(); return; }
+    state.range = next;
+    render();
+    push({range: state.range});
+  });
+});
+
+
+
+/* ---------- 匯出 A3 PDF ---------- */
+/* 沙箱裡頁面不能自己觸發下載，一律走 downloads 能力交給觀看者確認 */
+const pdfBtn = document.getElementById('pdf');
+
+/* 印出來的版本：拿掉操作用的按鈕、解除 sticky、分類名改橫排（html2canvas 不吃直排） */
+function buildPrintable(){
+  /* 畫面上折疊的細項也要印出來，先全部展開，clone 完再還原 */
+  const keepCollapsed = state.collapsed;
+  state.collapsed = {};
+  render();
+
+  const holder = document.createElement('div');
+  holder.style.cssText =
+    'position:fixed;left:-99999px;top:0;background:#fff;padding:26px;font-family:' +
+    getComputedStyle(document.body).fontFamily;
+
+  const head = document.createElement('div');
+  head.style.cssText = 'margin-bottom:14px;display:flex;align-items:flex-end;gap:24px';
+  head.innerHTML =
+    `<div><div style="font-family:'Noto Serif TC',serif;font-size:26px;font-weight:700">城鈺深晴2　工作進度表</div>` +
+    `<div style="font-size:13px;color:#5C6560;margin-top:2px">台中市太平區・長億特區　電梯別墅 7 戶　／　成屋接手</div></div>` +
+    `<div style="margin-left:auto;text-align:right;font-family:'IBM Plex Mono',monospace;font-size:14px;color:#1E241F">` +
+    `${roc(days[0])} — ${roc(days[days.length-1])}　共 ${days.length} 天<br>` +
+    `<span style="font-size:12px;color:#5C6560">○ 開始　◎ 發包設計　● 完成</span></div>`;
+  holder.appendChild(head);
+
+  const clone = grid.cloneNode(true);
+  clone.querySelectorAll('.del,.delg,.addbtn,.fold,.addsub,.kidcount').forEach(el => el.remove());
+  /* 拿掉「新增項目」列的同時，把它身上的分類分隔線移交給該組最後一個項目列 */
+  clone.querySelectorAll('tr.addrow').forEach(tr => {
+    const prev = tr.previousElementSibling;
+    if (prev && prev.classList.contains('item'))
+      [...prev.children].forEach(c => { c.style.borderBottom = '2px solid #5C6560'; });
+    tr.remove();
+  });
+  clone.querySelectorAll('th').forEach(th => { th.style.position = 'static'; });
+  /* html2canvas 會把 inset box-shadow 畫成整格滿版色塊，改用真的邊框 */
+  clone.querySelectorAll('th.catcell').forEach(th => {
+    if (th.rowSpan > 1) th.rowSpan -= 1;                 // 少了「新增項目」那一列
+    const gi = +(th.querySelector('.gnm')?.dataset.g ?? 0);
+    const col = GC_HEX[gi % GC_HEX.length];
+    th.style.cssText += ';width:74px;min-width:74px;max-width:74px;padding:0 4px' +
+      ';box-shadow:none;border-left:3px solid ' + col + ';background:#FAFBF8';
+    const g = th.querySelector('.gnm');
+    if (g) g.style.cssText +=
+      ';writing-mode:horizontal-tb;white-space:normal;letter-spacing:0;line-height:1.25' +
+      ';font-size:12px;color:' + col;
+  });
+  /* 同上：今天那一欄的 inset 陰影會變成整條紅柱，內文格拿掉，表頭仍看得出今天 */
+  clone.querySelectorAll('td.cell').forEach(td => { td.style.boxShadow = 'none'; });
+  clone.querySelectorAll('.nm').forEach(el => { el.contentEditable = 'false'; });
+  clone.querySelectorAll('.gnm').forEach(el => { el.contentEditable = 'false'; });
+  /* 畫面版的外框畫在捲動容器上，PDF 版沒有容器，要自己補一圈 */
+  clone.style.cssText = 'border-collapse:separate;border-spacing:0;border:2px solid #5C6560';
+
+  holder.appendChild(clone);
+  document.body.appendChild(holder);
+
+  state.collapsed = keepCollapsed;                 /* 還原畫面上的折疊狀態 */
+  render();
+  return holder;
+}
+
+async function exportPDF(){
+  /* 一般網頁環境，直接用 a[download] 存檔 */
+  pdfBtn.disabled = true;
+  toast('正在產生 A3 PDF…', false);
+  let holder = null;
+  try{
+    holder = buildPrintable();
+    const canvas = await html2canvas(holder, {scale: 2, backgroundColor: '#FFFFFF', logging: false});
+    const {jsPDF} = window.jspdf;
+    const pdf = new jsPDF({orientation: 'landscape', unit: 'mm', format: 'a3'});
+    const PW = 420, PH = 297, M = 8;
+    const s = Math.min((PW - M*2) / canvas.width, (PH - M*2) / canvas.height);
+    const w = canvas.width * s, h = canvas.height * s;
+    pdf.addImage(canvas.toDataURL('image/png'), 'PNG', (PW - w)/2, (PH - h)/2, w, h, undefined, 'FAST');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(pdf.output('blob'));
+    a.download = `城鈺深晴2_工作進度表_${state.range.from}~${state.range.to}.pdf`;
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 4000);
+    toast('PDF 已存檔', false);
+  } catch (e){
+    const c = e && e.code;
+    if (c === 'declined') hideToast();
+    else if (c === 'too_large') toast('檔案超過 16MB，把日期區間縮短一點再試', false);
+    else if (c === 'rate_limited') toast('剛剛已經有一個存檔視窗，稍等一下再按', false);
+    else toast('PDF 產生失敗：' + ((e && e.message) || e), false);
+  } finally {
+    if (holder) holder.remove();
+    pdfBtn.disabled = false;
+  }
+}
+pdfBtn.addEventListener('click', exportPDF);
+
+/* ---------- 起手（唯讀快照）---------- */
+state = {
+  range: {...FROZEN.range},
+  groups: FROZEN.groups.slice(),
+  items: FROZEN.items.map(o => ({...o})),
+  marks: {...FROZEN.marks},
+  collapsed: {}
+};
+render();
+setStatus('唯讀快照 ・ ' + SNAPSHOT_AT, 'idle');
+pdfBtn.hidden = false;
+</script>
+
+</body></html>
