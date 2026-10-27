@@ -86,14 +86,14 @@ h1 em{font-style:normal;color:var(--purple)}
   <div class="tag">精選 4 支</div>
   <h1>每一支，都在回答<em>一個問題</em>。</h1>
   <div class="reels">
-    <div class="reel"><div class="phone"><video data-src="assets/clips/intro_v41.mp4" poster="assets/posters/intro_v41.jpg" muted loop playsinline></video></div>
-      <h3>建築師手繪介紹動畫</h3><p>透天怎麼一眼看懂？用線稿一層一層畫給你看。</p></div>
-    <div class="reel"><div class="phone"><video data-src="assets/clips/drawer.mp4" poster="assets/posters/drawer.jpg" muted loop playsinline></video></div>
-      <h3>逐層抽屜</h3><p>樓層像抽屜一樣拉出來，格局不用講，看就懂。</p></div>
+    <div class="reel"><div class="phone"><video data-src="assets/clips/no2.mp4" poster="assets/posters/no2.jpg" muted loop playsinline></video></div>
+      <h3>10 月 No.2 數字版</h3><p>賣點怎麼三秒講完？91–99 坪、12 年國教免接送、5 分鐘直達商圈。</p></div>
+    <div class="reel"><div class="phone"><video data-src="assets/clips/fb30.mp4" poster="assets/posters/fb30.jpg" muted loop playsinline></video></div>
+      <h3>Facebook 30 秒廣告</h3><p>室內長什麼樣？「把日子，過成喜歡的樣子」。</p></div>
     <div class="reel"><div class="phone"><video data-src="assets/clips/ai_deco.mp4" poster="assets/posters/ai_deco.jpg" muted loop playsinline></video></div>
       <h3>AI 裝潢滑動</h3><p>空屋怎麼想像成家？一條滑桿，前後對照。</p></div>
-    <div class="reel"><div class="phone"><video data-src="assets/clips/owner.mp4" poster="assets/posters/owner.jpg" muted loop playsinline></video></div>
-      <h3>自營商廣告片</h3><p>住廠合一的老闆，一句「致敬打拚」打到他。</p></div>
+    <div class="reel"><div class="phone"><video data-src="assets/clips/humor.mp4" poster="assets/posters/humor.jpg" muted loop playsinline></video></div>
+      <h3>手繪幽默廣告</h3><p>電梯透天好在哪？「房子升級了，爸爸的藉口沒了」。</p></div>
   </div>
   <div class="more">另外還有：預告短片 9 版、介紹影片 v5、帳本版、歷史電影感片、生活機能圖、全區價格配置圖、591 版位、派報、結構手繪貼文⋯⋯（第 1 頁牆上都看得到）</div>
 </section>
@@ -119,7 +119,7 @@ h1 em{font-style:normal;color:var(--purple)}
 
 <script>
 // 素材牆
-const posters=['intro_v41','teaser','film_v5','history','owner','ledger','drawer','ai_deco','family','meeting'].map(n=>'assets/posters/'+n+'.jpg');
+const posters=['no2','teaser','film_v5','history','humor','ledger','fb30','ai_deco','family','meeting'].map(n=>'assets/posters/'+n+'.jpg');
 const imgs=['price','life','struct','struct2','townhouse','retouch','flyer','p591','a6'].map(n=>'assets/imgs/'+n+'.jpg');
 const all=[];for(let i=0;i<Math.max(posters.length,imgs.length);i++){if(posters[i])all.push(posters[i]);if(imgs[i])all.push(imgs[i]);}
 const wall=document.getElementById('wall');
