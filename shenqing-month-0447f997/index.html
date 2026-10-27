@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>深晴這一個月</title>
+<style>
+:root{--bg:#F6F1E7;--ink:#2B2A28;--mute:#8A8478;--gold:#C9A25A;--gold-l:#E4C07E;--purple:#5A3E85;--card:#FFFDF8;--line:#E3DACA}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden;background:var(--bg);color:var(--ink);font-family:"PingFang TC","Noto Sans TC",system-ui,sans-serif}
+.deck{display:flex;height:100%;width:300%;transition:transform .8s cubic-bezier(.65,0,.25,1)}
+.slide{width:100vw;height:100vh;position:relative;overflow:hidden;padding:5vh 5vw}
+.tag{font-size:max(14px,1.1vw);letter-spacing:.3em;color:var(--gold);font-weight:700}
+h1{font-size:clamp(34px,5.2vw,86px);line-height:1.12;font-weight:900;letter-spacing:.02em}
+h1 em{font-style:normal;color:var(--purple)}
+.sub{font-size:max(16px,1.5vw);color:var(--mute);margin-top:1.2vh;line-height:1.6}
+
+/* 頁 1：素材牆 */
+.s1 .wall{position:absolute;inset:0;display:flex;gap:1.2vw;transform:rotate(-8deg) scale(1.25);transform-origin:center;opacity:.95}
+.col{flex:1;display:flex;flex-direction:column;gap:1.2vw;animation:up 60s linear infinite}
+.col:nth-child(even){animation-direction:reverse}
+.col img{width:100%;border-radius:10px;display:block;box-shadow:0 6px 18px rgba(60,40,10,.12)}
+@keyframes up{from{transform:translateY(0)}to{transform:translateY(-50%)}}
+.s1 .veil{position:absolute;inset:0;background:linear-gradient(90deg,var(--bg) 0%,var(--bg) 34%,rgba(246,241,231,.55) 52%,rgba(246,241,231,0) 75%)}
+.s1 .copy{position:relative;z-index:2;height:100%;display:flex;flex-direction:column;justify-content:center;max-width:46vw}
+.big{display:flex;gap:2.4vw;margin-top:5vh}
+.big div b{display:block;font-size:clamp(54px,8vw,130px);line-height:1;font-weight:900;color:var(--purple)}
+.big div span{font-size:max(15px,1.3vw);color:var(--mute)}
+
+/* 頁 2：作品 */
+.s2{display:flex;flex-direction:column}
+.reels{flex:1;display:grid;grid-template-columns:repeat(4,1fr);gap:2vw;margin-top:3vh;min-height:0}
+.reel{display:flex;flex-direction:column;align-items:center;text-align:center;min-height:0}
+.phone{display:flex;justify-content:center}
+.phone video{width:min(100%,47vh);height:auto;aspect-ratio:4/5;object-fit:cover;border-radius:14px;box-shadow:0 14px 34px rgba(60,40,10,.22);background:#ddd}
+.reel h3{font-size:max(17px,1.5vw);margin-top:1.6vh;font-weight:800}
+.reel p{font-size:max(13px,1.05vw);color:var(--mute);margin-top:.5vh;line-height:1.5}
+.reel .no{color:var(--gold);font-weight:800;letter-spacing:.15em;font-size:max(12px,.95vw)}
+.more{margin-top:2vh;font-size:max(13px,1.05vw);color:var(--mute);border-top:1px solid var(--line);padding-top:1.4vh}
+
+/* 頁 3：曲線 */
+.s3{display:flex;gap:4vw;align-items:center}
+.s3 .l{flex:0 0 32vw}
+.s3 .l .n{font-size:clamp(80px,12vw,190px);font-weight:900;color:var(--purple);line-height:1;margin-top:3vh}
+.s3 .l .n small{font-size:.28em;color:var(--ink);margin-left:.2em}
+.s3 .r{flex:1;background:var(--card);border:1px solid var(--line);border-radius:18px;padding:3vh 2.4vw;height:76vh;display:flex;flex-direction:column}
+.s3 svg{flex:1;width:100%}
+.chips{display:flex;gap:.8vw;flex-wrap:wrap;margin-top:3vh}
+.chips span{border:1px solid var(--gold);color:var(--ink);padding:.5vh 1vw;border-radius:99px;font-size:max(12px,1vw);background:var(--card)}
+.draw{stroke-dasharray:1200;stroke-dashoffset:1200}
+.on .draw{animation:dr 2.2s .5s ease forwards}
+@keyframes dr{to{stroke-dashoffset:0}}
+.pt{opacity:0;transition:opacity .5s}
+.on .pt{opacity:1}
+.bar{transform-origin:bottom;transform:scaleY(0);transform-box:fill-box;transition:transform .9s cubic-bezier(.2,.8,.2,1)}
+.on .bar{transform:scaleY(1)}
+
+/* 導覽 */
+.nav{position:fixed;bottom:2.4vh;left:50%;transform:translateX(-50%);display:flex;gap:10px;z-index:9}
+.nav i{width:34px;height:5px;border-radius:3px;background:var(--line);cursor:pointer;transition:.3s}
+.nav i.a{background:var(--purple);width:56px}
+.arrow{position:fixed;top:50%;font-size:34px;color:var(--mute);cursor:pointer;z-index:9;padding:10px;user-select:none}
+.arrow.l{left:.6vw}.arrow.r{right:.6vw}
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+
+<!-- 1 -->
+<section class="slide s1" id="p0">
+  <div class="wall" id="wall"></div>
+  <div class="veil"></div>
+  <div class="copy">
+    <div class="tag">城鈺深晴 · 9/27 – 10/27</div>
+    <h1>一個月，<br>一群 <em>AI</em>，<br>一面牆的作品。</h1>
+    <p class="sub">背後這面牆，全是這個月做出來的東西，還在慢慢往上爬。</p>
+    <div class="big">
+      <div><b>21</b><span>個新專案資料夾</span></div>
+      <div><b>24</b><span>個影片檔</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- 2 -->
+<section class="slide s2" id="p1">
+  <div class="tag">精選 4 支</div>
+  <h1>每一支，都在回答<em>一個問題</em>。</h1>
+  <div class="reels">
+    <div class="reel"><div class="phone"><video data-src="assets/clips/intro_v41.mp4" poster="assets/posters/intro_v41.jpg" muted loop playsinline></video></div>
+      <h3>建築師手繪介紹動畫</h3><p>透天怎麼一眼看懂？用線稿一層一層畫給你看。</p></div>
+    <div class="reel"><div class="phone"><video data-src="assets/clips/drawer.mp4" poster="assets/posters/drawer.jpg" muted loop playsinline></video></div>
+      <h3>逐層抽屜</h3><p>樓層像抽屜一樣拉出來，格局不用講，看就懂。</p></div>
+    <div class="reel"><div class="phone"><video data-src="assets/clips/ai_deco.mp4" poster="assets/posters/ai_deco.jpg" muted loop playsinline></video></div>
+      <h3>AI 裝潢滑動</h3><p>空屋怎麼想像成家？一條滑桿，前後對照。</p></div>
+    <div class="reel"><div class="phone"><video data-src="assets/clips/owner.mp4" poster="assets/posters/owner.jpg" muted loop playsinline></video></div>
+      <h3>自營商廣告片</h3><p>住廠合一的老闆，一句「致敬打拚」打到他。</p></div>
+  </div>
+  <div class="more">另外還有：預告短片 9 版、介紹影片 v5、帳本版、歷史電影感片、生活機能圖、全區價格配置圖、591 版位、派報、結構手繪貼文⋯⋯（第 1 頁牆上都看得到）</div>
+</section>
+
+<!-- 3 -->
+<section class="slide s3" id="p2">
+  <div class="l">
+    <div class="tag">10/1 進場 · 週報實數</div>
+    <h1>來人，<br>一組一組<br>往上<em>累積</em>。</h1>
+    <div class="n">11<small>組</small></div>
+    <p class="sub">四週累計來人（週報表逐週加總）</p>
+    <div class="chips"><span>FB + IG 名單</span><span>591 智能優選</span><span>Google 再行銷</span><span>POP 基地／太平／大里</span></div>
+  </div>
+  <div class="r">
+    <svg id="chart" viewBox="0 0 800 460" preserveAspectRatio="xMidYMid meet"></svg>
+  </div>
+</section>
+</div>
+
+<div class="arrow l" onclick="go(cur-1)">‹</div>
+<div class="arrow r" onclick="go(cur+1)">›</div>
+<div class="nav" id="nav"><i></i><i></i><i></i></div>
+
+<script>
+// 素材牆
+const posters=['intro_v41','teaser','film_v5','history','owner','ledger','drawer','ai_deco','family','meeting'].map(n=>'assets/posters/'+n+'.jpg');
+const imgs=['price','life','struct','struct2','townhouse','retouch','flyer','p591','a6'].map(n=>'assets/imgs/'+n+'.jpg');
+const all=[];for(let i=0;i<Math.max(posters.length,imgs.length);i++){if(posters[i])all.push(posters[i]);if(imgs[i])all.push(imgs[i]);}
+const wall=document.getElementById('wall');
+for(let c=0;c<6;c++){
+  const col=document.createElement('div');col.className='col';
+  const set=all.filter((_,i)=>i%6===c||i%6===(c+3)%6).concat(all.filter((_,i)=>(i+c)%5===0));
+  const list=[...set,...set];
+  list.forEach(s=>{const im=new Image();im.src=s;col.appendChild(im);});
+  wall.appendChild(col);
+}
+// 曲線：資料來自週報表 一-週報表 來人列（W01–W04）
+const wk=[1,3,5,2], cum=[1,4,9,11], lab=['第 1 週 9/28–10/4','第 2 週 10/5–10/11','第 3 週 10/12–10/18','第 4 週 10/19–10/25'];
+const svg=document.getElementById('chart'),X0=90,X1=740,Y0=400,H=300,max=12;
+const x=i=>X0+(i+.5)*(X1-X0)/4, y=v=>Y0-v/max*H;
+let s='';
+for(let g=0;g<=12;g+=4)s+=`<line x1="60" x2="780" y1="${y(g)}" y2="${y(g)}" stroke="#E3DACA"/><text x="46" y="${y(g)+5}" text-anchor="end" font-size="15" fill="#8A8478">${g}</text>`;
+wk.forEach((v,i)=>{s+=`<rect class="bar" style="transition-delay:${i*.15}s" x="${x(i)-34}" y="${y(v)}" width="68" height="${Y0-y(v)}" rx="8" fill="#E4C07E"/>
+`;
+ (`本週 ${v} 組\n`+lab[i]).split('\n').forEach((t,k)=>s+=`<text x="${x(i)}" y="${Y0+24+k*19}" text-anchor="middle" font-size="${k?13:16}" font-weight="${k===0?800:400}" fill="${k===0?'#2B2A28':'#8A8478'}">${t}</text>`);});
+const path=cum.map((v,i)=>(i?'L':'M')+x(i)+' '+y(v)).join(' ');
+s+=`<path class="draw" d="${path}" fill="none" stroke="#5A3E85" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>`;
+cum.forEach((v,i)=>s+=`<circle class="pt" style="transition-delay:${.6+i*.5}s" cx="${x(i)}" cy="${y(v)}" r="8" fill="#5A3E85"/><text class="pt" style="transition-delay:${.6+i*.5}s" x="${x(i)}" y="${y(v)-18}" text-anchor="middle" font-size="22" font-weight="900" fill="#5A3E85">${v}</text>`);
+s+=`<rect x="470" y="14" width="16" height="16" rx="3" fill="#E4C07E"/><text x="492" y="27" font-size="15" fill="#2B2A28">每週來人</text><line x1="590" x2="618" y1="22" y2="22" stroke="#5A3E85" stroke-width="5"/><text x="626" y="27" font-size="15" fill="#2B2A28">累計來人</text>`;
+svg.innerHTML=s;
+
+// 翻頁
+let cur=0;const deck=document.getElementById('deck'),dots=[...document.querySelectorAll('#nav i')];
+function go(n){cur=Math.max(0,Math.min(2,n));deck.style.transform=`translateX(${-cur*100}vw)`;
+ dots.forEach((d,i)=>d.classList.toggle('a',i===cur));
+ document.querySelectorAll('.slide').forEach((el,i)=>el.classList.toggle('on',i===cur));
+ document.querySelectorAll('video').forEach(v=>{if(!v.src&&v.dataset.src&&cur===1)v.src=v.dataset.src; cur===1?v.play().catch(()=>{}):v.pause();});}
+dots.forEach((d,i)=>d.onclick=()=>go(i));
+addEventListener('keydown',e=>{if(['ArrowRight',' ','PageDown'].includes(e.key))go(cur+1);if(['ArrowLeft','PageUp'].includes(e.key))go(cur-1);});
+go(0);
+</script>
+</body>
+</html>
